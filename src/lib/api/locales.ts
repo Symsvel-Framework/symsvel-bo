@@ -8,7 +8,9 @@ export function normalizeLanguage(value: string | null | undefined): string | nu
 }
 
 function browserLanguage(): string {
-	return typeof navigator === 'undefined' ? 'en' : (normalizeLanguage(navigator.language) ?? 'en');
+	return typeof navigator === 'undefined'
+		? 'en'
+		: (normalizeLanguage(navigator.language) ?? 'en');
 }
 
 export const uiLanguage = writable<string | null>(null);
@@ -31,7 +33,8 @@ export type ApiLocaleOptions = {
 export function localizedApiPath(path: string, options: ApiLocaleOptions = {}): string {
 	if (options.skipLocales) return path;
 	const uiLang = normalizeLanguage(options.uiLang) ?? get(uiLanguage) ?? browserLanguage();
-	const translationLang = normalizeLanguage(options.translationLang) ?? get(translationLanguage) ?? uiLang;
+	const translationLang =
+		normalizeLanguage(options.translationLang) ?? get(translationLanguage) ?? uiLang;
 	const [withoutHash, hash] = path.split('#', 2);
 	const [pathname, query = ''] = withoutHash.split('?', 2);
 	const params = new URLSearchParams(query);
