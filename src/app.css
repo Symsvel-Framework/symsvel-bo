@@ -150,3 +150,18 @@ a:hover {
 		padding: 20px;
 	}
 }
+
+.bo-topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 24px;
+}
+.bo-topbar button {
+	border: 1px solid #ccd4df;
+	background: #fff;
+	border-radius: 8px;
+	padding: 9px 14px;
+	font: inherit;
+	cursor: pointer;
+}
