@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	onMount(() => {
 		// Fail closed until the Auth integration can verify a BO session.
-		void goto('/login', { replaceState: true });
+		void goto(resolve('/login'), { replaceState: true });
 	});
 </script>
 
