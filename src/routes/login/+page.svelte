@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { api, ApiError } from '../../lib/api/client';
+	import { ApiError } from '../../lib/api/client';
+	import { loginBo } from '../../lib/api/session';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let email = $state('');
 	let password = $state('');
@@ -12,13 +15,9 @@
 		loading = true;
 		error = '';
 		try {
-			await api('/apibo/auth/login', {
-				method: 'POST',
-				public: true,
-				body: JSON.stringify({ email, password })
-			});
-			// No navigation until Auth defines and wires a verifiable BO session.
-			error = 'Connexion reçue, mais la session BO n’est pas encore raccordée.';
+			await loginBo(email, password);
+			password = '';
+			await goto(resolve('/dashboard'), { replaceState: true });
 		} catch (cause) {
 			error =
 				cause instanceof ApiError && cause.status === 401
