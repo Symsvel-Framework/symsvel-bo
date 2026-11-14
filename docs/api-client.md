@@ -1,0 +1,29 @@
+# BO API client and language contract
+
+The BO uses `src/lib/api/client.ts` for HTTP requests and `src/lib/api/locales.ts` for language selection. Functional modules should use this client rather than implementing independent fetch wrappers.
+
+## Routing
+
+- `/apibo`: back-office APIs.
+- `/api`: application APIs.
+- `/apiopen`: public APIs and unauthenticated reference data, where provided by the backend.
+
+A route prefix does **not** determine authentication by itself. Public login and registration operations can exist in their respective API areas. Actual endpoints must be declared by the owning module; the client does not manufacture them.
+
+## Languages
+
+Every normal request appends `ui_lang` (interface language) and `translation_lang` (content language). The interface language uses the administrator preference when populated, otherwise the browser language, falling back to `en`. The content language is independent and defaults to the interface language. Existing URL parameters take precedence. Per-request overrides `uiLang` and `translationLang` are available; `skipLocales` disables both additions.
+
+The Auth module will supply the administrator preference after profile loading. Translation dictionaries, fallback rules and cache invalidation remain backend responsibilities.
+
+## Public requests and authentication integration
+
+Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests can temporarily receive `accessToken` explicitly; automatic session refresh, token storage and logout are deliberately **not** implemented here because Auth is developed separately. Do not duplicate its session lifecycle.
+
+The client uses `PUBLIC_API_URL` when set; otherwise, in a browser, it resolves `bo.example` to `backend.example`. Outside the browser an explicit URL is required. The client accepts root-relative paths only.
+
+Responses follow the SymSvel envelope (`{data: ...}`, `{error: {code, message}}`, or HTTP 204). Errors throw `ApiError` with HTTP status and optional API code.
+
+## Validation
+
+Run `npm run check`, `npm run lint`, `npm run build` and `npm run test:unit -- --run`. Full QA and real browser/backend crash tests are required before completion. Verify backend route contracts, CORS and Auth integration separately.
