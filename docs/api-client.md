@@ -37,3 +37,9 @@ Prochain raccordement : définir et tester la réponse du contrôleur Auth, le s
 Le formulaire utilise provisoirement l'import relatif `../../lib/api/client`, résolu sans alias par TypeScript. La configuration actuelle de `tsconfig.json` étend `$app/tsconfig` et ne prouve pas la résolution de l'alias `#lib` dans `svelte-check` ; la CI valide ce point.
 
 Les redirections internes SvelteKit passent par `resolve('/login')` avant `goto(...)`, conformément à la règle ESLint `svelte/no-navigation-without-resolve` du projet.
+
+## Session BO éphémère (14/11/2026)
+
+Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) : `POST /apibo/auth/login`, puis vérification de l'identité par `GET /apibo/auth/me`. Le dashboard n'est rendu qu'après une nouvelle vérification `/me` ; en cas d'échec, retour à `/login`. La déconnexion appelle `POST /apibo/auth/logout` et efface immédiatement les secrets en mémoire, même si la requête réseau échoue.
+
+**Limitation volontaire de sécurité :** les tokens restent uniquement en mémoire JavaScript, jamais en localStorage, sessionStorage ni cookie lisible par JS. Un rechargement complet perd donc la session et oblige à se reconnecter. Ce mécanisme transitoire ne remplace pas un transport serveur par cookies HttpOnly/Secure avec politique CSRF et CORS validée. Les tokens exposés au JavaScript restent vulnérables en cas de XSS. Pas de renouvellement automatique, de protection globale de toutes les routes ni de validation navigateur/backend : ne pas considérer cette passe comme prête pour la production.
