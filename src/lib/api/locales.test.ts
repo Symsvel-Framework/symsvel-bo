@@ -7,9 +7,7 @@ describe('localizedApiPath', () => {
 		setTranslationLanguage(null);
 	});
 	it('adds both languages and defaults translation to UI language', () => {
-		expect(localizedApiPath('/apibo/admins')).toBe(
-			'/apibo/admins?ui_lang=fr&translation_lang=fr'
-		);
+		expect(localizedApiPath('/apibo/admins')).toBe('/apibo/admins?ui_lang=fr&translation_lang=fr');
 	});
 	it('keeps a separate translation language', () => {
 		setTranslationLanguage('de');

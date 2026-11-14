@@ -26,9 +26,7 @@ export function apiBaseUrl(): string {
 		throw new Error('PUBLIC_API_URL is required outside the browser.');
 	}
 	const { protocol, hostname, port } = window.location;
-	const backendHostname = hostname.startsWith('bo.')
-		? `backend.${hostname.slice(3)}`
-		: hostname;
+	const backendHostname = hostname.startsWith('bo.') ? `backend.${hostname.slice(3)}` : hostname;
 	return `${protocol}//${backendHostname}${port ? `:${port}` : ''}`;
 }
 
@@ -46,11 +44,7 @@ export async function api<T>(path: string, init: ApiRequestInit = {}): Promise<T
 	}
 	const headers = new Headers(requestInit.headers);
 	headers.set('Accept', 'application/json');
-	if (
-		requestInit.body &&
-		!headers.has('Content-Type') &&
-		!(requestInit.body instanceof FormData)
-	) {
+	if (requestInit.body && !headers.has('Content-Type') && !(requestInit.body instanceof FormData)) {
 		headers.set('Content-Type', 'application/json');
 	}
 	if (isPublic) {

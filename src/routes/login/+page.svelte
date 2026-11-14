@@ -44,7 +44,13 @@
 			<label for="email">Adresse e-mail</label>
 			<input id="email" type="email" autocomplete="username" bind:value={email} required />
 			<label for="password">Mot de passe</label>
-			<input id="password" type="password" autocomplete="current-password" bind:value={password} required />
+			<input
+				id="password"
+				type="password"
+				autocomplete="current-password"
+				bind:value={password}
+				required
+			/>
 			<button type="submit" disabled={loading}>{loading ? 'Connexion…' : 'Se connecter'}</button>
 		</form>
 	</section>
