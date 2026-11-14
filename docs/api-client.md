@@ -34,4 +34,4 @@ Les vues `/login` et `/dashboard` reprennent les styles et la structure de XCore
 
 Prochain raccordement : définir et tester la réponse du contrôleur Auth, le stockage/transport sûr des tokens, la vérification d'accès au dashboard, le renouvellement et la déconnexion. Aucun écran 2FA, récupération de mot de passe ou création de compte App n'est inclus dans cette passe.
 
-Le formulaire importe le client via l'alias `#lib` déclaré dans `package.json`, et non via `$lib` ; cette convention est nécessaire pour la résolution TypeScript dans la CI du BO.
+Le formulaire utilise provisoirement l'import relatif `../../lib/api/client`, résolu sans alias par TypeScript. La configuration actuelle de `tsconfig.json` étend `$app/tsconfig` et ne prouve pas la résolution de l'alias `#lib` dans `svelte-check` ; la CI valide ce point.
