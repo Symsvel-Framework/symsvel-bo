@@ -1,0 +1,33 @@
+name: Format BO API and views once
+
+on:
+  push:
+    branches:
+      - feat/bo-api-locales-client
+    paths:
+      - .github/workflows/format-bo-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: [self-hosted, linux, ARM64, symsvel]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Apply repository Prettier and remove one-shot workflow
+        run: |
+          npx prettier --write src/app.css src/lib/api/client.ts src/lib/api/locales.test.ts src/lib/api/locales.ts src/routes/dashboard/+page.svelte src/routes/login/+page.svelte
+          git rm .github/workflows/format-bo-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app.css src/lib/api/client.ts src/lib/api/locales.test.ts src/lib/api/locales.ts src/routes/dashboard/+page.svelte src/routes/login/+page.svelte
+          git commit -m "style(bo): appliquer Prettier aux clients API et vues XCore"
+          git push origin HEAD:feat/bo-api-locales-client
