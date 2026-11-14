@@ -27,3 +27,9 @@ Responses follow the SymSvel envelope (`{data: ...}`, `{error: {code, message}}`
 ## Validation
 
 Run `npm run check`, `npm run lint`, `npm run build` and `npm run test:unit -- --run`. Full QA and real browser/backend crash tests are required before completion. Verify backend route contracts, CORS and Auth integration separately.
+
+## Première passe visuelle BO (14/11/2026)
+
+Les vues `/login` et `/dashboard` reprennent les styles et la structure de XCore (`src/app.css`, coque d'authentification et coque BO). L'accueil redirige vers `/login`. Le formulaire envoie une requête publique `POST /apibo/auth/login` mais **ne crée aucune session côté navigateur** : le contrôleur Auth et le transport de session restent à raccorder. En attendant, même une réponse HTTP réussie ne donne pas accès au dashboard ; celui-ci redirige vers la connexion. Il ne faut pas présenter cette étape comme une authentification fonctionnelle.
+
+Prochain raccordement : définir et tester la réponse du contrôleur Auth, le stockage/transport sûr des tokens, la vérification d'accès au dashboard, le renouvellement et la déconnexion. Aucun écran 2FA, récupération de mot de passe ou création de compte App n'est inclus dans cette passe.
