@@ -39,7 +39,10 @@ describe('ephemeral BO session', () => {
 	it('never restores a login response arriving after logout', async () => {
 		let finish!: (value: typeof tokens) => void;
 		mockedApi.mockImplementationOnce(
-			() => new Promise((resolve) => { finish = resolve as typeof finish; })
+			() =>
+				new Promise((resolve) => {
+					finish = resolve as typeof finish;
+				})
 		);
 		const pending = loginBo('admin@example.test', 'password');
 		await logoutBo();
@@ -50,7 +53,9 @@ describe('ephemeral BO session', () => {
 
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
-		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
+			'Invalid BO identity'
+		);
 		expect(await currentBo()).toBeNull();
 	});
 });
