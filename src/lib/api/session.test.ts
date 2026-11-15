@@ -171,9 +171,7 @@ describe('ephemeral BO session', () => {
 	it('rejects unauthenticated and public module calls', async () => {
 		await expect(boApi('/apibo/admins')).rejects.toMatchObject({ status: 401 });
 		await expect(boApi('/api/users')).rejects.toThrow('authenticated BO path');
-		await expect(boApi('/apibo/admins', { public: true })).rejects.toThrow(
-			'authenticated BO path'
-		);
+		await expect(boApi('/apibo/admins', { public: true })).rejects.toThrow('authenticated BO path');
 		await expect(boApi('/apibo/admins', { accessToken: 'injected' })).rejects.toThrow(
 			'authenticated BO path'
 		);
