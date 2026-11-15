@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./client', () => ({ api: vi.fn() }));
+vi.mock('./client', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('./client')>();
+	return { ...actual, api: vi.fn() };
+});
 
 import { api, ApiError } from './client';
 import { boApi, currentBo, loginBo, logoutBo } from './session';
@@ -190,12 +193,18 @@ describe('ephemeral BO session', () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
 		await loginBo('admin@example.test', 'password');
 		const deferred = Promise.withResolvers<{ data: number[] }>();
-		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const requestStarted = Promise.withResolvers<void>();
+		mockedApi.mockImplementationOnce(() => {
+			requestStarted.resolve();
+			return deferred.promise;
+		});
 		const pending = boApi('/apibo/admins');
+		const rejected = expect(pending).rejects.toMatchObject({ status: 401 });
+		await requestStarted.promise;
 		mockedApi.mockResolvedValueOnce(undefined);
 		await logoutBo();
 		deferred.resolve({ data: [1] });
-		await expect(pending).rejects.toMatchObject({ status: 401 });
+		await rejected;
 		expect(await currentBo()).toBeNull();
 	});
 
