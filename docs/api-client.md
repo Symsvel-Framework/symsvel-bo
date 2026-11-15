@@ -43,3 +43,7 @@ Les redirections internes SvelteKit passent par `resolve('/login')` avant `goto(
 Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) : `POST /apibo/auth/login`, puis vérification de l'identité par `GET /apibo/auth/me`. Le dashboard n'est rendu qu'après une nouvelle vérification `/me` ; en cas d'échec, retour à `/login`. La déconnexion appelle `POST /apibo/auth/logout` et efface immédiatement les secrets en mémoire, même si la requête réseau échoue.
 
 **Limitation volontaire de sécurité :** les tokens restent uniquement en mémoire JavaScript, jamais en localStorage, sessionStorage ni cookie lisible par JS. Un rechargement complet perd donc la session et oblige à se reconnecter. Ce mécanisme transitoire ne remplace pas un transport serveur par cookies HttpOnly/Secure avec politique CSRF et CORS validée. Les tokens exposés au JavaScript restent vulnérables en cas de XSS. Pas de renouvellement automatique, de protection globale de toutes les routes ni de validation navigateur/backend : ne pas considérer cette passe comme prête pour la production.
+
+## Prévention des courses de session
+
+Chaque tentative de connexion et déconnexion incrémente une génération de session. Une réponse tardive de login ou de vérification `/me` ne peut plus rétablir un état après déconnexion ou remplacer une session plus récente. `src/lib/api/session.test.ts` couvre la connexion vérifiée, le logout, le refus d'un contexte App et la réponse de login arrivée après logout. La CI et le crash-test navigateur restent nécessaires.
