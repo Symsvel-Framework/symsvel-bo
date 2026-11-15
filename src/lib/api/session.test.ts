@@ -81,6 +81,21 @@ describe('ephemeral BO session', () => {
 		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(1);
 	});
 
+	it('never restores a refresh response arriving after logout', async () => {
+		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
+		const renewed = { ...tokens, access_token: 'c'.repeat(43), refresh_token: 'd'.repeat(43) };
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		const deferred = Promise.withResolvers<typeof tokens>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const pending = currentBo();
+		mockedApi.mockResolvedValueOnce(undefined);
+		await logoutBo();
+		deferred.resolve(renewed);
+		expect(await pending).toBeNull();
+		expect(await currentBo()).toBeNull();
+	});
+
 	it('rejects an already expired login token', async () => {
 		mockedApi.mockResolvedValueOnce({
 			...tokens,
