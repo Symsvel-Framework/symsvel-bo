@@ -149,7 +149,9 @@ describe('ephemeral BO session', () => {
 		try {
 			vi.setSystemTime(Date.now() + 3_000);
 			expect(await currentBo()).toBeNull();
-			expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(0);
+			expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(
+				0
+			);
 		} finally {
 			vi.useRealTimers();
 		}
