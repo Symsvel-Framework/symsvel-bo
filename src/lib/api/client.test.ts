@@ -54,7 +54,7 @@ describe('BO API client security', () => {
 
 	it('rejects backslash and newline path escapes', async () => {
 		await expect(api('/\\\\other.example.test')).rejects.toThrow('root-relative');
-		await expect(api('/apibo/auth/me\\nInjected: yes')).rejects.toThrow('root-relative');
+		await expect(api('/apibo/auth/me' + String.fromCharCode(10) + 'Injected: yes')).rejects.toThrow('root-relative');
 		expect(fetch).not.toHaveBeenCalled();
 	});
 
