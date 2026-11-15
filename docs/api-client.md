@@ -116,3 +116,7 @@ La CI couvre maintenant aussi deux scénarios navigateur supplémentaires : rév
 8. Vérifier les réponses CORS sur les véritables domaines et le comportement en cas d'interruption réseau.
 
 **Critère de clôture :** CI verte, crash-tests locaux observés et validés par l'utilisateur, documentation mise à jour, aucune dette technique ouverte. Les étapes ci-dessus sont un protocole, pas un compte rendu de tests déjà effectués.
+
+### Stabilisation du test de révocation navigateur
+
+Le scénario Playwright de révocation attend maintenant explicitement la deuxième requête `/apibo/auth/me` via `expect.poll` avant de vérifier la redirection vers `/login`. En effet, cette URL est également celle du formulaire initial : une assertion immédiate pouvait réussir avant la fin de la connexion et observer une seule requête `me`. La correction concerne uniquement la synchronisation du test, pas le comportement de production.
