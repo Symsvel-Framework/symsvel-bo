@@ -53,3 +53,7 @@ Chaque tentative de connexion et déconnexion incrémente une génération de se
 `currentBo()` renouvelle les tokens si l'access token expire dans moins de 30 secondes via `POST /apibo/auth/refresh`, puis vérifie l'identité avec le nouvel access token. Les appels simultanés partagent une seule rotation pour éviter le rejeu du refresh. Les réponses tardives ne peuvent pas restaurer une session déconnectée. En cas de refus ou d'expiration du refresh, la session en mémoire est effacée et l'accès reste fermé. Test de rotation ajouté dans `session.test.ts`.
 
 La rotation est **déclenchée par les vérifications de session**, pas par une minuterie permanente ; un écran ouvert sans nouvelle vérification ne renouvelle pas la session. Les tokens restent exposés au JavaScript en mémoire : le transport serveur HttpOnly, les règles CSRF/CORS et les crash-tests navigateur sont encore nécessaires avant production.
+
+### Isolation des rotations concurrentes
+
+La rotation en cours est associée à la génération de session et à l'objet token d'origine. Une déconnexion ou une nouvelle connexion invalide ce rattachement : une requête tardive de l'ancienne session ne peut pas être réutilisée par la nouvelle. Un test simule deux vérifications BO concurrentes et exige un seul appel HTTP de refresh. Les tests CI restent nécessaires avant validation.
