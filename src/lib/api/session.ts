@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, ApiError, type ApiRequestInit } from './client';
 
 export type BoIdentity = { id: number; context: 'bo' };
 type LoginTokens = {
@@ -140,5 +140,39 @@ export async function logoutBo(): Promise<void> {
 		});
 	} catch {
 		// Fail closed locally even when the network cannot revoke the server token.
+	}
+}
+
+/**
+ * Authenticated BO module requests. Never expose token handling to individual modules.
+ * Refresh is shared with currentBo(); a failed authorization invalidates this session.
+ */
+export async function boApi<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
+	if (!path.startsWith('/apibo/') || init.public || init.accessToken || init.credentials) {
+		throw new Error('boApi requires an authenticated BO path');
+	}
+	const tokens = await accessTokens();
+	if (!tokens) throw new ApiError('Authentication required.', 401, 'unauthorized');
+	const generation = sessionGeneration;
+	try {
+		const result = await api<T>(path, {
+			...init,
+			credentials: 'omit',
+			accessToken: tokens.access_token
+		});
+		if (generation !== sessionGeneration || session !== tokens) {
+			throw new ApiError('Session changed.', 401, 'unauthorized');
+		}
+		return result;
+	} catch (error) {
+		if (
+			error instanceof ApiError &&
+			error.status === 401 &&
+			generation === sessionGeneration &&
+			session === tokens
+		) {
+			session = null;
+		}
+		throw error;
 	}
 }
