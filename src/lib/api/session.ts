@@ -38,6 +38,7 @@ async function accessTokens(): Promise<LoginTokens | null> {
 			});
 			if (generation !== sessionGeneration || session !== current) return null;
 			if (
+				!next ||
 				next.token_type !== 'Bearer' ||
 				!next.access_token ||
 				!next.refresh_token ||
@@ -79,6 +80,7 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		body: JSON.stringify({ email, password })
 	});
 	if (
+		!tokens ||
 		tokens.token_type !== 'Bearer' ||
 		!tokens.access_token ||
 		!tokens.refresh_token ||
@@ -94,7 +96,7 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		const identity = await api<BoIdentity>('/apibo/auth/me', {
 			accessToken: tokens.access_token
 		});
-		if (identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
+		if (!identity || identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
 			throw new Error('Invalid BO identity');
 		}
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
@@ -148,7 +150,13 @@ export async function logoutBo(): Promise<void> {
  * Refresh is shared with currentBo(); a failed authorization invalidates this session.
  */
 export async function boApi<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
-	if (!path.startsWith('/apibo/') || init.public || init.accessToken || init.credentials) {
+	if (
+		!path.startsWith('/apibo/') ||
+		init.public ||
+		init.accessToken ||
+		init.credentials ||
+		new Headers(init.headers).has('Authorization')
+	) {
 		throw new Error('boApi requires an authenticated BO path');
 	}
 	const tokens = await accessTokens();
