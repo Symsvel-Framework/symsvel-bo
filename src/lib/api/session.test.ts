@@ -48,9 +48,7 @@ describe('ephemeral BO session', () => {
 
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
-		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
-			'Invalid BO identity'
-		);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
 		expect(await currentBo()).toBeNull();
 	});
 });
