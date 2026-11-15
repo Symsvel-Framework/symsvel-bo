@@ -57,3 +57,7 @@ La rotation est **déclenchée par les vérifications de session**, pas par une 
 ### Isolation des rotations concurrentes
 
 La rotation en cours est associée à la génération de session et à l'objet token d'origine. Une déconnexion ou une nouvelle connexion invalide ce rattachement : une requête tardive de l'ancienne session ne peut pas être réutilisée par la nouvelle. Un test simule deux vérifications BO concurrentes et exige un seul appel HTTP de refresh. Les tests CI restent nécessaires avant validation.
+
+### Validation des dates de session
+
+Les réponses de connexion et de renouvellement doivent contenir deux dates valides et futures : expiration de l'access token et du refresh token. Une réponse contenant une date absente, invalide ou déjà dépassée est refusée ; lors du renouvellement, la session locale est immédiatement invalidée. Un échec HTTP de renouvellement ferme également la session et n'entraîne pas de boucle de retry. Tests unitaires ajoutés pour les cas d'expiration et de refus.
