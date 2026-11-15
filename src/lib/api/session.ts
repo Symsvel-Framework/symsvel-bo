@@ -11,6 +11,51 @@ type LoginTokens = {
 
 let session: LoginTokens | null = null;
 let sessionGeneration = 0;
+let pendingRefresh: Promise<LoginTokens | null> | null = null;
+
+async function accessTokens(): Promise<LoginTokens | null> {
+	const current = session;
+	const generation = sessionGeneration;
+	if (!current) return null;
+	if (Date.parse(current.expires_at) > Date.now() + 30_000) return current;
+	if (Date.parse(current.refresh_expires_at) <= Date.now()) {
+		if (generation === sessionGeneration && session === current) session = null;
+		return null;
+	}
+	if (pendingRefresh) return pendingRefresh;
+	const refresh = (async (): Promise<LoginTokens | null> => {
+		try {
+			const next = await api<LoginTokens>('/apibo/auth/refresh', {
+				method: 'POST',
+				public: true,
+				body: JSON.stringify({ refresh_token: current.refresh_token })
+			});
+			if (generation !== sessionGeneration || session !== current) return null;
+			if (
+				next.token_type !== 'Bearer' ||
+				!next.access_token ||
+				!next.refresh_token ||
+				!Number.isFinite(Date.parse(next.expires_at)) ||
+				!Number.isFinite(Date.parse(next.refresh_expires_at))
+			) {
+				session = null;
+				return null;
+			}
+			session = next;
+			return next;
+		} catch {
+			if (generation === sessionGeneration && session === current) session = null;
+			return null;
+		}
+	})();
+	pendingRefresh = refresh;
+	try {
+		return await refresh;
+	} finally {
+		if (pendingRefresh === refresh) pendingRefresh = null;
+	}
+}
+
 
 /**
  * Ephemeral BO session. No localStorage, sessionStorage or persistent JS cookies.
@@ -51,12 +96,9 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 }
 
 export async function currentBo(): Promise<BoIdentity | null> {
-	const current = session;
+	const current = await accessTokens();
 	const generation = sessionGeneration;
-	if (!current || Date.parse(current.expires_at) <= Date.now()) {
-		if (generation === sessionGeneration) session = null;
-		return null;
-	}
+	if (!current) return null;
 	try {
 		const identity = await api<BoIdentity>('/apibo/auth/me', {
 			accessToken: current.access_token
