@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Format only staged files supported by Prettier, then re-stage them.
 set -eu
 cd "$(git rev-parse --show-toplevel)"
