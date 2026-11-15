@@ -116,9 +116,9 @@ test('revoked BO session redirects the dashboard to login', async ({ page }) => 
 	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
 	await page.getByLabel('Mot de passe').fill('password');
 	await page.getByRole('button', { name: 'Se connecter' }).click();
+	await expect.poll(() => identityCalls).toBeGreaterThanOrEqual(2);
 	await expect(page).toHaveURL(/\/login$/);
 	await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
-	expect(identityCalls).toBeGreaterThanOrEqual(2);
 });
 
 test('login requests include interface and translation languages', async ({ page }) => {
