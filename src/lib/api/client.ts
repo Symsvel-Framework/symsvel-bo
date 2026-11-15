@@ -39,7 +39,7 @@ export async function api<T>(path: string, init: ApiRequestInit = {}): Promise<T
 		translationLang,
 		...requestInit
 	} = init;
-	if (!path.startsWith('/') || path.startsWith('//')) {
+	if (!path.startsWith('/') || path.startsWith('//') || /[\\\r\n]/.test(path)) {
 		throw new Error('API paths must be root-relative.');
 	}
 	const headers = new Headers(requestInit.headers);
@@ -49,6 +49,8 @@ export async function api<T>(path: string, init: ApiRequestInit = {}): Promise<T
 	}
 	if (isPublic) {
 		headers.delete('Authorization');
+		headers.delete('Cookie');
+		headers.delete('Proxy-Authorization');
 	} else if (accessToken) {
 		headers.set('Authorization', `Bearer ${accessToken}`);
 	}
@@ -60,13 +62,14 @@ export async function api<T>(path: string, init: ApiRequestInit = {}): Promise<T
 			headers
 		}
 	);
-	if (response.status === 204) return undefined as T;
+	if (response.ok && response.status === 204) return undefined as T;
 	const payload = await response.json().catch(() => ({}));
 	if (!response.ok) {
+		const error = payload?.error;
 		throw new ApiError(
-			payload?.error?.message ?? 'API request failed.',
+			typeof error?.message === 'string' ? error.message : 'API request failed.',
 			response.status,
-			payload?.error?.code
+			typeof error?.code === 'string' ? error.code : undefined
 		);
 	}
 	return payload as T;
