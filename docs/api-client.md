@@ -85,3 +85,9 @@ Les tests unitaires vérifient le Bearer, les chemins et options interdits, l'ab
 ### Correction des tests du client authentifié (15/11/2026)
 
 Le mock Vitest de `./client` doit conserver l'export réel `ApiError` via `importOriginal`, en remplaçant uniquement `api` par un mock. Sans cela, les scénarios de refus HTTP échouent avec une erreur de mock, indépendamment du comportement de production. Pour le test de déconnexion pendant un appel module, attendre explicitement que le mock ait reçu la requête avant de déclencher le logout ; sinon la course est non déterministe et peut bloquer le test sur une promesse jamais résolue. Le test attache son assertion de rejet dès le lancement de la requête pour éviter les rejets non gérés.
+
+## Tests navigateur BO avec Playwright (15/11/2026)
+
+`src/routes/auth.e2e.ts` ajoute trois parcours navigateur à la suite QA : connexion BO réussie avec contrôle des headers et du corps HTTP, vérification du dashboard puis déconnexion ; refus des identifiants incorrects avec message utilisateur ; refus d'accès direct au dashboard sans session. Les routes `/apibo/auth/*` sont simulées avec `page.route` afin de tester le comportement réel de SvelteKit dans Chromium sans dépendre d'une base de données ni d'un backend installé. Le scénario de connexion confirme que le login public n'envoie pas d'Authorization, que les requêtes `/me` et `/logout` portent le Bearer attendu et que la déconnexion redirige vers `/login`.
+
+Ces tests navigateur simulés **ne sont pas** les crash-tests locaux du module Auth. Il restera à vérifier le CORS, les cookies et le transport définitif, la rotation DBAL et les endpoints réels sur une installation SymSvel, avec validation de l'utilisateur avant de déclarer le chantier terminé.
