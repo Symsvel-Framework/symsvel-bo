@@ -10,6 +10,7 @@ type LoginTokens = {
 };
 
 let session: LoginTokens | null = null;
+let sessionGeneration = 0;
 
 /**
  * Ephemeral BO session. No localStorage, sessionStorage or persistent JS cookies.
@@ -17,6 +18,7 @@ let session: LoginTokens | null = null;
  * transport has been validated.
  */
 export async function loginBo(email: string, password: string): Promise<BoIdentity> {
+	const generation = ++sessionGeneration;
 	session = null;
 	const tokens = await api<LoginTokens>('/apibo/auth/login', {
 		method: 'POST',
@@ -31,6 +33,7 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 	) {
 		throw new Error('Invalid authentication response');
 	}
+	if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
 	try {
 		const identity = await api<BoIdentity>('/apibo/auth/me', {
 			accessToken: tokens.access_token
@@ -38,35 +41,40 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		if (identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
 			throw new Error('Invalid BO identity');
 		}
+		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
 		session = tokens;
 		return identity;
 	} catch (error) {
-		session = null;
+		if (generation === sessionGeneration) session = null;
 		throw error;
 	}
 }
 
 export async function currentBo(): Promise<BoIdentity | null> {
-	if (!session || Date.parse(session.expires_at) <= Date.now()) {
-		session = null;
+	const current = session;
+	const generation = sessionGeneration;
+	if (!current || Date.parse(current.expires_at) <= Date.now()) {
+		if (generation === sessionGeneration) session = null;
 		return null;
 	}
 	try {
 		const identity = await api<BoIdentity>('/apibo/auth/me', {
-			accessToken: session.access_token
+			accessToken: current.access_token
 		});
+		if (generation !== sessionGeneration || session !== current) return null;
 		if (identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
 			session = null;
 			return null;
 		}
 		return identity;
 	} catch {
-		session = null;
+		if (generation === sessionGeneration && session === current) session = null;
 		return null;
 	}
 }
 
 export async function logoutBo(): Promise<void> {
+	++sessionGeneration;
 	const previous = session;
 	session = null;
 	if (!previous) return;
