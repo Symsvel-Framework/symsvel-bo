@@ -47,3 +47,9 @@ Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) :
 ## Prévention des courses de session
 
 Chaque tentative de connexion et déconnexion incrémente une génération de session. Une réponse tardive de login ou de vérification `/me` ne peut plus rétablir un état après déconnexion ou remplacer une session plus récente. `src/lib/api/session.test.ts` couvre la connexion vérifiée, le logout, le refus d'un contexte App et la réponse de login arrivée après logout. La CI et le crash-test navigateur restent nécessaires.
+
+## Rotation de session BO (15/11/2026)
+
+`currentBo()` renouvelle les tokens si l'access token expire dans moins de 30 secondes via `POST /apibo/auth/refresh`, puis vérifie l'identité avec le nouvel access token. Les appels simultanés partagent une seule rotation pour éviter le rejeu du refresh. Les réponses tardives ne peuvent pas restaurer une session déconnectée. En cas de refus ou d'expiration du refresh, la session en mémoire est effacée et l'accès reste fermé. Test de rotation ajouté dans `session.test.ts`.
+
+La rotation est **déclenchée par les vérifications de session**, pas par une minuterie permanente ; un écran ouvert sans nouvelle vérification ne renouvelle pas la session. Les tokens restent exposés au JavaScript en mémoire : le transport serveur HttpOnly, les règles CSRF/CORS et les crash-tests navigateur sont encore nécessaires avant production.
