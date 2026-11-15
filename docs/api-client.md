@@ -69,3 +69,9 @@ Les réponses de connexion et de renouvellement doivent contenir deux dates vali
 ### Crash-test unitaire : déconnexion pendant le refresh
 
 Un test supplémentaire retarde volontairement la réponse de `/apibo/auth/refresh`, déconnecte l'administrateur, puis libère la réponse. La vérification doit retourner `null` et aucun token renouvelé ne doit rétablir la session locale. Ce test ne remplace pas un crash-test HTTP réel : si le serveur a déjà effectué une rotation au moment de la déconnexion, la révocation côté backend doit être contrôlée séparément.
+
+## Lot de durcissement client et session (15/11/2026)
+
+Le client HTTP retire désormais explicitement les entêtes `Authorization`, `Cookie` et `Proxy-Authorization` sur les requêtes `public: true`, en plus de `credentials: omit`. Les chemins commençant par `//`, contenant un antislash ou des retours à la ligne sont rejetés avant `fetch`. Le code HTTP 204 n'est accepté comme succès que si `response.ok` ; les erreurs sans JSON ou dont les champs `message`/`code` ont un type inattendu reçoivent un message sûr. Ces contrôles ne remplacent pas la politique CORS côté serveur.
+
+Les tests du client couvrent désormais ces entêtes, les chemins malformés, les erreurs vides et les payloads d'erreur invalides. Les tests de session couvrent en plus les refresh tokens déjà expirés à la connexion, les access tokens déjà expirés après rotation et le refus de renouveler lorsque la durée de vie du refresh est dépassée. Le mécanisme de session demeure éphémère et limité au BO. Exécuter la CI puis les crash-tests locaux avant validation fonctionnelle.
