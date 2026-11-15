@@ -63,6 +63,24 @@ describe('ephemeral BO session', () => {
 		});
 	});
 
+	it('shares one refresh across concurrent BO checks', async () => {
+		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
+		const renewed = { ...tokens, access_token: 'c'.repeat(43), refresh_token: 'd'.repeat(43) };
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		const deferred = Promise.withResolvers<typeof tokens>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const first = currentBo();
+		const second = currentBo();
+		deferred.resolve(renewed);
+		mockedApi.mockResolvedValue({ id: 7, context: 'bo' });
+		expect(await Promise.all([first, second])).toEqual([
+			{ id: 7, context: 'bo' },
+			{ id: 7, context: 'bo' }
+		]);
+		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(1);
+	});
+
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
