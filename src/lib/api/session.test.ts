@@ -188,6 +188,19 @@ describe('ephemeral BO session', () => {
 		expect(await currentBo()).toBeNull();
 	});
 
+	it('does not return a module response after logout', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		const deferred = Promise.withResolvers<{ data: number[] }>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const pending = boApi('/apibo/admins');
+		mockedApi.mockResolvedValueOnce(undefined);
+		await logoutBo();
+		deferred.resolve({ data: [1] });
+		await expect(pending).rejects.toMatchObject({ status: 401 });
+		expect(await currentBo()).toBeNull();
+	});
+
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
