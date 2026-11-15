@@ -11,7 +11,11 @@ type LoginTokens = {
 
 let session: LoginTokens | null = null;
 let sessionGeneration = 0;
-let pendingRefresh: Promise<LoginTokens | null> | null = null;
+let pendingRefresh: {
+	generation: number;
+	tokens: LoginTokens;
+	promise: Promise<LoginTokens | null>;
+} | null = null;
 
 async function accessTokens(): Promise<LoginTokens | null> {
 	const current = session;
@@ -22,7 +26,9 @@ async function accessTokens(): Promise<LoginTokens | null> {
 		if (generation === sessionGeneration && session === current) session = null;
 		return null;
 	}
-	if (pendingRefresh) return pendingRefresh;
+	if (pendingRefresh?.generation === generation && pendingRefresh.tokens === current) {
+		return pendingRefresh.promise;
+	}
 	const refresh = (async (): Promise<LoginTokens | null> => {
 		try {
 			const next = await api<LoginTokens>('/apibo/auth/refresh', {
@@ -48,11 +54,11 @@ async function accessTokens(): Promise<LoginTokens | null> {
 			return null;
 		}
 	})();
-	pendingRefresh = refresh;
+	pendingRefresh = { generation, tokens: current, promise: refresh };
 	try {
 		return await refresh;
 	} finally {
-		if (pendingRefresh === refresh) pendingRefresh = null;
+		if (pendingRefresh?.promise === refresh) pendingRefresh = null;
 	}
 }
 
@@ -63,6 +69,7 @@ async function accessTokens(): Promise<LoginTokens | null> {
  */
 export async function loginBo(email: string, password: string): Promise<BoIdentity> {
 	const generation = ++sessionGeneration;
+	pendingRefresh = null;
 	session = null;
 	const tokens = await api<LoginTokens>('/apibo/auth/login', {
 		method: 'POST',
@@ -116,6 +123,7 @@ export async function currentBo(): Promise<BoIdentity | null> {
 
 export async function logoutBo(): Promise<void> {
 	++sessionGeneration;
+	pendingRefresh = null;
 	const previous = session;
 	session = null;
 	if (!previous) return;
