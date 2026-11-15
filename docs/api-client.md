@@ -105,6 +105,7 @@ La CI couvre maintenant aussi deux scénarios navigateur supplémentaires : rév
 **Préconditions du crash-test manuel :** installation SymSvel opérationnelle, module Auth chargé, migrations appliquées, compte administrateur de test, domaine BO et backend configurés avec les origines effectivement utilisées. Ne pas déclarer ce crash-test réussi sur la seule base des mocks Playwright.
 
 **Séquence de validation sur installation :**
+
 1. Ouvrir la page BO sans session, confirmer le refus d'accès au dashboard.
 2. Tenter un mot de passe incorrect, vérifier le HTTP 401 et l'absence de session.
 3. Se connecter avec l'administrateur de test ; vérifier les requêtes `/apibo/auth/login` puis `/apibo/auth/me`, les deux paramètres de langue et le Bearer sur `me`.
