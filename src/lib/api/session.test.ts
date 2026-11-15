@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./client', () => ({ api: vi.fn() }));
 
-import { api } from './client';
-import { currentBo, loginBo, logoutBo } from './session';
+import { api, ApiError } from './client';
+import { boApi, currentBo, loginBo, logoutBo } from './session';
 
 const mockedApi = vi.mocked(api);
 const tokens = {
@@ -155,6 +155,37 @@ describe('ephemeral BO session', () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+
+	it('attaches the current BO token to module requests', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		mockedApi.mockResolvedValueOnce({ data: [1, 2] });
+		expect(await boApi('/apibo/admins')).toEqual({ data: [1, 2] });
+		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/admins', {
+			credentials: 'omit',
+			accessToken: tokens.access_token
+		});
+	});
+
+	it('rejects unauthenticated and public module calls', async () => {
+		await expect(boApi('/apibo/admins')).rejects.toMatchObject({ status: 401 });
+		await expect(boApi('/api/users')).rejects.toThrow('authenticated BO path');
+		await expect(boApi('/apibo/admins', { public: true })).rejects.toThrow(
+			'authenticated BO path'
+		);
+		await expect(boApi('/apibo/admins', { accessToken: 'injected' })).rejects.toThrow(
+			'authenticated BO path'
+		);
+		expect(mockedApi).not.toHaveBeenCalled();
+	});
+
+	it('invalidates the session after a module request receives 401', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		mockedApi.mockRejectedValueOnce(new ApiError('Expired', 401, 'unauthorized'));
+		await expect(boApi('/apibo/admins')).rejects.toMatchObject({ status: 401 });
+		expect(await currentBo()).toBeNull();
 	});
 
 	it('rejects a mismatched BO identity', async () => {
