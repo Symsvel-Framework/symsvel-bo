@@ -65,3 +65,34 @@ test('direct dashboard access without a session redirects to login', async ({ pa
 	await expect(page).toHaveURL(/\/login$/);
 	await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
 });
+
+test('wrong BO context refuses login and does not open the dashboard', async ({ page }) => {
+	await page.route('**/apibo/auth/login?*', (route) =>
+		route.fulfill({ status: 200, json: tokens })
+	);
+	await page.route('**/apibo/auth/me?*', (route) =>
+		route.fulfill({ status: 200, json: { id: 7, context: 'app' } })
+	);
+	await page.goto('/login');
+	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
+	await page.getByLabel('Mot de passe').fill('password');
+	await page.getByRole('button', { name: 'Se connecter' }).click();
+	await expect(page.getByRole('alert')).toHaveText('Connexion impossible pour le moment.');
+	await expect(page).toHaveURL(/\/login$/);
+});
+
+test('a browser reload discards the temporary BO session', async ({ page }) => {
+	await page.route('**/apibo/auth/login?*', (route) =>
+		route.fulfill({ status: 200, json: tokens })
+	);
+	await page.route('**/apibo/auth/me?*', (route) =>
+		route.fulfill({ status: 200, json: { id: 7, context: 'bo' } })
+	);
+	await page.goto('/login');
+	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
+	await page.getByLabel('Mot de passe').fill('password');
+	await page.getByRole('button', { name: 'Se connecter' }).click();
+	await expect(page.getByText('Administrateur #7')).toBeVisible();
+	await page.reload();
+	await expect(page).toHaveURL(/\/login$/);
+});
