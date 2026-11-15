@@ -96,7 +96,12 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		const identity = await api<BoIdentity>('/apibo/auth/me', {
 			accessToken: tokens.access_token
 		});
-		if (!identity || identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
+		if (
+			!identity ||
+			identity.context !== 'bo' ||
+			!Number.isInteger(identity.id) ||
+			identity.id < 1
+		) {
 			throw new Error('Invalid BO identity');
 		}
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
