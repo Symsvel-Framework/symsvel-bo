@@ -96,3 +96,44 @@ test('a browser reload discards the temporary BO session', async ({ page }) => {
 	await page.reload();
 	await expect(page).toHaveURL(/\/login$/);
 });
+
+test('revoked BO session redirects the dashboard to login', async ({ page }) => {
+	let identityCalls = 0;
+	await page.route('**/apibo/auth/login?*', (route) =>
+		route.fulfill({ status: 200, json: tokens })
+	);
+	await page.route('**/apibo/auth/me?*', (route) => {
+		identityCalls++;
+		if (identityCalls === 1) {
+			return route.fulfill({ status: 200, json: { id: 7, context: 'bo' } });
+		}
+		return route.fulfill({
+			status: 401,
+			json: { error: { code: 'unauthorized', message: 'Authentication required.' } }
+		});
+	});
+	await page.goto('/login');
+	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
+	await page.getByLabel('Mot de passe').fill('password');
+	await page.getByRole('button', { name: 'Se connecter' }).click();
+	await expect(page).toHaveURL(/\/login$/);
+	await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
+	expect(identityCalls).toBeGreaterThanOrEqual(2);
+});
+
+test('login requests include interface and translation languages', async ({ page }) => {
+	await page.route('**/apibo/auth/login?*', async (route) => {
+		const url = new URL(route.request().url());
+		expect(url.searchParams.get('ui_lang')).toMatch(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/);
+		expect(url.searchParams.get('translation_lang')).toBe(url.searchParams.get('ui_lang'));
+		await route.fulfill({
+			status: 401,
+			json: { error: { code: 'invalid_credentials', message: 'Invalid credentials.' } }
+		});
+	});
+	await page.goto('/login');
+	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
+	await page.getByLabel('Mot de passe').fill('wrong');
+	await page.getByRole('button', { name: 'Se connecter' }).click();
+	await expect(page.getByRole('alert')).toHaveText('Identifiants incorrects.');
+});
