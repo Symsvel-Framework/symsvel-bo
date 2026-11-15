@@ -117,6 +117,44 @@ describe('ephemeral BO session', () => {
 		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(1);
 	});
 
+	it('rejects an expired refresh token at login', async () => {
+		mockedApi.mockResolvedValueOnce({
+			...tokens,
+			refresh_expires_at: '2000-01-01T00:00:00+00:00'
+		});
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
+			'Invalid authentication response'
+		);
+		expect(mockedApi).toHaveBeenCalledTimes(1);
+	});
+
+	it('rejects a refresh response with an expired access token', async () => {
+		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		mockedApi.mockResolvedValueOnce({ ...tokens, expires_at: '2000-01-01T00:00:00+00:00' });
+		expect(await currentBo()).toBeNull();
+		expect(await currentBo()).toBeNull();
+	});
+
+	it('does not request a refresh when its expiration has passed', async () => {
+		const expiring = {
+			...tokens,
+			expires_at: new Date(Date.now() + 1_000).toISOString(),
+			refresh_expires_at: new Date(Date.now() + 2_000).toISOString()
+		};
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		vi.useFakeTimers();
+		try {
+			vi.setSystemTime(Date.now() + 3_000);
+			expect(await currentBo()).toBeNull();
+			expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(0);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
