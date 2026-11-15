@@ -4,18 +4,40 @@ on:
   push:
     branches: [dev, main]
   pull_request:
-    branches: [main]
+    branches: [dev, main]
+
+permissions:
+  contents: write
 
 jobs:
   test:
     runs-on: [self-hosted, linux, ARM64, symsvel]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          persist-credentials: true
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Format with repository Prettier
+        run: npm run format
+      - name: Commit formatting on same-repository working branches
+        if: github.ref_name != 'main' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add -u
+            git commit -m 'style: apply Prettier formatting [skip ci]'
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+          fi
+      - name: Verify no formatting drift on protected main or forks
+        if: github.ref_name == 'main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
+        run: git diff --exit-code
+
       - run: npx playwright install chromium
       - run: npm run qa
       - name: Verify deployable static build
