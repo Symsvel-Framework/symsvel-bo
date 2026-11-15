@@ -56,7 +56,6 @@ async function accessTokens(): Promise<LoginTokens | null> {
 	}
 }
 
-
 /**
  * Ephemeral BO session. No localStorage, sessionStorage or persistent JS cookies.
  * A full reload intentionally requires a new login until the server-side cookie
