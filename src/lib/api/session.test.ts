@@ -208,6 +208,35 @@ describe('ephemeral BO session', () => {
 		expect(await currentBo()).toBeNull();
 	});
 
+	it('rejects a null login response without requesting identity', async () => {
+		mockedApi.mockResolvedValueOnce(null);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
+			'Invalid authentication response'
+		);
+		expect(mockedApi).toHaveBeenCalledTimes(1);
+	});
+
+	it('rejects a null identity without retaining tokens', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(null);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
+		expect(await currentBo()).toBeNull();
+	});
+
+	it('rejects a null refresh response and closes the session', async () => {
+		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		await loginBo('admin@example.test', 'password');
+		mockedApi.mockResolvedValueOnce(null);
+		expect(await currentBo()).toBeNull();
+	});
+
+	it('rejects manually injected Authorization headers on module calls', async () => {
+		await expect(
+			boApi('/apibo/admins', { headers: { Authorization: 'Bearer injected' } })
+		).rejects.toThrow('authenticated BO path');
+		expect(mockedApi).not.toHaveBeenCalled();
+	});
+
 	it('rejects a mismatched BO identity', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
