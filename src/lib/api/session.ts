@@ -42,7 +42,9 @@ async function accessTokens(): Promise<LoginTokens | null> {
 				!next.access_token ||
 				!next.refresh_token ||
 				!Number.isFinite(Date.parse(next.expires_at)) ||
-				!Number.isFinite(Date.parse(next.refresh_expires_at))
+				!Number.isFinite(Date.parse(next.refresh_expires_at)) ||
+				Date.parse(next.expires_at) <= Date.now() ||
+				Date.parse(next.refresh_expires_at) <= Date.now()
 			) {
 				session = null;
 				return null;
@@ -80,7 +82,10 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		tokens.token_type !== 'Bearer' ||
 		!tokens.access_token ||
 		!tokens.refresh_token ||
-		!Number.isFinite(Date.parse(tokens.expires_at))
+		!Number.isFinite(Date.parse(tokens.expires_at)) ||
+		!Number.isFinite(Date.parse(tokens.refresh_expires_at)) ||
+		Date.parse(tokens.expires_at) <= Date.now() ||
+		Date.parse(tokens.refresh_expires_at) <= Date.now()
 	) {
 		throw new Error('Invalid authentication response');
 	}
