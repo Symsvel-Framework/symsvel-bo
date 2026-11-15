@@ -65,3 +65,7 @@ Les réponses de connexion et de renouvellement doivent contenir deux dates vali
 ## Tests du client HTTP (15/11/2026)
 
 `src/lib/api/client.test.ts` couvre l'absence de cookies et de header Authorization sur les appels publics, l'envoi du Bearer sur les appels authentifiés, le refus des URL commençant par `//` et la propagation du statut/code d'erreur du backend. Les tests sont unitaires avec `fetch` simulé ; ils ne prouvent pas la configuration CORS réelle.
+
+### Crash-test unitaire : déconnexion pendant le refresh
+
+Un test supplémentaire retarde volontairement la réponse de `/apibo/auth/refresh`, déconnecte l'administrateur, puis libère la réponse. La vérification doit retourner `null` et aucun token renouvelé ne doit rétablir la session locale. Ce test ne remplace pas un crash-test HTTP réel : si le serveur a déjà effectué une rotation au moment de la déconnexion, la révocation côté backend doit être contrôlée séparément.
