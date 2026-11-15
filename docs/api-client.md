@@ -97,3 +97,21 @@ Ces tests navigateur simulés **ne sont pas** les crash-tests locaux du module A
 Le contrat des endpoints Auth impose des objets JSON valides pour les tokens et l'identité BO. Le client refuse désormais explicitement une réponse JSON `null` pour `login`, `refresh` ou `me`, sans conserver de session utilisable. `boApi` refuse également un header `Authorization` fourni manuellement par un module : seul le point d'entrée central doit injecter le Bearer courant. Quatre tests unitaires couvrent ces conditions.
 
 Deux tests Playwright supplémentaires vérifient le refus d'une identité de contexte `app` lors d'une connexion BO et la disparition volontaire de la session après rechargement complet de la page. Cette dernière limite est attendue tant que le transport sécurisé persistant n'a pas été validé et mis en place. Les tests restent simulés et ne constituent pas une validation de l'intégration HTTP réelle avec le module Auth.
+
+## Préparation des crash-tests BO/Auth réels (15/11/2026)
+
+La CI couvre maintenant aussi deux scénarios navigateur supplémentaires : révocation du token entre login et vérification du dashboard (retour à la page de connexion), et présence de `ui_lang` et `translation_lang` sur la requête de login. Les réponses restent simulées avec Playwright.
+
+**Préconditions du crash-test manuel :** installation SymSvel opérationnelle, module Auth chargé, migrations appliquées, compte administrateur de test, domaine BO et backend configurés avec les origines effectivement utilisées. Ne pas déclarer ce crash-test réussi sur la seule base des mocks Playwright.
+
+**Séquence de validation sur installation :**
+1. Ouvrir la page BO sans session, confirmer le refus d'accès au dashboard.
+2. Tenter un mot de passe incorrect, vérifier le HTTP 401 et l'absence de session.
+3. Se connecter avec l'administrateur de test ; vérifier les requêtes `/apibo/auth/login` puis `/apibo/auth/me`, les deux paramètres de langue et le Bearer sur `me`.
+4. Lancer des appels BO authentifiés et contrôler les autorisations backend ; vérifier qu'aucun endpoint `/api` ou `/apiopen` ne reçoit le Bearer BO par ce client.
+5. Forcer l'expiration de l'access token, puis vérifier la rotation du refresh token et la poursuite de la session. Refaire l'essai avec refresh expiré ou révoqué : retour à la connexion.
+6. Se déconnecter, vérifier la révocation côté serveur, puis confirmer qu'un ancien token est refusé.
+7. Recharger complètement le BO : une reconnexion est attendue avec le transport éphémère actuel. Le transport HttpOnly et sa protection CSRF restent un chantier distinct.
+8. Vérifier les réponses CORS sur les véritables domaines et le comportement en cas d'interruption réseau.
+
+**Critère de clôture :** CI verte, crash-tests locaux observés et validés par l'utilisateur, documentation mise à jour, aucune dette technique ouverte. Les étapes ci-dessus sont un protocole, pas un compte rendu de tests déjà effectués.
