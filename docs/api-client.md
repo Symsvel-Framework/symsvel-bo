@@ -18,7 +18,7 @@ The Auth module will supply the administrator preference after profile loading. 
 
 ## Public requests and authentication integration
 
-Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests can temporarily receive `accessToken` explicitly; automatic session refresh, token storage and logout are deliberately **not** implemented here because Auth is developed separately. Do not duplicate its session lifecycle.
+Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests can temporarily receive `accessToken` explicitly; the BO session lifecycle is implemented separately in `session.ts` (temporary in-memory tokens, refresh on `currentBo()`, and logout). Do not duplicate its session lifecycle in functional modules.
 
 The client uses `PUBLIC_API_URL` when set; otherwise, in a browser, it resolves `bo.example` to `backend.example`. Outside the browser an explicit URL is required. The client accepts root-relative paths only.
 
@@ -30,9 +30,9 @@ Run `npm run check`, `npm run lint`, `npm run build` and `npm run test:unit -- -
 
 ## Première passe visuelle BO (14/11/2026)
 
-Les vues `/login` et `/dashboard` reprennent les styles et la structure de XCore (`src/app.css`, coque d'authentification et coque BO). L'accueil redirige vers `/login`. Le formulaire envoie une requête publique `POST /apibo/auth/login` mais **ne crée aucune session côté navigateur** : le contrôleur Auth et le transport de session restent à raccorder. En attendant, même une réponse HTTP réussie ne donne pas accès au dashboard ; celui-ci redirige vers la connexion. Il ne faut pas présenter cette étape comme une authentification fonctionnelle.
+Les vues `/login` et `/dashboard` reprennent les styles et la structure de XCore (`src/app.css`, coque d'authentification et coque BO). L'accueil redirige vers `/login`. Le formulaire envoie une requête publique `POST /apibo/auth/login` et utilise désormais `loginBo()` pour vérifier l'identité BO. Le transport durable sécurisé reste à raccorder ; la session éphémère permet l'accès au dashboard tant que la page n'est pas rechargée.
 
-Prochain raccordement : définir et tester la réponse du contrôleur Auth, le stockage/transport sûr des tokens, la vérification d'accès au dashboard, le renouvellement et la déconnexion. Aucun écran 2FA, récupération de mot de passe ou création de compte App n'est inclus dans cette passe.
+Raccordements encore requis : transport HttpOnly/CSRF/CORS et tests réels navigateur/backend. La vérification d'accès, le renouvellement à la demande et la déconnexion sont désormais câblés en mode éphémère. Aucun écran 2FA, récupération de mot de passe ou création de compte App n'est inclus dans cette passe.
 
 Le formulaire utilise provisoirement l'import relatif `../../lib/api/client`, résolu sans alias par TypeScript. La configuration actuelle de `tsconfig.json` étend `$app/tsconfig` et ne prouve pas la résolution de l'alias `#lib` dans `svelte-check` ; la CI valide ce point.
 
@@ -42,7 +42,7 @@ Les redirections internes SvelteKit passent par `resolve('/login')` avant `goto(
 
 Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) : `POST /apibo/auth/login`, puis vérification de l'identité par `GET /apibo/auth/me`. Le dashboard n'est rendu qu'après une nouvelle vérification `/me` ; en cas d'échec, retour à `/login`. La déconnexion appelle `POST /apibo/auth/logout` et efface immédiatement les secrets en mémoire, même si la requête réseau échoue.
 
-**Limitation volontaire de sécurité :** les tokens restent uniquement en mémoire JavaScript, jamais en localStorage, sessionStorage ni cookie lisible par JS. Un rechargement complet perd donc la session et oblige à se reconnecter. Ce mécanisme transitoire ne remplace pas un transport serveur par cookies HttpOnly/Secure avec politique CSRF et CORS validée. Les tokens exposés au JavaScript restent vulnérables en cas de XSS. Pas de renouvellement automatique, de protection globale de toutes les routes ni de validation navigateur/backend : ne pas considérer cette passe comme prête pour la production.
+**Limitation volontaire de sécurité :** les tokens restent uniquement en mémoire JavaScript, jamais en localStorage, sessionStorage ni cookie lisible par JS. Un rechargement complet perd donc la session et oblige à se reconnecter. Ce mécanisme transitoire ne remplace pas un transport serveur par cookies HttpOnly/Secure avec politique CSRF et CORS validée. Les tokens exposés au JavaScript restent vulnérables en cas de XSS. Pas de protection globale de toutes les routes ni de validation navigateur/backend : ne pas considérer cette passe comme prête pour la production.
 
 ## Prévention des courses de session
 
@@ -61,3 +61,7 @@ La rotation en cours est associée à la génération de session et à l'objet t
 ### Validation des dates de session
 
 Les réponses de connexion et de renouvellement doivent contenir deux dates valides et futures : expiration de l'access token et du refresh token. Une réponse contenant une date absente, invalide ou déjà dépassée est refusée ; lors du renouvellement, la session locale est immédiatement invalidée. Un échec HTTP de renouvellement ferme également la session et n'entraîne pas de boucle de retry. Tests unitaires ajoutés pour les cas d'expiration et de refus.
+
+## Tests du client HTTP (15/11/2026)
+
+`src/lib/api/client.test.ts` couvre l'absence de cookies et de header Authorization sur les appels publics, l'envoi du Bearer sur les appels authentifiés, le refus des URL commençant par `//` et la propagation du statut/code d'erreur du backend. Les tests sont unitaires avec `fetch` simulé ; ils ne prouvent pas la configuration CORS réelle.
