@@ -37,16 +37,11 @@ describe('ephemeral BO session', () => {
 	});
 
 	it('never restores a login response arriving after logout', async () => {
-		let finish!: (value: typeof tokens) => void;
-		mockedApi.mockImplementationOnce(
-			() =>
-				new Promise((resolve) => {
-					finish = resolve as typeof finish;
-				})
-		);
+		const deferred = Promise.withResolvers<typeof tokens>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
 		const pending = loginBo('admin@example.test', 'password');
 		await logoutBo();
-		finish(tokens);
+		deferred.resolve(tokens);
 		await expect(pending).rejects.toThrow('superseded');
 		expect(await currentBo()).toBeNull();
 	});
