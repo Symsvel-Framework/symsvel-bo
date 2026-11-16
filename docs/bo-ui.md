@@ -58,3 +58,11 @@ abstraction plus large sans besoin.
 Tests unitaires des utilitaires de pagination, tri et affichage requis.
 
 L'étiquette accessible des filtres de tableau suit aussi la langue d'interface.
+
+## Actualisation des alertes
+
+Après une opération susceptible de modifier les avertissements, un module
+peut déclencher `window.dispatchEvent(new Event('symsvel:alerts-changed'))`.
+Le shell réinterroge alors uniquement les providers des modules autorisés ;
+il ne recalcule aucune règle métier et ne déconnecte pas l'administrateur.
+L'abonnement est nettoyé lors du démontage du shell.

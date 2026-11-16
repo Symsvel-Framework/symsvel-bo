@@ -67,6 +67,14 @@
 
 	onMount(() => {
 		let mounted = true;
+		// Refresh module alerts after a settings change, without remounting the BO.
+		const refreshAlerts = (): void => {
+			if (!mounted || !identity) return;
+			void availableBoSystemAlerts(modules, boApi).then((found) => {
+				if (mounted && identity) alerts = found;
+			});
+		};
+		window.addEventListener('symsvel:alerts-changed', refreshAlerts);
 		void currentBo()
 			.then(async (result) => {
 				if (!mounted) return;
@@ -79,14 +87,14 @@
 				if (!mounted) return;
 				modules = allowed;
 				modulesPending = false;
-				const found = await availableBoSystemAlerts(allowed, boApi);
-				if (mounted) alerts = found;
+				refreshAlerts();
 			})
 			.catch(() => {
 				if (mounted) void goto(resolve('/login'), { replaceState: true });
 			});
 		return () => {
 			mounted = false;
+			window.removeEventListener('symsvel:alerts-changed', refreshAlerts);
 		};
 	});
 
