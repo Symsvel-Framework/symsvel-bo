@@ -78,7 +78,7 @@
 			{#if modules.length > 0}
 				<nav aria-label={t.modules} class="module-navigation">
 					{#each modules as module (module.path)}
-						<a href={module.path}>{module.label[language]}</a>
+						<a href={resolve(module.path)}>{module.label[language]}</a>
 					{/each}
 				</nav>
 			{/if}
@@ -101,7 +101,7 @@
 						{:else}
 							<div class="module-cards">
 								{#each modules as module (module.path)}
-									<a href={module.path} class="module-card">{module.label[language]}</a>
+									<a href={resolve(module.path)} class="module-card">{module.label[language]}</a>
 								{/each}
 							</div>
 						{/if}
