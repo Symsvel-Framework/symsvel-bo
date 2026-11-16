@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-import type { Path } from '$app/types';
+	import type { Path } from '$app/types';
 	import { uiLanguage } from '../../lib/api/locales';
 	import { boApi, currentBo, logoutBo } from '../../lib/api/session';
 	import {
@@ -102,7 +102,9 @@ import type { Path } from '$app/types';
 						{:else}
 							<div class="module-cards">
 								{#each modules as module (module.path)}
-									<a href={resolve(module.path.slice(1) as Path)} class="module-card">{module.label[language]}</a>
+									<a href={resolve(module.path.slice(1) as Path)} class="module-card"
+										>{module.label[language]}</a
+									>
 								{/each}
 							</div>
 						{/if}
