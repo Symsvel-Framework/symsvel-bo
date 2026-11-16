@@ -25,3 +25,7 @@ Plusieurs exécutions CI peuvent démarrer sur la même branche de PR après des
 ## CD des releases sur runners locaux (16/11/2026)
 
 La release déclenchée par un tag `vX.Y.Z` utilise maintenant `[self-hosted, linux, ARM64, symsvel]`. Le setup Node.js 24, les tests Playwright et la génération SvelteKit demeurent ; `npx playwright install chromium` réutilise le fonctionnement de la CI sans installer de paquets système. La publication GitHub conserve les notes statiques initiales et vérifie le tag via `actions/github-script@v7`, sans dépendre du binaire `gh` (non garanti sur le runner). L'autorisation `contents: write` est maintenue, aucun tag n'est créé ici. Validation par release réelle et CT de l'artefact requise.
+
+## Navigation BO des modules (16/11/2026)
+
+Les modules installés fournissent chacun leur entrée `bo/src/lib/modules/<slug>/navigation.ts` avec route, libellés FR/EN, ressource et action ACL et chemin GET protégé par le backend. Le dashboard Svelte découvre ces déclarations à la compilation avec `import.meta.glob` et ne montre un lien que si son appel de contrôle via `boApi` aboutit. Aucun module absent n'est affiché, et les accès refusés n'apparaissent pas dans les menus. Les autorisations restent vérifiées sur le backend, sans nouvel endpoint ni registre central Symfony. Tooling synchronise les fichiers, puis produit le build statique. Tests Vitest `navigation.test.ts` et CT XT des routes `/admins`, `/users`, `/settings` requis.
