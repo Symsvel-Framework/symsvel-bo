@@ -2,9 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const tokens = {
 	access_token: 'a'.repeat(43),
-	refresh_token: 'b'.repeat(43),
 	expires_at: '2099-01-01T00:00:00+00:00',
-	refresh_expires_at: '2099-02-01T00:00:00+00:00',
 	token_type: 'Bearer'
 };
 
@@ -12,7 +10,7 @@ test('BO login, authenticated dashboard and logout', async ({ page }) => {
 	let loginCalls = 0;
 	let meCalls = 0;
 	let logoutCalls = 0;
-	await page.route('**/apibo/auth/login?*', async (route) => {
+	await page.route('**/apibo/auth/browser/login?*', async (route) => {
 		loginCalls++;
 		expect(route.request().method()).toBe('POST');
 		expect(route.request().headers().authorization).toBeUndefined();
@@ -27,9 +25,9 @@ test('BO login, authenticated dashboard and logout', async ({ page }) => {
 		expect(route.request().headers().authorization).toBe('Bearer ' + tokens.access_token);
 		await route.fulfill({ status: 200, json: { id: 7, context: 'bo' } });
 	});
-	await page.route('**/apibo/auth/logout?*', async (route) => {
+	await page.route('**/apibo/auth/browser/logout?*', async (route) => {
 		logoutCalls++;
-		expect(route.request().headers().authorization).toBe('Bearer ' + tokens.access_token);
+		expect(route.request().headers().authorization).toBeUndefined();
 		await route.fulfill({ status: 204, body: '' });
 	});
 	await page.goto('/login');
@@ -46,7 +44,7 @@ test('BO login, authenticated dashboard and logout', async ({ page }) => {
 });
 
 test('invalid credentials keep the BO on the login page', async ({ page }) => {
-	await page.route('**/apibo/auth/login?*', async (route) => {
+	await page.route('**/apibo/auth/browser/login?*', async (route) => {
 		await route.fulfill({
 			status: 401,
 			json: { error: { code: 'invalid_credentials', message: 'Invalid credentials.' } }
@@ -61,13 +59,14 @@ test('invalid credentials keep the BO on the login page', async ({ page }) => {
 });
 
 test('direct dashboard access without a session redirects to login', async ({ page }) => {
+	await page.route('**/apibo/auth/browser/refresh?*', (route) => route.fulfill({ status: 401, json: { error: { code: 'invalid_session' } } }));
 	await page.goto('/dashboard');
 	await expect(page).toHaveURL(/\/login$/);
 	await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
 });
 
 test('wrong BO context refuses login and does not open the dashboard', async ({ page }) => {
-	await page.route('**/apibo/auth/login?*', (route) =>
+	await page.route('**/apibo/auth/browser/login?*', (route) =>
 		route.fulfill({ status: 200, json: tokens })
 	);
 	await page.route('**/apibo/auth/me?*', (route) =>
@@ -81,25 +80,34 @@ test('wrong BO context refuses login and does not open the dashboard', async ({ 
 	await expect(page).toHaveURL(/\/login$/);
 });
 
-test('a browser reload discards the temporary BO session', async ({ page }) => {
-	await page.route('**/apibo/auth/login?*', (route) =>
+test('a browser reload restores the BO session via cookie refresh', async ({ page }) => {
+	await page.route('**/apibo/auth/browser/login?*', (route) =>
 		route.fulfill({ status: 200, json: tokens })
 	);
 	await page.route('**/apibo/auth/me?*', (route) =>
 		route.fulfill({ status: 200, json: { id: 7, context: 'bo' } })
 	);
+	let refreshCalls = 0;
+	await page.route('**/apibo/auth/browser/refresh?*', async (route) => {
+		refreshCalls++;
+		expect(route.request().method()).toBe('POST');
+		expect(route.request().headers().authorization).toBeUndefined();
+		await route.fulfill({ status: 200, json: tokens });
+	});
 	await page.goto('/login');
 	await page.getByLabel('Adresse e-mail').fill('admin@example.test');
 	await page.getByLabel('Mot de passe').fill('password');
 	await page.getByRole('button', { name: 'Se connecter' }).click();
 	await expect(page.getByText('Administrateur #7')).toBeVisible();
 	await page.reload();
-	await expect(page).toHaveURL(/\/login$/);
+	await expect(page).toHaveURL(/\/dashboard$/);
+	await expect(page.getByText('Administrateur #7')).toBeVisible();
+	expect(refreshCalls).toBeGreaterThanOrEqual(1);
 });
 
 test('revoked BO session redirects the dashboard to login', async ({ page }) => {
 	let identityCalls = 0;
-	await page.route('**/apibo/auth/login?*', (route) =>
+	await page.route('**/apibo/auth/browser/login?*', (route) =>
 		route.fulfill({ status: 200, json: tokens })
 	);
 	await page.route('**/apibo/auth/me?*', (route) => {
@@ -122,7 +130,7 @@ test('revoked BO session redirects the dashboard to login', async ({ page }) => 
 });
 
 test('login requests include interface and translation languages', async ({ page }) => {
-	await page.route('**/apibo/auth/login?*', async (route) => {
+	await page.route('**/apibo/auth/browser/login?*', async (route) => {
 		const url = new URL(route.request().url());
 		expect(url.searchParams.get('ui_lang')).toMatch(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/);
 		expect(url.searchParams.get('translation_lang')).toBe(url.searchParams.get('ui_lang'));

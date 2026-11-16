@@ -11,235 +11,155 @@ import { boApi, currentBo, loginBo, logoutBo } from './session';
 const mockedApi = vi.mocked(api);
 const tokens = {
 	access_token: 'a'.repeat(43),
-	refresh_token: 'b'.repeat(43),
 	expires_at: '2099-01-01T00:00:00+00:00',
-	refresh_expires_at: '2099-02-01T00:00:00+00:00',
 	token_type: 'Bearer'
-};
+} as const;
+const identity = { id: 7, context: 'bo' };
 
-describe('ephemeral BO session', () => {
+describe('BO browser cookie and access session', () => {
 	beforeEach(async () => {
 		vi.resetAllMocks();
 		await logoutBo();
 		vi.resetAllMocks();
 	});
 
-	it('verifies login, checks identity and revokes on logout', async () => {
-		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		expect(await loginBo('admin@example.test', 'password')).toEqual({ id: 7, context: 'bo' });
-		mockedApi.mockResolvedValueOnce({ id: 7, context: 'bo' });
-		expect(await currentBo()).toEqual({ id: 7, context: 'bo' });
+	it('logs in without returning a JS refresh token and logs out through the cookie', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
+		expect(await loginBo('admin@example.test', 'password')).toEqual(identity);
+		expect(mockedApi).toHaveBeenNthCalledWith(1, '/apibo/auth/browser/login', {
+			method: 'POST', credentials: 'include',
+			body: JSON.stringify({ email: 'admin@example.test', password: 'password' })
+		});
+		expect(mockedApi).toHaveBeenNthCalledWith(2, '/apibo/auth/me', {
+			accessToken: tokens.access_token
+		});
+		mockedApi.mockResolvedValueOnce(identity);
+		expect(await currentBo()).toEqual(identity);
 		mockedApi.mockResolvedValueOnce(undefined);
 		await logoutBo();
-		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/logout', {
-			method: 'POST',
-			accessToken: tokens.access_token,
-			body: JSON.stringify({ refresh_token: tokens.refresh_token })
+		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/browser/logout', {
+			method: 'POST', credentials: 'include'
 		});
-		expect(await currentBo()).toBeNull();
 	});
 
-	it('never restores a login response arriving after logout', async () => {
+	it('restores a session with cookie-based refresh when memory starts empty', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
+		expect(await currentBo()).toEqual(identity);
+		expect(mockedApi).toHaveBeenNthCalledWith(1, '/apibo/auth/browser/refresh', {
+			method: 'POST', credentials: 'include'
+		});
+		expect(mockedApi).toHaveBeenNthCalledWith(2, '/apibo/auth/me', {
+			accessToken: tokens.access_token
+		});
+	});
+
+	it('shares one browser refresh across simultaneous calls', async () => {
 		const deferred = Promise.withResolvers<typeof tokens>();
 		mockedApi.mockResolvedValueOnce(deferred.promise);
-		const pending = loginBo('admin@example.test', 'password');
-		await logoutBo();
+		const first = currentBo();
+		const second = currentBo();
 		deferred.resolve(tokens);
-		await expect(pending).rejects.toThrow('superseded');
-		expect(await currentBo()).toBeNull();
+		mockedApi.mockResolvedValue(identity);
+		expect(await Promise.all([first, second])).toEqual([identity, identity]);
+		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh'))
+			.toHaveLength(1);
 	});
 
-	it('rotates expiring tokens before checking BO identity', async () => {
+	it('renews an access token before expiration without exposing its refresh secret', async () => {
 		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		const renewed = { ...tokens, access_token: 'c'.repeat(43), refresh_token: 'd'.repeat(43) };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
+		const renewed = { ...tokens, access_token: 'c'.repeat(43) };
+		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce(identity);
 		await loginBo('admin@example.test', 'password');
-		mockedApi.mockResolvedValueOnce(renewed).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		expect(await currentBo()).toEqual({ id: 7, context: 'bo' });
-		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/refresh', {
-			method: 'POST',
-			public: true,
-			body: JSON.stringify({ refresh_token: expiring.refresh_token })
+		mockedApi.mockResolvedValueOnce(renewed).mockResolvedValueOnce(identity);
+		expect(await currentBo()).toEqual(identity);
+		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/browser/refresh', {
+			method: 'POST', credentials: 'include'
 		});
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/me', {
 			accessToken: renewed.access_token
 		});
 	});
 
-	it('shares one refresh across concurrent BO checks', async () => {
-		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		const renewed = { ...tokens, access_token: 'c'.repeat(43), refresh_token: 'd'.repeat(43) };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		const deferred = Promise.withResolvers<typeof tokens>();
-		mockedApi.mockResolvedValueOnce(deferred.promise);
-		const first = currentBo();
-		const second = currentBo();
-		deferred.resolve(renewed);
-		mockedApi.mockResolvedValue({ id: 7, context: 'bo' });
-		expect(await Promise.all([first, second])).toEqual([
-			{ id: 7, context: 'bo' },
-			{ id: 7, context: 'bo' }
-		]);
-		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(1);
-	});
-
-	it('never restores a refresh response arriving after logout', async () => {
-		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		const renewed = { ...tokens, access_token: 'c'.repeat(43), refresh_token: 'd'.repeat(43) };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		const deferred = Promise.withResolvers<typeof tokens>();
-		mockedApi.mockResolvedValueOnce(deferred.promise);
-		const pending = currentBo();
-		mockedApi.mockResolvedValueOnce(undefined);
-		await logoutBo();
-		deferred.resolve(renewed);
-		expect(await pending).toBeNull();
-		expect(await currentBo()).toBeNull();
-	});
-
-	it('rejects an already expired login token', async () => {
-		mockedApi.mockResolvedValueOnce({
-			...tokens,
-			expires_at: '2000-01-01T00:00:00+00:00'
-		});
+	it('rejects any leaked refresh token in JSON', async () => {
+		mockedApi.mockResolvedValueOnce({ ...tokens, refresh_token: 'secret' });
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
 			'Invalid authentication response'
 		);
-		expect(await currentBo()).toBeNull();
 	});
 
-	it('closes the session when refresh fails', async () => {
-		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		mockedApi.mockRejectedValueOnce(new Error('invalid_session'));
-		expect(await currentBo()).toBeNull();
-		expect(await currentBo()).toBeNull();
-		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(1);
-	});
-
-	it('rejects an expired refresh token at login', async () => {
-		mockedApi.mockResolvedValueOnce({
-			...tokens,
-			refresh_expires_at: '2000-01-01T00:00:00+00:00'
-		});
-		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
-			'Invalid authentication response'
-		);
-		expect(mockedApi).toHaveBeenCalledTimes(1);
-	});
-
-	it('rejects a refresh response with an expired access token', async () => {
-		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
+	it('rejects expired or malformed access tokens', async () => {
 		mockedApi.mockResolvedValueOnce({ ...tokens, expires_at: '2000-01-01T00:00:00+00:00' });
-		expect(await currentBo()).toBeNull();
+		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
+			'Invalid authentication response'
+		);
+		mockedApi.mockResolvedValueOnce(null);
 		expect(await currentBo()).toBeNull();
 	});
 
-	it('does not request a refresh when its expiration has passed', async () => {
-		const expiring = {
-			...tokens,
-			expires_at: new Date(Date.now() + 1_000).toISOString(),
-			refresh_expires_at: new Date(Date.now() + 2_000).toISOString()
-		};
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		vi.useFakeTimers();
-		try {
-			vi.setSystemTime(Date.now() + 3_000);
-			expect(await currentBo()).toBeNull();
-			expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/refresh')).toHaveLength(
-				0
-			);
-		} finally {
-			vi.useRealTimers();
-		}
+	it('never restores a login response arriving after logout', async () => {
+		const deferred = Promise.withResolvers<typeof tokens>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const login = loginBo('admin@example.test', 'password');
+		const rejected = expect(login).rejects.toThrow('superseded');
+		const logout = logoutBo();
+		deferred.resolve(tokens);
+		await rejected;
+		await logout;
+		expect(await currentBo()).toBeNull();
 	});
 
-	it('attaches the current BO token to module requests', async () => {
-		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
+	it('does not restore a refresh that arrives during logout', async () => {
+		const deferred = Promise.withResolvers<typeof tokens>();
+		mockedApi.mockResolvedValueOnce(deferred.promise);
+		const current = currentBo();
+		const logout = logoutBo();
+		deferred.resolve(tokens);
+		expect(await current).toBeNull();
+		await logout;
+		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/browser/logout', {
+			method: 'POST', credentials: 'include'
+		});
+	});
+
+	it('ignores invalid cookies and does not retry refresh indefinitely', async () => {
+		mockedApi.mockRejectedValueOnce(new ApiError('Invalid', 401, 'invalid_session'));
+		expect(await currentBo()).toBeNull();
+		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh'))
+			.toHaveLength(1);
+	});
+
+	it('sends only a short-lived Bearer on module requests', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
 		await loginBo('admin@example.test', 'password');
 		mockedApi.mockResolvedValueOnce({ data: [1, 2] });
 		expect(await boApi('/apibo/admins')).toEqual({ data: [1, 2] });
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/admins', {
-			credentials: 'omit',
-			accessToken: tokens.access_token
+			credentials: 'omit', accessToken: tokens.access_token
 		});
 	});
 
-	it('rejects unauthenticated and public module calls', async () => {
-		await expect(boApi('/apibo/admins')).rejects.toMatchObject({ status: 401 });
+	it('does not allow modules to attach cookies or inject credentials', async () => {
+		await expect(boApi('/apibo/users', { credentials: 'include' }))
+			.rejects.toThrow('authenticated BO path');
 		await expect(boApi('/api/users')).rejects.toThrow('authenticated BO path');
-		await expect(boApi('/apibo/admins', { public: true })).rejects.toThrow('authenticated BO path');
-		await expect(boApi('/apibo/admins', { accessToken: 'injected' })).rejects.toThrow(
-			'authenticated BO path'
-		);
-		expect(mockedApi).not.toHaveBeenCalled();
+		await expect(boApi('/apibo/users', { public: true })).rejects.toThrow('authenticated BO path');
+		await expect(boApi('/apibo/users', { accessToken: 'injected' }))
+			.rejects.toThrow('authenticated BO path');
 	});
 
-	it('invalidates the session after a module request receives 401', async () => {
-		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
+	it('invalidates access on a module 401', async () => {
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
 		await loginBo('admin@example.test', 'password');
-		mockedApi.mockRejectedValueOnce(new ApiError('Expired', 401, 'unauthorized'));
+		mockedApi.mockRejectedValueOnce(new ApiError('Unauthorized', 401, 'unauthorized'));
 		await expect(boApi('/apibo/admins')).rejects.toMatchObject({ status: 401 });
-		expect(await currentBo()).toBeNull();
 	});
 
-	it('does not return a module response after logout', async () => {
-		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		const deferred = Promise.withResolvers<{ data: number[] }>();
-		const requestStarted = Promise.withResolvers<void>();
-		mockedApi.mockImplementationOnce(() => {
-			requestStarted.resolve();
-			return deferred.promise;
-		});
-		const pending = boApi('/apibo/admins');
-		const rejected = expect(pending).rejects.toMatchObject({ status: 401 });
-		await requestStarted.promise;
-		mockedApi.mockResolvedValueOnce(undefined);
-		await logoutBo();
-		deferred.resolve({ data: [1] });
-		await rejected;
-		expect(await currentBo()).toBeNull();
-	});
-
-	it('rejects a null login response without requesting identity', async () => {
-		mockedApi.mockResolvedValueOnce(null);
-		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow(
-			'Invalid authentication response'
-		);
-		expect(mockedApi).toHaveBeenCalledTimes(1);
-	});
-
-	it('rejects a null identity without retaining tokens', async () => {
-		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(null);
-		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
-		expect(await currentBo()).toBeNull();
-	});
-
-	it('rejects a null refresh response and closes the session', async () => {
-		const expiring = { ...tokens, expires_at: new Date(Date.now() + 1_000).toISOString() };
-		mockedApi.mockResolvedValueOnce(expiring).mockResolvedValueOnce({ id: 7, context: 'bo' });
-		await loginBo('admin@example.test', 'password');
-		mockedApi.mockResolvedValueOnce(null);
-		expect(await currentBo()).toBeNull();
-	});
-
-	it('rejects manually injected Authorization headers on module calls', async () => {
-		await expect(
-			boApi('/apibo/admins', { headers: { Authorization: 'Bearer injected' } })
-		).rejects.toThrow('authenticated BO path');
-		expect(mockedApi).not.toHaveBeenCalled();
-	});
-
-	it('rejects a mismatched BO identity', async () => {
+	it('rejects a mismatched principal and revokes the cookie', async () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce({ id: 7, context: 'app' });
+		mockedApi.mockResolvedValueOnce(undefined);
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
-		expect(await currentBo()).toBeNull();
+		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/browser/logout', {
+			method: 'POST', credentials: 'include'
+		});
 	});
 });

@@ -14,6 +14,7 @@
 	let authorized = $state(false);
 	let adminId = $state<number | null>(null);
 	let loadingModules = $state(false);
+	let detectedModules = $state(0);
 	let modules = $state<BoNavigationItem[]>([]);
 	const language = $derived(($uiLanguage ?? 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en');
 	const copy = {
@@ -24,6 +25,9 @@
 			modules: 'Modules disponibles',
 			loading: 'Chargement des modules autorisés…',
 			empty: 'Aucun module accessible pour cette session.',
+			missingBuild: 'Aucune navigation modulaire détectée dans ce build BO.',
+			unavailable: 'Modules détectés, mais aucun endpoint de lecture autorisé ou disponible.',
+			detected: 'Modules détectés dans ce build'
 			logout: 'Déconnexion',
 			administrator: 'Administrateur'
 		},
@@ -34,6 +38,9 @@
 			modules: 'Available modules',
 			loading: 'Checking permitted modules…',
 			empty: 'No modules available for this session.',
+			missingBuild: 'No installed module navigation detected in this BO build.',
+			unavailable: 'Modules were detected, but no read endpoint was permitted or available.',
+			detected: 'Modules detected in this build'
 			logout: 'Log out',
 			administrator: 'Administrator'
 		}
@@ -51,7 +58,9 @@
 			adminId = identity.id;
 			authorized = true;
 			loadingModules = true;
-			void availableBoNavigation(declaredBoNavigation(), (probe) => boApi(probe))
+			const declared = declaredBoNavigation();
+			detectedModules = declared.length;
+			void availableBoNavigation(declared, (probe) => boApi(probe))
 				.then((allowed) => {
 					if (active) modules = allowed;
 				})
@@ -95,10 +104,11 @@
 					<p>{t.session}</p>
 					<section aria-label={t.modules} class="modules">
 						<h2>{t.modules}</h2>
+						<p>{t.detected}: {detectedModules}</p>
 						{#if loadingModules}
 							<p role="status">{t.loading}</p>
 						{:else if modules.length === 0}
-							<p>{t.empty}</p>
+							<p role="status">{detectedModules === 0 ? t.missingBuild : t.unavailable}</p>
 						{:else}
 							<div class="module-cards">
 								{#each modules as module (module.path)}

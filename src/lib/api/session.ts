@@ -1,118 +1,133 @@
 import { api, ApiError, type ApiRequestInit } from './client';
 
 export type BoIdentity = { id: number; context: 'bo' };
-type LoginTokens = {
+/** Access tokens only. The refresh secret never enters JavaScript. */
+type BrowserAccess = {
 	access_token: string;
-	refresh_token: string;
 	expires_at: string;
-	refresh_expires_at: string;
 	token_type: 'Bearer';
 };
 
-let session: LoginTokens | null = null;
+let session: BrowserAccess | null = null;
 let sessionGeneration = 0;
-let pendingRefresh: {
-	generation: number;
-	tokens: LoginTokens;
-	promise: Promise<LoginTokens | null>;
-} | null = null;
+let pendingRefresh: { generation: number; promise: Promise<BrowserAccess | null> } | null = null;
+let pendingLogin: Promise<BoIdentity> | null = null;
 
-async function accessTokens(): Promise<LoginTokens | null> {
-	const current = session;
+function validAccess(value: BrowserAccess | null): value is BrowserAccess {
+	if (!value || typeof value !== 'object') return false;
+	if (
+		value.token_type !== 'Bearer' ||
+		typeof value.access_token !== 'string' ||
+		!/^[A-Za-z0-9_-]{43}$/.test(value.access_token) ||
+		typeof value.expires_at !== 'string' ||
+		!Number.isFinite(Date.parse(value.expires_at)) ||
+		Date.parse(value.expires_at) <= Date.now()
+	) return false;
+	// An accidentally exposed refresh token is a broken server contract.
+	return !('refresh_token' in value);
+}
+
+async function renew(): Promise<BrowserAccess | null> {
 	const generation = sessionGeneration;
-	if (!current) return null;
-	if (Date.parse(current.expires_at) > Date.now() + 30_000) return current;
-	if (Date.parse(current.refresh_expires_at) <= Date.now()) {
-		if (generation === sessionGeneration && session === current) session = null;
-		return null;
-	}
-	if (pendingRefresh?.generation === generation && pendingRefresh.tokens === current) {
-		return pendingRefresh.promise;
-	}
-	const refresh = (async (): Promise<LoginTokens | null> => {
+	if (pendingRefresh?.generation === generation) return pendingRefresh.promise;
+
+	const promise = (async (): Promise<BrowserAccess | null> => {
 		try {
-			const next = await api<LoginTokens>('/apibo/auth/refresh', {
+			const access = await api<BrowserAccess>('/apibo/auth/browser/refresh', {
 				method: 'POST',
-				public: true,
-				body: JSON.stringify({ refresh_token: current.refresh_token })
+				credentials: 'include'
 			});
-			if (generation !== sessionGeneration || session !== current) return null;
-			if (
-				!next ||
-				next.token_type !== 'Bearer' ||
-				!next.access_token ||
-				!next.refresh_token ||
-				!Number.isFinite(Date.parse(next.expires_at)) ||
-				!Number.isFinite(Date.parse(next.refresh_expires_at)) ||
-				Date.parse(next.expires_at) <= Date.now() ||
-				Date.parse(next.refresh_expires_at) <= Date.now()
-			) {
+			if (generation !== sessionGeneration) return null;
+			if (!validAccess(access)) {
 				session = null;
 				return null;
 			}
-			session = next;
-			return next;
+			session = access;
+			return access;
 		} catch {
-			if (generation === sessionGeneration && session === current) session = null;
+			if (generation === sessionGeneration) session = null;
 			return null;
 		}
 	})();
-	pendingRefresh = { generation, tokens: current, promise: refresh };
+
+	pendingRefresh = { generation, promise };
 	try {
-		return await refresh;
+		return await promise;
 	} finally {
-		if (pendingRefresh?.promise === refresh) pendingRefresh = null;
+		if (pendingRefresh?.promise === promise) pendingRefresh = null;
 	}
+}
+
+async function accessTokens(): Promise<BrowserAccess | null> {
+	const current = session;
+	if (current && Date.parse(current.expires_at) > Date.now() + 30_000) return current;
+	// Restores the BO after a full reload, or rotates a short-lived access token.
+	// The HttpOnly cookie is sent by the browser, never read by JavaScript.
+	return renew();
+}
+
+function validIdentity(identity: BoIdentity | null): identity is BoIdentity {
+	return !!identity && identity.context === 'bo' &&
+		Number.isInteger(identity.id) && identity.id > 0;
 }
 
 /**
- * Ephemeral BO session. No localStorage, sessionStorage or persistent JS cookies.
- * A full reload intentionally requires a new login until the server-side cookie
- * transport has been validated.
+ * BO password login. The server sets the Secure HttpOnly refresh cookie.
+ * No refresh token is returned to, or persisted by, the Svelte runtime.
  */
 export async function loginBo(email: string, password: string): Promise<BoIdentity> {
 	const generation = ++sessionGeneration;
-	pendingRefresh = null;
+	const previousRefresh = pendingRefresh?.promise;
+	const previousLogin = pendingLogin;
 	session = null;
-	const tokens = await api<LoginTokens>('/apibo/auth/login', {
-		method: 'POST',
-		public: true,
-		body: JSON.stringify({ email, password })
-	});
-	if (
-		!tokens ||
-		tokens.token_type !== 'Bearer' ||
-		!tokens.access_token ||
-		!tokens.refresh_token ||
-		!Number.isFinite(Date.parse(tokens.expires_at)) ||
-		!Number.isFinite(Date.parse(tokens.refresh_expires_at)) ||
-		Date.parse(tokens.expires_at) <= Date.now() ||
-		Date.parse(tokens.refresh_expires_at) <= Date.now()
-	) {
-		throw new Error('Invalid authentication response');
-	}
-	if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
-	try {
-		const identity = await api<BoIdentity>('/apibo/auth/me', {
-			accessToken: tokens.access_token
-		});
-		if (
-			!identity ||
-			identity.context !== 'bo' ||
-			!Number.isInteger(identity.id) ||
-			identity.id < 1
-		) {
-			throw new Error('Invalid BO identity');
-		}
+	pendingRefresh = null;
+	const operation = (async (): Promise<BoIdentity> => {
+		// Avoid an old in-flight response overwriting a newer session cookie.
+		if (previousRefresh) await previousRefresh.catch(() => null);
+		if (previousLogin) await previousLogin.catch(() => null);
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
-		session = tokens;
-		return identity;
-	} catch (error) {
-		if (generation === sessionGeneration) session = null;
-		throw error;
+		const access = await api<BrowserAccess>('/apibo/auth/browser/login', {
+			method: 'POST',
+			credentials: 'include',
+			body: JSON.stringify({ email, password })
+		});
+		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
+		if (!validAccess(access)) {
+			throw new Error('Invalid authentication response');
+		}
+		try {
+			const identity = await api<BoIdentity>('/apibo/auth/me', {
+				accessToken: access.access_token
+			});
+			if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
+			if (!validIdentity(identity)) throw new Error('Invalid BO identity');
+			session = access;
+			return identity;
+		} catch (error) {
+			if (generation === sessionGeneration) {
+				session = null;
+				// Do not keep a valid refresh cookie if identity verification failed.
+				try {
+					await api<void>('/apibo/auth/browser/logout', {
+						method: 'POST',
+						credentials: 'include'
+					});
+				} catch {
+					// Local session remains closed if the network is unavailable.
+				}
+			}
+			throw error;
+		}
+	})();
+	pendingLogin = operation;
+	try {
+		return await operation;
+	} finally {
+		if (pendingLogin === operation) pendingLogin = null;
 	}
 }
 
+/** Full page reload: recover the access token from the server cookie. */
 export async function currentBo(): Promise<BoIdentity | null> {
 	const current = await accessTokens();
 	const generation = sessionGeneration;
@@ -122,7 +137,7 @@ export async function currentBo(): Promise<BoIdentity | null> {
 			accessToken: current.access_token
 		});
 		if (generation !== sessionGeneration || session !== current) return null;
-		if (identity.context !== 'bo' || !Number.isInteger(identity.id) || identity.id < 1) {
+		if (!validIdentity(identity)) {
 			session = null;
 			return null;
 		}
@@ -133,27 +148,28 @@ export async function currentBo(): Promise<BoIdentity | null> {
 	}
 }
 
+/** Revoke the backend refresh family even when no access token is in memory. */
 export async function logoutBo(): Promise<void> {
-	++sessionGeneration;
-	pendingRefresh = null;
-	const previous = session;
+	const generation = ++sessionGeneration;
+	const priorRefresh = pendingRefresh?.promise;
+	const priorLogin = pendingLogin;
 	session = null;
-	if (!previous) return;
+	pendingRefresh = null;
+	if (priorRefresh || priorLogin) {
+		await Promise.allSettled([priorRefresh, priorLogin].filter((p) => p !== null));
+	}
+	if (generation !== sessionGeneration) return;
 	try {
-		await api<void>('/apibo/auth/logout', {
+		await api<void>('/apibo/auth/browser/logout', {
 			method: 'POST',
-			accessToken: previous.access_token,
-			body: JSON.stringify({ refresh_token: previous.refresh_token })
+			credentials: 'include'
 		});
 	} catch {
-		// Fail closed locally even when the network cannot revoke the server token.
+		// Local session remains closed, even if remote revocation fails.
 	}
 }
 
-/**
- * Authenticated BO module requests. Never expose token handling to individual modules.
- * Refresh is shared with currentBo(); a failed authorization invalidates this session.
- */
+/** Module APIs never send refresh cookies, only the short-lived Bearer. */
 export async function boApi<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
 	if (
 		!path.startsWith('/apibo/') ||

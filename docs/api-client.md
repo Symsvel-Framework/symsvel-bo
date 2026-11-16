@@ -18,7 +18,7 @@ The Auth module will supply the administrator preference after profile loading. 
 
 ## Public requests and authentication integration
 
-Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests can temporarily receive `accessToken` explicitly; the BO session lifecycle is implemented separately in `session.ts` (temporary in-memory tokens, refresh on `currentBo()`, and logout). Do not duplicate its session lifecycle in functional modules.
+Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests receive `accessToken` from the central `session.ts` lifecycle. The BO browser login/refresh/logout calls are intentionally credentialed requests with `credentials: include`, whereas module APIs always use `credentials: omit` and a short-lived Bearer. Do not duplicate its session lifecycle in functional modules.
 
 The client uses `PUBLIC_API_URL` when set; otherwise, in a browser, it resolves `bo.example` to `backend.example`. Outside the browser an explicit URL is required. The client accepts root-relative paths only.
 
@@ -38,7 +38,7 @@ Le formulaire utilise provisoirement l'import relatif `../../lib/api/client`, r�
 
 Les redirections internes SvelteKit passent par `resolve('/login')` avant `goto(...)`, conformément à la règle ESLint `svelte/no-navigation-without-resolve` du projet.
 
-## Session BO éphémère (14/11/2026)
+## Ancien transport BO éphémère, remplacé le 16/11/2026 (historique)
 
 Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) : `POST /apibo/auth/login`, puis vérification de l'identité par `GET /apibo/auth/me`. Le dashboard n'est rendu qu'après une nouvelle vérification `/me` ; en cas d'échec, retour à `/login`. La déconnexion appelle `POST /apibo/auth/logout` et efface immédiatement les secrets en mémoire, même si la requête réseau échoue.
 
@@ -124,3 +124,11 @@ Le scénario Playwright de révocation attend maintenant explicitement la deuxi�
 ## Indicateur de robustesse sur les écrans de création de mot de passe (16/11/2026)
 
 Le helper natif `src/lib/password/strength.ts` calcule sur la saisie un indicateur **descriptif** de diversité (longueur, catégories de caractères) et applique exactement le contrat serveur actuel : 12 à 1024 **octets UTF-8**, sans NUL. Le score de 0 à 4 n'est ni une estimation cryptographique ni une exigence supplémentaire ; la saisie n'est pas rejetée pour l'absence d'une majuscule ou d'un symbole. Les modules peuvent réutiliser ce helper dans leurs formulaires sans dupliquer les règles, avec libellés externalisés FR/EN. Vitest protège les limites, Unicode, NUL et score. CT navigateur et CI requis.
+
+## Session BO persistante par cookie de refresh (16/11/2026)
+
+Le transport transitoire ci-dessus a été **remplacé**. Les secrets refresh ne sont plus renvoyés au JavaScript : `loginBo()` appelle `POST /apibo/auth/browser/login`, qui répond avec `access_token` et `expires_at` uniquement, tout en envoyant un cookie backend `__Host-symsvel-bo-refresh; Secure; HttpOnly; SameSite=Strict; Path=/`. `currentBo()` effectue une rotation `POST /apibo/auth/browser/refresh` avec `credentials: include` lorsque la mémoire est vide après reload ou que l'access token expire. La rotation est mutualisée entre appels concurrents, et l'ancien secret est révoqué par le TokenStore. `logoutBo()` efface l'état JS immédiatement, attend les éventuelles rotations en cours, puis appelle `POST /apibo/auth/browser/logout` pour révoquer la famille et expirer le cookie. Une requête tardive d'une ancienne génération ne doit pas restaurer la session.
+
+Les appels métiers `boApi` restent inchangés dans leur contrat : `Authorization: Bearer <access_token>`, **`credentials: omit`**, refus de fournir les tokens ou cookies depuis un module. Les appels de login au transport navigateur ne sont volontairement pas marqués `public: true` car cette option force `credentials: omit` ; seul le transport Auth BO peut utiliser `credentials: include`. L'App garde ses propres endpoints. Les deux hôtes BO et backend doivent être HTTPS, de même site pour le cookie `SameSite=Strict`, et leur origine contrôlée par Auth via le Setup. Le CORS côté Back n'autorise les credentials que sur `/apibo/auth/browser/*`. La politique finale doit être validée en navigateur réel, notamment le rechargement, le refresh, les sessions expirées, le logout, les origines étrangères et les en-têtes Set-Cookie.
+
+Les tests Vitest couvrent l'absence de refresh secret en JS, le bootstrap après reload, les rotations concurrentes, les courses logout/login, la séparation des modules et les erreurs 401. Playwright couvre le parcours écran avec rechargement sur endpoints simulés. Ces tests ne remplacent pas le CT HTTPS/SMTP XT ni la validation des cookies et CORS sur les vrais domaines.
