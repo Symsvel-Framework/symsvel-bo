@@ -38,6 +38,7 @@ test('BO login, authenticated dashboard and logout', async ({ page }) => {
 	await expect(page.getByText('Administrateur #7')).toBeVisible();
 	expect(loginCalls).toBe(1);
 	expect(meCalls).toBeGreaterThanOrEqual(2);
+	await page.getByRole('button', { name: 'Menu administrateur' }).click();
 	await page.getByRole('button', { name: 'Déconnexion' }).click();
 	await expect(page).toHaveURL(/\/login$/);
 	expect(logoutCalls).toBe(1);

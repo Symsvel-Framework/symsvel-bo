@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { availableBoNavigation, declaredBoNavigation, type BoNavigationItem } from './navigation';
+import { availableBoNavigation, availableBoSystemAlerts, declaredBoNavigation, type BoNavigationItem } from './navigation';
 
 const entries: BoNavigationItem[] = [
 	{
@@ -37,5 +37,32 @@ describe('module-owned BO navigation', () => {
 				throw new Error('network');
 			})
 		).toEqual([]);
+	});
+});
+
+describe('module-owned system alerts', () => {
+	it('does not load alerts from a forbidden module', async () => {
+		const load = vi.fn(async () => [
+			{ id: 'missing', path: '/users', message: { fr: 'Manquant', en: 'Missing' } }
+		]);
+		expect(
+			await availableBoSystemAlerts([entries[0]], async () => ({}), [
+				{ boNavigation: entries[1], boAlerts: load }
+			])
+		).toEqual([]);
+		expect(load).not.toHaveBeenCalled();
+	});
+	it('keeps only alerts from the authorized owner', async () => {
+		const alerts = await availableBoSystemAlerts(entries, async () => ({}), [
+			{
+				boNavigation: entries[0],
+				boAlerts: async () => [
+					{ id: 'ok', path: '/admins', message: { fr: 'Oui', en: 'Yes' } },
+					{ id: 'wrong', path: '/settings', message: { fr: 'Non', en: 'No' } }
+				]
+			},
+			{ boNavigation: entries[1], boAlerts: async () => { throw Error('offline'); } }
+		]);
+		expect(alerts.map((alert) => alert.id)).toEqual(['ok']);
 	});
 });
