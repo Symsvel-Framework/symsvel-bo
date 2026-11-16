@@ -27,7 +27,7 @@
 			empty: 'Aucun module accessible pour cette session.',
 			missingBuild: 'Aucune navigation modulaire détectée dans ce build BO.',
 			unavailable: 'Modules détectés, mais aucun endpoint de lecture autorisé ou disponible.',
-			detected: 'Modules détectés dans ce build'
+			detected: 'Modules détectés dans ce build',
 			logout: 'Déconnexion',
 			administrator: 'Administrateur'
 		},
@@ -40,7 +40,7 @@
 			empty: 'No modules available for this session.',
 			missingBuild: 'No installed module navigation detected in this BO build.',
 			unavailable: 'Modules were detected, but no read endpoint was permitted or available.',
-			detected: 'Modules detected in this build'
+			detected: 'Modules detected in this build',
 			logout: 'Log out',
 			administrator: 'Administrator'
 		}
