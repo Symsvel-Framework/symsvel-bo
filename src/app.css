@@ -325,3 +325,146 @@ a:hover {
 		display: none;
 	}
 }
+
+/* Reusable UI primitives: presentational only, never make API calls. */
+.bo-button {
+	border: 0;
+	border-radius: 8px;
+	padding: 10px 14px;
+	background: #1e293b;
+	color: white;
+	font: inherit;
+	font-weight: 650;
+	cursor: pointer;
+}
+.bo-button-secondary {
+	border: 1px solid #ccd4df;
+	background: white;
+	color: #1e293b;
+}
+.bo-button-danger {
+	background: #9d2626;
+	color: white;
+}
+.bo-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+.bo-button:focus-visible {
+	outline: 2px solid #2457d6;
+	outline-offset: 2px;
+}
+.bo-alert {
+	padding: 11px 13px;
+	border-radius: 9px;
+	margin: 12px 0;
+}
+.bo-alert-error {
+	background: #fff1f1;
+	color: #9d2626;
+}
+.bo-alert-success {
+	background: #eefaf2;
+	color: #236747;
+}
+.bo-alert-info {
+	background: #eef5ff;
+	color: #294f8a;
+}
+.bo-field {
+	display: grid;
+	gap: 6px;
+	font-weight: 600;
+}
+.bo-field input {
+	width: 100%;
+	min-width: 0;
+	padding: 10px 12px;
+	border: 1px solid #ccd4df;
+	border-radius: 8px;
+	font: inherit;
+}
+.bo-data-table {
+	width: 100%;
+}
+.bo-data-table-scroll {
+	overflow-x: auto;
+}
+.bo-data-table-scroll table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.bo-data-table-scroll th,
+.bo-data-table-scroll td {
+	padding: 12px;
+	border-bottom: 1px solid #e5e7eb;
+	text-align: left;
+}
+.bo-data-table-scroll .bo-data-table-right {
+	text-align: right;
+}
+.bo-data-table-scroll .bo-data-table-center {
+	text-align: center;
+}
+.bo-data-table-sort {
+	border: none;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 650;
+	cursor: pointer;
+}
+.bo-data-table-actions {
+	white-space: nowrap;
+}
+.bo-data-table-actions .bo-button {
+	margin-right: 6px;
+}
+.bo-data-table-empty {
+	text-align: center !important;
+	color: #667085;
+	padding: 24px !important;
+}
+.bo-data-table-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+.bo-data-table-filter {
+	display: grid;
+	gap: 5px;
+}
+.bo-data-table-filter input,
+.bo-data-table-filter select {
+	border: 1px solid #ccd4df;
+	border-radius: 7px;
+	padding: 7px 9px;
+	font: inherit;
+}
+.bo-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 12px 0;
+	font-size: 0.875rem;
+}
+.bo-pagination-size,
+.bo-pagination-controls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.bo-pagination-size select {
+	padding: 7px 9px;
+	border: 1px solid #ccd4df;
+	border-radius: 7px;
+	font: inherit;
+	background: white;
+}
+.bo-pagination-count {
+	color: #667085;
+	font-variant-numeric: tabular-nums;
+}

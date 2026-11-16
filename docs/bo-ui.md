@@ -31,3 +31,28 @@ Exécuter `npm run qa`, vérifier les CI du BO et des modules, puis sur XT :
 Dashboard → Admins → Users → Settings → Dashboard, menu persistant et actif,
 ACL, alertes, déconnexion, rechargement avec refresh HttpOnly et session expirée.
 Seuls les crash-tests utilisateur confirment l'intégration réelle.
+
+## Catalogue de composants réutilisables (hérité des principes XCore)
+
+Le BO hôte fournit désormais `src/lib/components/Button.svelte`,
+`Alert.svelte`, `InputField.svelte`, `DataTable.svelte` et
+`Pagination.svelte`. Les modules doivent préférer ces primitives,
+sans les recopier. Aucun de ces composants n'appelle l'API.
+
+- `Button` reçoit les props HTML du bouton, `variant`
+  (`primary`, `secondary`, `danger`) et `loading`.
+- `Alert` reçoit `kind` (`error`, `success`, `info`) et expose
+  le rôle ARIA approprié.
+- `InputField` associe label et saisie, avec `bind:value`.
+- `DataTable` reçoit lignes, colonnes, actions, filtres, tri et pagination
+  optionnels. Il n'interprète aucune ACL et n'effectue aucun fetch.
+- `Pagination` reçoit `page`, `limit` (10/20/50/100), `total`,
+  `onPageChange` et `onLimitChange`. Le défaut est 20 résultats.
+
+Les libellés génériques FR/EN sont centralisés dans `components/texts.ts`,
+synchronisés avec `uiLanguage`. Les chaînes métier restent dans les modules.
+Pour les tableaux avec édition en ligne complexe, conserver le HTML natif
+jusqu'à l'existence d'un besoin avéré de snippets de cellule : éviter une
+abstraction plus large sans besoin.
+
+Tests unitaires des utilitaires de pagination, tri et affichage requis.
