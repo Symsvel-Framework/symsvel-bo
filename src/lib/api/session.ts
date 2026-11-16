@@ -22,7 +22,8 @@ function validAccess(value: BrowserAccess | null): value is BrowserAccess {
 		typeof value.expires_at !== 'string' ||
 		!Number.isFinite(Date.parse(value.expires_at)) ||
 		Date.parse(value.expires_at) <= Date.now()
-	) return false;
+	)
+		return false;
 	// An accidentally exposed refresh token is a broken server contract.
 	return !('refresh_token' in value);
 }
@@ -67,8 +68,9 @@ async function accessTokens(): Promise<BrowserAccess | null> {
 }
 
 function validIdentity(identity: BoIdentity | null): identity is BoIdentity {
-	return !!identity && identity.context === 'bo' &&
-		Number.isInteger(identity.id) && identity.id > 0;
+	return (
+		!!identity && identity.context === 'bo' && Number.isInteger(identity.id) && identity.id > 0
+	);
 }
 
 /**

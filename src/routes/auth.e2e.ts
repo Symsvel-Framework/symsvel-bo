@@ -59,7 +59,9 @@ test('invalid credentials keep the BO on the login page', async ({ page }) => {
 });
 
 test('direct dashboard access without a session redirects to login', async ({ page }) => {
-	await page.route('**/apibo/auth/browser/refresh?*', (route) => route.fulfill({ status: 401, json: { error: { code: 'invalid_session' } } }));
+	await page.route('**/apibo/auth/browser/refresh?*', (route) =>
+		route.fulfill({ status: 401, json: { error: { code: 'invalid_session' } } })
+	);
 	await page.goto('/dashboard');
 	await expect(page).toHaveURL(/\/login$/);
 	await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();

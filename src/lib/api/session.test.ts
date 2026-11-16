@@ -27,7 +27,8 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
 		expect(await loginBo('admin@example.test', 'password')).toEqual(identity);
 		expect(mockedApi).toHaveBeenNthCalledWith(1, '/apibo/auth/browser/login', {
-			method: 'POST', credentials: 'include',
+			method: 'POST',
+			credentials: 'include',
 			body: JSON.stringify({ email: 'admin@example.test', password: 'password' })
 		});
 		expect(mockedApi).toHaveBeenNthCalledWith(2, '/apibo/auth/me', {
@@ -38,7 +39,8 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce(undefined);
 		await logoutBo();
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/browser/logout', {
-			method: 'POST', credentials: 'include'
+			method: 'POST',
+			credentials: 'include'
 		});
 	});
 
@@ -46,7 +48,8 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
 		expect(await currentBo()).toEqual(identity);
 		expect(mockedApi).toHaveBeenNthCalledWith(1, '/apibo/auth/browser/refresh', {
-			method: 'POST', credentials: 'include'
+			method: 'POST',
+			credentials: 'include'
 		});
 		expect(mockedApi).toHaveBeenNthCalledWith(2, '/apibo/auth/me', {
 			accessToken: tokens.access_token
@@ -61,8 +64,9 @@ describe('BO browser cookie and access session', () => {
 		deferred.resolve(tokens);
 		mockedApi.mockResolvedValue(identity);
 		expect(await Promise.all([first, second])).toEqual([identity, identity]);
-		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh'))
-			.toHaveLength(1);
+		expect(
+			mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh')
+		).toHaveLength(1);
 	});
 
 	it('renews an access token before expiration without exposing its refresh secret', async () => {
@@ -73,7 +77,8 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce(renewed).mockResolvedValueOnce(identity);
 		expect(await currentBo()).toEqual(identity);
 		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/browser/refresh', {
-			method: 'POST', credentials: 'include'
+			method: 'POST',
+			credentials: 'include'
 		});
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/me', {
 			accessToken: renewed.access_token
@@ -117,15 +122,17 @@ describe('BO browser cookie and access session', () => {
 		expect(await current).toBeNull();
 		await logout;
 		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/browser/logout', {
-			method: 'POST', credentials: 'include'
+			method: 'POST',
+			credentials: 'include'
 		});
 	});
 
 	it('ignores invalid cookies and does not retry refresh indefinitely', async () => {
 		mockedApi.mockRejectedValueOnce(new ApiError('Invalid', 401, 'invalid_session'));
 		expect(await currentBo()).toBeNull();
-		expect(mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh'))
-			.toHaveLength(1);
+		expect(
+			mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh')
+		).toHaveLength(1);
 	});
 
 	it('sends only a short-lived Bearer on module requests', async () => {
@@ -134,17 +141,20 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce({ data: [1, 2] });
 		expect(await boApi('/apibo/admins')).toEqual({ data: [1, 2] });
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/admins', {
-			credentials: 'omit', accessToken: tokens.access_token
+			credentials: 'omit',
+			accessToken: tokens.access_token
 		});
 	});
 
 	it('does not allow modules to attach cookies or inject credentials', async () => {
-		await expect(boApi('/apibo/users', { credentials: 'include' }))
-			.rejects.toThrow('authenticated BO path');
+		await expect(boApi('/apibo/users', { credentials: 'include' })).rejects.toThrow(
+			'authenticated BO path'
+		);
 		await expect(boApi('/api/users')).rejects.toThrow('authenticated BO path');
 		await expect(boApi('/apibo/users', { public: true })).rejects.toThrow('authenticated BO path');
-		await expect(boApi('/apibo/users', { accessToken: 'injected' }))
-			.rejects.toThrow('authenticated BO path');
+		await expect(boApi('/apibo/users', { accessToken: 'injected' })).rejects.toThrow(
+			'authenticated BO path'
+		);
 	});
 
 	it('invalidates access on a module 401', async () => {
@@ -159,7 +169,8 @@ describe('BO browser cookie and access session', () => {
 		mockedApi.mockResolvedValueOnce(undefined);
 		await expect(loginBo('admin@example.test', 'password')).rejects.toThrow('Invalid BO identity');
 		expect(mockedApi).toHaveBeenLastCalledWith('/apibo/auth/browser/logout', {
-			method: 'POST', credentials: 'include'
+			method: 'POST',
+			credentials: 'include'
 		});
 	});
 });
