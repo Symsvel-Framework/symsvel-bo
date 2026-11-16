@@ -28,7 +28,12 @@
 <dialog bind:this={dialog} aria-labelledby={titleId} onclose={onClose} oncancel={onClose}>
 	<header class="bo-modal-heading">
 		<h2 id={titleId}>{title}</h2>
-		<button type="button" class="bo-modal-close" aria-label={closeLabel} onclick={() => dialog.close()}>×</button>
+		<button
+			type="button"
+			class="bo-modal-close"
+			aria-label={closeLabel}
+			onclick={() => dialog.close()}>×</button
+		>
 	</header>
 	<div class="bo-modal-body">
 		{@render children()}
@@ -47,7 +52,9 @@
 		background: #fff;
 		color: inherit;
 	}
-	dialog::backdrop { background: rgba(15, 23, 42, 0.54); }
+	dialog::backdrop {
+		background: rgba(15, 23, 42, 0.54);
+	}
 	.bo-modal-heading {
 		display: flex;
 		align-items: center;
@@ -56,7 +63,10 @@
 		padding: 18px 24px;
 		border-bottom: 1px solid #edf0f4;
 	}
-	h2 { font-size: 1.2rem; margin: 0; }
+	h2 {
+		font-size: 1.2rem;
+		margin: 0;
+	}
 	.bo-modal-close {
 		background: transparent;
 		border: 0;
@@ -66,7 +76,14 @@
 		min-width: 36px;
 		min-height: 36px;
 	}
-	.bo-modal-close:hover { background: #f3f5f8; }
-	.bo-modal-close:focus-visible { outline: 2px solid #2457d6; }
-	.bo-modal-body { padding: 24px; overflow-y: auto; }
+	.bo-modal-close:hover {
+		background: #f3f5f8;
+	}
+	.bo-modal-close:focus-visible {
+		outline: 2px solid #2457d6;
+	}
+	.bo-modal-body {
+		padding: 24px;
+		overflow-y: auto;
+	}
 </style>
