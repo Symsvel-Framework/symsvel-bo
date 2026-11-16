@@ -120,3 +120,7 @@ La CI couvre maintenant aussi deux scénarios navigateur supplémentaires : rév
 ### Stabilisation du test de révocation navigateur
 
 Le scénario Playwright de révocation attend maintenant explicitement la deuxième requête `/apibo/auth/me` via `expect.poll` avant de vérifier la redirection vers `/login`. En effet, cette URL est également celle du formulaire initial : une assertion immédiate pouvait réussir avant la fin de la connexion et observer une seule requête `me`. La correction concerne uniquement la synchronisation du test, pas le comportement de production.
+
+## Indicateur de robustesse sur les écrans de création de mot de passe (16/11/2026)
+
+Le helper natif `src/lib/password/strength.ts` calcule sur la saisie un indicateur **descriptif** de diversité (longueur, catégories de caractères) et applique exactement le contrat serveur actuel : 12 à 1024 **octets UTF-8**, sans NUL. Le score de 0 à 4 n'est ni une estimation cryptographique ni une exigence supplémentaire ; la saisie n'est pas rejetée pour l'absence d'une majuscule ou d'un symbole. Les modules peuvent réutiliser ce helper dans leurs formulaires sans dupliquer les règles, avec libellés externalisés FR/EN. Vitest protège les limites, Unicode, NUL et score. CT navigateur et CI requis.
