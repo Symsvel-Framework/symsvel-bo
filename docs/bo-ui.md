@@ -66,3 +66,37 @@ peut déclencher `window.dispatchEvent(new Event('symsvel:alerts-changed'))`.
 Le shell réinterroge alors uniquement les providers des modules autorisés ;
 il ne recalcule aucune règle métier et ne déconnecte pas l'administrateur.
 L'abonnement est nettoyé lors du démontage du shell.
+
+
+## Compatibilité entre les sources BO et les modules
+
+Les pages des modules installés peuvent importer les composants publics du BO
+depuis `src/lib/components/`. Lorsqu'un module adopte de nouvelles primitives
+BO, le **BO natif du projet doit être actualisé en premier**. Dans un projet
+SymSvel en canal `dev` :
+
+```bash
+symsvel update bo
+symsvel update
+```
+
+Ces commandes ont des responsabilités distinctes :
+`symsvel update bo` suit la source Git BO correspondant au canal du projet,
+applique les nouveautés natives et reconstruit le BO ;
+`symsvel update` passe par Composer et synchronise les modules, mais n'installe
+pas à lui seul les nouveaux fichiers natifs du BO.
+
+Un échec Vite `UNRESOLVED_IMPORT` pour `components/Button.svelte`,
+`components/Alert.svelte` ou `components/DataTable.svelte`, alors que
+ces fichiers existent dans le dépôt BO, indique un assemblage local dont les
+sources sont désalignées ou absentes. Ne pas recopier les composants dans les
+modules et ne pas « réparer » leurs imports relatifs tant que leur résolution
+a été confirmée par l'assemblage CI. Vérifier d'abord que la mise à jour native
+s'est effectivement terminée (elle est transactionnelle et peut restaurer
+l'état précédent en cas d'échec).
+
+Le canal est enregistré dans `backend/.symsvel/project.json`. Ne pas changer
+ce fichier manuellement pour débloquer une version : il fait partie de la
+provenance gérée par CLI/Tooling. Les CI isolées des modules assemblent un
+BO `dev` neuf et ne prouvent pas à elles seules le comportement d'un projet
+historique possédant encore un BO natif antérieur. Le crash-test XT reste requis.
