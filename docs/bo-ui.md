@@ -67,7 +67,6 @@ Le shell réinterroge alors uniquement les providers des modules autorisés ;
 il ne recalcule aucune règle métier et ne déconnecte pas l'administrateur.
 L'abonnement est nettoyé lors du démontage du shell.
 
-
 ## Compatibilité entre les sources BO et les modules
 
 Les pages des modules installés peuvent importer les composants publics du BO
