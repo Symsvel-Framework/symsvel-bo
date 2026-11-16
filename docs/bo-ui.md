@@ -99,3 +99,16 @@ ce fichier manuellement pour débloquer une version : il fait partie de la
 provenance gérée par CLI/Tooling. Les CI isolées des modules assemblent un
 BO `dev` neuf et ne prouvent pas à elles seules le comportement d'un projet
 historique possédant encore un BO natif antérieur. Le crash-test XT reste requis.
+
+## Modales d'édition et d'invitation
+
+`src/lib/components/Modal.svelte` repose sur l'élément HTML natif
+`dialog.showModal()`. La page module possède l'état `open`, le titre, les
+champs et le rappel `onClose`. Le composant gère le voile, l'accessibilité
+(nom accessible, fermeture par Échap, focus géré par le navigateur) et ne
+contient ni API ni droits métier. Ne pas recopier un overlay dans chaque module.
+
+Les onglets et les accordéons restent du HTML natif piloté par le module.
+Les tableaux réutilisent `DataTable` + `Pagination` avec une recherche,
+un tri et un découpage gérés par l'écran, comme dans XCore. L'API garde ses
+contrôles d'accès et reste la seule autorité pour les mutations.
