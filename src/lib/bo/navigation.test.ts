@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { availableBoNavigation, availableBoSystemAlerts, declaredBoNavigation, type BoNavigationItem } from './navigation';
+import {
+	availableBoNavigation,
+	availableBoSystemAlerts,
+	declaredBoNavigation,
+	type BoNavigationItem
+} from './navigation';
 
 const entries: BoNavigationItem[] = [
 	{
@@ -61,7 +66,12 @@ describe('module-owned system alerts', () => {
 					{ id: 'wrong', path: '/settings', message: { fr: 'Non', en: 'No' } }
 				]
 			},
-			{ boNavigation: entries[1], boAlerts: async () => { throw Error('offline'); } }
+			{
+				boNavigation: entries[1],
+				boAlerts: async () => {
+					throw Error('offline');
+				}
+			}
 		]);
 		expect(alerts.map((alert) => alert.id)).toEqual(['ok']);
 	});
