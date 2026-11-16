@@ -56,3 +56,5 @@ jusqu'à l'existence d'un besoin avéré de snippets de cellule : éviter une
 abstraction plus large sans besoin.
 
 Tests unitaires des utilitaires de pagination, tri et affichage requis.
+
+L'étiquette accessible des filtres de tableau suit aussi la langue d'interface.

@@ -3,7 +3,7 @@
 	 * Pagination is presentation-only: the parent owns the API request and its state.
 	 * `onPageChange` and `onLimitChange` are invoked only on user interaction.
 	 */
-import { uiLanguage } from '../api/locales';
+	import { uiLanguage } from '../api/locales';
 	import { boComponentCopy } from './texts';
 	import Button from './Button.svelte';
 	let {
@@ -65,26 +65,26 @@ import { uiLanguage } from '../api/locales';
 			type="button"
 			aria-label={t.first}
 			disabled={loading || current <= 1}
-			onclick={() => goTo(1)}>«</button
+			onclick={() => goTo(1)}>«</Button
 		>
 		<Button
 			type="button"
 			aria-label={t.previous}
 			disabled={loading || current <= 1}
-			onclick={() => goTo(current - 1)}>‹</button
+			onclick={() => goTo(current - 1)}>‹</Button
 		>
 		<span aria-live="polite">{t.page(current, pages)}</span>
 		<Button
 			type="button"
 			aria-label={t.next}
 			disabled={loading || current >= pages}
-			onclick={() => goTo(current + 1)}>›</button
+			onclick={() => goTo(current + 1)}>›</Button
 		>
 		<Button
 			type="button"
 			aria-label={t.last}
 			disabled={loading || current >= pages}
-			onclick={() => goTo(pages)}>»</button
+			onclick={() => goTo(pages)}>»</Button
 		>
 	</div>
 </nav>

@@ -57,7 +57,7 @@
 
 <div class="bo-data-table">
 	{#if filters.length > 0}
-		<div class="bo-data-table-filters" role="group" aria-label={t.actions}>
+		<div class="bo-data-table-filters" role="group" aria-label={t.filters}>
 			{#each filters as filter (filter.key)}
 				<label class="bo-data-table-filter">
 					<span>{filter.label}</span>
@@ -137,7 +137,7 @@
 										type="button"
 										disabled={loading || action.disabled?.(row)}
 										onclick={() => action.onClick(row)}
-										>{typeof action.label === 'function' ? action.label(row) : action.label}</button
+										>{typeof action.label === 'function' ? action.label(row) : action.label}</Button
 									>
 								{/each}
 							</td>
