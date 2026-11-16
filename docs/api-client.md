@@ -133,7 +133,6 @@ Les appels métiers `boApi` restent inchangés dans leur contrat : `Authorizatio
 
 Les tests Vitest couvrent l'absence de refresh secret en JS, le bootstrap après reload, les rotations concurrentes, les courses logout/login, la séparation des modules et les erreurs 401. Playwright couvre le parcours écran avec rechargement sur endpoints simulés. Ces tests ne remplacent pas le CT HTTPS/SMTP XT ni la validation des cookies et CORS sur les vrais domaines.
 
-
 ### Domaine HTTP local au Setup (16/11/2026)
 
 Le transport cookie supporte aussi, en environnement Symfony dev uniquement, un domaine réservé local de type `http://bo.xt.localhost` vers `http://backend.xt.localhost` (et ports de développement). Dans ce cas Auth valide précisément le domaine issu du Setup et fournit un cookie `symsvel-bo-refresh-local` qui reste `HttpOnly`, `SameSite=Strict` et host-only, mais ne porte pas `Secure`. En HTTPS, le cookie normal `__Host-symsvel-bo-refresh` garde `Secure`. Le BO ne lit aucun secret depuis JavaScript dans les deux cas ; la production exige HTTPS. Le Setup, le serveur BO et le backend doivent partager la même origine de site pour que `SameSite=Strict` soit utilisable.
