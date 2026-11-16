@@ -51,14 +51,14 @@ describe('module-owned system alerts', () => {
 			{ id: 'missing', path: '/users', message: { fr: 'Manquant', en: 'Missing' } }
 		]);
 		expect(
-			await availableBoSystemAlerts([entries[0]], async <T>() => ({} as T), [
+			await availableBoSystemAlerts([entries[0]], async <T>() => ({}) as T, [
 				{ boNavigation: entries[1], boAlerts: load }
 			])
 		).toEqual([]);
 		expect(load).not.toHaveBeenCalled();
 	});
 	it('keeps only alerts from the authorized owner', async () => {
-		const alerts = await availableBoSystemAlerts(entries, async <T>() => ({} as T), [
+		const alerts = await availableBoSystemAlerts(entries, async <T>() => ({}) as T, [
 			{
 				boNavigation: entries[0],
 				boAlerts: async () => [

@@ -9,7 +9,8 @@ const copy = {
 		filters: 'Filtres du tableau',
 		pagination: 'Pagination',
 		perPage: 'Lignes par page',
-		count: (first: number, last: number, total: number) => `${first}–${last} sur ${total} résultats`,
+		count: (first: number, last: number, total: number) =>
+			`${first}–${last} sur ${total} résultats`,
 		page: (current: number, total: number) => `Page ${current} / ${total}`,
 		first: 'Première page',
 		previous: 'Page précédente',

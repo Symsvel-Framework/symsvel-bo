@@ -16,6 +16,8 @@ describe('DataTable helpers', () => {
 		expect(displayCell({ key: 'id', label: 'ID', format: (v) => `#${v}` }, row)).toBe('#1');
 	});
 	it('uses English boolean labels when supplied by the host', () => {
-		expect(displayCell({ key: 'active', label: 'Active' }, { active: false }, { yes: 'Yes', no: 'No' })).toBe('No');
+		expect(
+			displayCell({ key: 'active', label: 'Active' }, { active: false }, { yes: 'Yes', no: 'No' })
+		).toBe('No');
 	});
 });

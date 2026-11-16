@@ -145,9 +145,8 @@
 					</tr>
 				{:else}
 					<tr
-						><td
-							colspan={columns.length + (actions.length > 0 ? 1 : 0)}
-							class="bo-data-table-empty">{loading ? t.loading : (emptyMessage ?? t.empty)}</td
+						><td colspan={columns.length + (actions.length > 0 ? 1 : 0)} class="bo-data-table-empty"
+							>{loading ? t.loading : (emptyMessage ?? t.empty)}</td
 						></tr
 					>
 				{/each}
