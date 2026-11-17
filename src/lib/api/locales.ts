@@ -8,7 +8,7 @@ export function normalizeLanguage(value: string | null | undefined): string | nu
 }
 
 function browserLanguage(): string {
-	return typeof navigator === 'undefined' ? 'en' : (normalizeLanguage(navigator.language) ?? 'en');
+	return typeof navigator === 'undefined' ? 'fr' : (normalizeLanguage(navigator.language) ?? 'fr');
 }
 
 export const uiLanguage = writable<string | null>(null);
