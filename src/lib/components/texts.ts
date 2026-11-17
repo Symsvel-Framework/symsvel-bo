@@ -1,3 +1,5 @@
+import { generatedTranslation } from '../i18n/generated-translations';
+
 /** BO UI primitives use the same interface-language store as the host shell. */
 const copy = {
 	fr: {
@@ -39,5 +41,9 @@ const copy = {
 	}
 };
 export function boComponentCopy(language: string | null | undefined) {
-	return language?.toLowerCase().split('-')[0] === 'en' ? copy.en : copy.fr;
+	const base = language?.toLowerCase().split('-')[0] === 'en' ? copy.en : copy.fr;
+	return Object.fromEntries(Object.entries(base).map(([key, value]) => [
+		key,
+		typeof value === 'string' ? (generatedTranslation(language, `components.${key}`) ?? value) : value
+	])) as typeof copy.fr;
 }
