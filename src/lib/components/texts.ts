@@ -39,5 +39,5 @@ const copy = {
 	}
 };
 export function boComponentCopy(language: string | null | undefined) {
-	return language?.toLowerCase().startsWith('fr') ? copy.fr : copy.en;
+	return language?.toLowerCase().split('-')[0] === 'en' ? copy.en : copy.fr;
 }
