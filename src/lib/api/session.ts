@@ -222,6 +222,7 @@ export async function currentBo(): Promise<BoIdentity | null> {
 
 /** Revoke the backend refresh family even when no access token is in memory. */
 export async function logoutBo(): Promise<void> {
+	pendingSecondFactor = null;
 	const generation = ++sessionGeneration;
 	const priorRefresh = pendingRefresh?.promise;
 	const priorLogin = pendingLogin;
