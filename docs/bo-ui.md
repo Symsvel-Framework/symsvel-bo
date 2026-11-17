@@ -118,3 +118,10 @@ contrôles d'accès et reste la seule autorité pour les mutations.
 Les dictionnaires TypeScript produits par Languages et écrits en développement par Tooling sont attendus sous `src/lib/i18n/generated/<code-iso>.ts`. La fonction `generatedTranslation()` dans `src/lib/i18n/generated-translations.ts` les découvre au **build Vite** avec `import.meta.glob` et résout les objets imbriqués. Le fallback est effectué à la clé vers le dictionnaire français, sans modifier la langue du compte.
 
 Les libellés des composants natifs BO (`components.*`) utilisent ces dictionnaires lorsque la clé existe, avec repli sur les valeurs FR/EN intégrées. Les pages de modules qui utilisent leur propre système d'i18n doivent raccorder leurs clés au même helper ; les pages Languages utilisent `languages.*` et `languages.translations.*`. Les fonctions de mise en forme dynamiques restent portées par le code. Aucun chargement de BDD/Redis à l'exécution et aucun serveur Node en production. Un nouveau build/CD est nécessaire après toute modification de fichier généré.
+
+
+## Connexion avec module 2FA optionnel (17/11/2026)
+
+La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
+
+Après validation, `completeBoSecondFactor` appelle `/apibo/auth/browser/second-factor` avec le cookie HttpOnly géré par le serveur, vérifie `/apibo/auth/me` puis conserve uniquement l'access token en mémoire. La réponse peut afficher une seule fois les codes de secours ; les secrets refresh ne transitent pas par JavaScript. Le challenge disparaît après rechargement de page : il faut alors se reconnecter. La synchronisation du module Svelte et les CT de navigation sont requis avant release.
