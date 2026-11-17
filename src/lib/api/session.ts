@@ -31,12 +31,15 @@ export function pendingBoSecondFactor(): SecondFactorChallenge | null {
 function validSecondFactor(value: unknown): value is SecondFactorChallenge {
 	if (!value || typeof value !== 'object') return false;
 	const data = value as Partial<SecondFactorChallenge>;
-	return data.second_factor_required === true &&
-		typeof data.challenge === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.challenge) &&
+	return (
+		data.second_factor_required === true &&
+		typeof data.challenge === 'string' &&
+		/^[A-Za-z0-9_-]{43}$/.test(data.challenge) &&
 		typeof data.challenge_expires_at === 'string' &&
 		Number.isFinite(Date.parse(data.challenge_expires_at)) &&
 		Date.parse(data.challenge_expires_at) > Date.now() &&
-		typeof data.enrollment_required === 'boolean';
+		typeof data.enrollment_required === 'boolean'
+	);
 }
 
 let session: BrowserAccess | null = null;
@@ -174,7 +177,8 @@ export async function completeBoSecondFactor(code: string): Promise<string[]> {
 	if (!pending) throw new Error('No active second-factor challenge.');
 	const generation = sessionGeneration;
 	const access = await api<BrowserAccess & { recovery_codes?: string[] }>(
-		'/apibo/auth/browser/second-factor', {
+		'/apibo/auth/browser/second-factor',
+		{
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify({ challenge: pending.challenge, code })
