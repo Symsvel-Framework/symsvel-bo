@@ -113,7 +113,6 @@ Les tableaux réutilisent `DataTable` + `Pagination` avec une recherche,
 un tri et un découpage gérés par l'écran, comme dans XCore. L'API garde ses
 contrôles d'accès et reste la seule autorité pour les mutations.
 
-
 ## Traductions statiques générées (17/11/2026)
 
 Les dictionnaires TypeScript produits par Languages et écrits en développement par Tooling sont attendus sous `src/lib/i18n/generated/<code-iso>.ts`. La fonction `generatedTranslation()` dans `src/lib/i18n/generated-translations.ts` les découvre au **build Vite** avec `import.meta.glob` et résout les objets imbriqués. Le fallback est effectué à la clé vers le dictionnaire français, sans modifier la langue du compte.
