@@ -42,8 +42,9 @@ const copy = {
 };
 export function boComponentCopy(language: string | null | undefined) {
 	const base = language?.toLowerCase().split('-')[0] === 'en' ? copy.en : copy.fr;
-	return Object.fromEntries(Object.entries(base).map(([key, value]) => [
-		key,
-		typeof value === 'string' ? (generatedTranslation(language, `components.${key}`) ?? value) : value
-	])) as typeof copy.fr;
+	const entries = Object.entries(base).map(([key, value]) => {
+		if (typeof value !== 'string') return [key, value];
+		return [key, generatedTranslation(language, `components.${key}`) ?? value];
+	});
+	return Object.fromEntries(entries) as typeof copy.fr;
 }
