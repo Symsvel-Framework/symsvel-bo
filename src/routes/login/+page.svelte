@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ApiError } from '../../lib/api/client';
-	import { loginBo } from '../../lib/api/session';
+	import { loginBo, SecondFactorRequired } from '../../lib/api/session';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
@@ -19,6 +19,12 @@
 			password = '';
 			await goto(resolve('/dashboard'), { replaceState: true });
 		} catch (cause) {
+			if (cause instanceof SecondFactorRequired) {
+				password = '';
+				await goto(resolve('/').replace(/\/$/, '') + '/two-factor');
+				return;
+			}
+
 			error =
 				cause instanceof ApiError && cause.status === 401
 					? 'Identifiants incorrects.'
