@@ -21,6 +21,8 @@
 		} catch (cause) {
 			if (cause instanceof SecondFactorRequired) {
 				password = '';
+				// Dynamically supplied by the optional TwoFactor module.
+				// eslint-disable-next-line svelte/no-navigation-without-resolve
 				await goto(resolve('/').replace(/\/$/, '') + '/two-factor');
 				return;
 			}
