@@ -8,6 +8,37 @@ type BrowserAccess = {
 	token_type: 'Bearer';
 };
 
+export type SecondFactorChallenge = {
+	second_factor_required: true;
+	challenge: string;
+	challenge_expires_at: string;
+	enrollment_required: boolean;
+	totp_secret?: string;
+	provisioning_uri?: string;
+};
+export class SecondFactorRequired extends Error {
+	constructor() {
+		super('Additional authentication required');
+		this.name = 'SecondFactorRequired';
+	}
+}
+let pendingSecondFactor: SecondFactorChallenge | null = null;
+export function pendingBoSecondFactor(): SecondFactorChallenge | null {
+	return pendingSecondFactor && Date.parse(pendingSecondFactor.challenge_expires_at) > Date.now()
+		? pendingSecondFactor
+		: null;
+}
+function validSecondFactor(value: unknown): value is SecondFactorChallenge {
+	if (!value || typeof value !== 'object') return false;
+	const data = value as Partial<SecondFactorChallenge>;
+	return data.second_factor_required === true &&
+		typeof data.challenge === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.challenge) &&
+		typeof data.challenge_expires_at === 'string' &&
+		Number.isFinite(Date.parse(data.challenge_expires_at)) &&
+		Date.parse(data.challenge_expires_at) > Date.now() &&
+		typeof data.enrollment_required === 'boolean';
+}
+
 let session: BrowserAccess | null = null;
 let sessionGeneration = 0;
 let pendingRefresh: { generation: number; promise: Promise<BrowserAccess | null> } | null = null;
@@ -82,18 +113,23 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 	const previousRefresh = pendingRefresh?.promise;
 	const previousLogin = pendingLogin;
 	session = null;
+	pendingSecondFactor = null;
 	pendingRefresh = null;
 	const operation = (async (): Promise<BoIdentity> => {
 		// Avoid an old in-flight response overwriting a newer session cookie.
 		if (previousRefresh) await previousRefresh.catch(() => null);
 		if (previousLogin) await previousLogin.catch(() => null);
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
-		const access = await api<BrowserAccess>('/apibo/auth/browser/login', {
+		const access = await api<BrowserAccess | SecondFactorChallenge>('/apibo/auth/browser/login', {
 			method: 'POST',
 			credentials: 'include',
 			body: JSON.stringify({ email, password })
 		});
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
+		if (validSecondFactor(access)) {
+			pendingSecondFactor = access;
+			throw new SecondFactorRequired();
+		}
 		if (!validAccess(access)) {
 			throw new Error('Invalid authentication response');
 		}
@@ -127,6 +163,36 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 	} finally {
 		if (pendingLogin === operation) pendingLogin = null;
 	}
+}
+
+/**
+ * Complete a 2FA challenge without exposing the HttpOnly BO refresh secret.
+ * Full session state is committed only after /apibo/auth/me succeeds.
+ */
+export async function completeBoSecondFactor(code: string): Promise<string[]> {
+	const pending = pendingBoSecondFactor();
+	if (!pending) throw new Error('No active second-factor challenge.');
+	const generation = sessionGeneration;
+	const access = await api<BrowserAccess & { recovery_codes?: string[] }>(
+		'/apibo/auth/browser/second-factor', {
+			method: 'POST',
+			credentials: 'include',
+			body: JSON.stringify({ challenge: pending.challenge, code })
+		}
+	);
+	if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
+	if (!validAccess(access)) throw new Error('Invalid second-factor response');
+	const identity = await api<BoIdentity>('/apibo/auth/me', { accessToken: access.access_token });
+	if (generation !== sessionGeneration || !validIdentity(identity)) {
+		throw new Error('Invalid BO identity after 2FA');
+	}
+	session = {
+		access_token: access.access_token,
+		expires_at: access.expires_at,
+		token_type: 'Bearer'
+	};
+	pendingSecondFactor = null;
+	return Array.isArray(access.recovery_codes) ? access.recovery_codes : [];
 }
 
 /** Full page reload: recover the access token from the server cookie. */
