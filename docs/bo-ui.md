@@ -119,7 +119,6 @@ Les dictionnaires TypeScript produits par Languages et écrits en développement
 
 Les libellés des composants natifs BO (`components.*`) utilisent ces dictionnaires lorsque la clé existe, avec repli sur les valeurs FR/EN intégrées. Les pages de modules qui utilisent leur propre système d'i18n doivent raccorder leurs clés au même helper ; les pages Languages utilisent `languages.*` et `languages.translations.*`. Les fonctions de mise en forme dynamiques restent portées par le code. Aucun chargement de BDD/Redis à l'exécution et aucun serveur Node en production. Un nouveau build/CD est nécessaire après toute modification de fichier généré.
 
-
 ## Connexion avec module 2FA optionnel (17/11/2026)
 
 La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
