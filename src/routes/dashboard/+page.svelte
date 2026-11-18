@@ -28,9 +28,14 @@
 			unavailable: 'Modules were detected, but no read endpoint was permitted or available.'
 		}
 	};
-	const t = $derived(Object.fromEntries(Object.entries(copy[language]).map(([key, fallback]) => [
-		key, generatedTranslation($uiLanguage, `bo.system.dashboard.${key}`) ?? fallback
-	])) as typeof copy.fr);
+	const t = $derived(
+		Object.fromEntries(
+			Object.entries(copy[language]).map(([key, fallback]) => [
+				key,
+				generatedTranslation($uiLanguage, `bo.system.dashboard.${key}`) ?? fallback
+			])
+		) as typeof copy.fr
+	);
 </script>
 
 <svelte:head><title>{t.dashboard} | SymSvel BO</title></svelte:head>

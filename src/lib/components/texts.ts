@@ -49,13 +49,17 @@ export function boComponentCopy(language: string | null | undefined) {
 	const result = Object.fromEntries(entries) as typeof copy.fr;
 	const countPattern = generatedTranslation(language, 'bo.system.count');
 	if (countPattern !== null) {
-		result.count = (first, last, total) => countPattern.replace(/\{(first|last|total)\}/g, (_, part: string) =>
-			String(({ first, last, total } as Record<string, number>)[part]));
+		result.count = (first, last, total) =>
+			countPattern.replace(/\{(first|last|total)\}/g, (_, part: string) =>
+				String(({ first, last, total } as Record<string, number>)[part])
+			);
 	}
 	const pagePattern = generatedTranslation(language, 'bo.system.page');
 	if (pagePattern !== null) {
-		result.page = (current, total) => pagePattern.replace(/\{(current|total)\}/g, (_, part: string) =>
-			String(({ current, total } as Record<string, number>)[part]));
+		result.page = (current, total) =>
+			pagePattern.replace(/\{(current|total)\}/g, (_, part: string) =>
+				String(({ current, total } as Record<string, number>)[part])
+			);
 	}
 	return result;
 }

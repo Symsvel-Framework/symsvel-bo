@@ -9,13 +9,19 @@
 	// Auth owns the sign-in words even though this native route lives in BO.
 	const t = $derived({
 		title: generatedTranslation($uiLanguage, 'bo.auth.signIn.title') ?? 'Connexion',
-		intro: generatedTranslation($uiLanguage, 'bo.auth.signIn.intro') ?? 'Connectez-vous à l’administration.',
+		intro:
+			generatedTranslation($uiLanguage, 'bo.auth.signIn.intro') ??
+			'Connectez-vous à l’administration.',
 		email: generatedTranslation($uiLanguage, 'bo.auth.signIn.email') ?? 'Adresse e-mail',
 		password: generatedTranslation($uiLanguage, 'bo.auth.signIn.password') ?? 'Mot de passe',
 		busy: generatedTranslation($uiLanguage, 'bo.auth.signIn.busy') ?? 'Connexion…',
 		submit: generatedTranslation($uiLanguage, 'bo.auth.signIn.submit') ?? 'Se connecter',
-		invalidCredentials: generatedTranslation($uiLanguage, 'bo.auth.signIn.invalidCredentials') ?? 'Identifiants incorrects.',
-		failure: generatedTranslation($uiLanguage, 'bo.auth.signIn.failure') ?? 'Connexion impossible pour le moment.'
+		invalidCredentials:
+			generatedTranslation($uiLanguage, 'bo.auth.signIn.invalidCredentials') ??
+			'Identifiants incorrects.',
+		failure:
+			generatedTranslation($uiLanguage, 'bo.auth.signIn.failure') ??
+			'Connexion impossible pour le moment.'
 	});
 
 	let email = $state('');
@@ -41,10 +47,7 @@
 				return;
 			}
 
-			error =
-				cause instanceof ApiError && cause.status === 401
-					? t.invalidCredentials
-					: t.failure;
+			error = cause instanceof ApiError && cause.status === 401 ? t.invalidCredentials : t.failure;
 		} finally {
 			loading = false;
 		}
