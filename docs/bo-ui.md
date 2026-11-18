@@ -156,3 +156,16 @@ l'autorité sur l'expiration réelle, les essais TOTP et la consommation du
 challenge. Les tests unitaires simulent un rechargement de module, une
 expiration, un stockage inaccessible et la suppression après succès, nouvelle
 connexion et déconnexion. Crash-test local encore requis.
+
+### QR TOTP du module TwoFactor (18/11/2026)
+
+Le module optionnel TwoFactor affiche un QR code créé **localement dans le navigateur**
+à partir de l'URI `otpauth://` transmise par Auth. Les dépendances
+`qrcode@^1.5.4` et `@types/qrcode@^1.5.5` sont installées par le BO hôte ;
+elles ne sont incluses dans le build statique que lorsque la route du module
+les importe. Aucun service QR externe et aucun changement des tokens ou cookies BO.
+La clé manuelle reste disponible dans un volet de secours.
+
+Sur un projet existant, lancer `symsvel update bo` **avant** de synchroniser
+la nouvelle version de TwoFactor pour disposer des dépendances npm. Le build
+statique et le CT local du scan restent requis.
