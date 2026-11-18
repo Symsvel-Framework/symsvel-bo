@@ -46,5 +46,16 @@ export function boComponentCopy(language: string | null | undefined) {
 		if (typeof value !== 'string') return [key, value];
 		return [key, generatedTranslation(language, `bo.system.${key}`) ?? value];
 	});
-	return Object.fromEntries(entries) as typeof copy.fr;
+	const result = Object.fromEntries(entries) as typeof copy.fr;
+	const countPattern = generatedTranslation(language, 'bo.system.count');
+	if (countPattern !== null) {
+		result.count = (first, last, total) => countPattern.replace(/\{(first|last|total)\}/g, (_, part: string) =>
+			String(({ first, last, total } as Record<string, number>)[part]));
+	}
+	const pagePattern = generatedTranslation(language, 'bo.system.page');
+	if (pagePattern !== null) {
+		result.page = (current, total) => pagePattern.replace(/\{(current|total)\}/g, (_, part: string) =>
+			String(({ current, total } as Record<string, number>)[part]));
+	}
+	return result;
 }

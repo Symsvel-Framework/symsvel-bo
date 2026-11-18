@@ -12,5 +12,7 @@ export default {
   "next": "Next page",
   "last": "Last page",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "count": "{first}–{last} of {total} results",
+  "page": "Page {current} / {total}"
 } as const;

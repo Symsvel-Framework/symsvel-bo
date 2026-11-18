@@ -52,3 +52,5 @@ Vérifications : tests de sélection FR/EN/autres locales et tests de build/CI. 
 ## Traductions des composants natifs et des modules (18/11/2026)
 
 Les dictionnaires système vivent sous `src/lib/translations/system/<lang>.ts`. Tooling copie ceux des modules sous `src/lib/translations/<module>/<lang>.ts`. Le helper i18n lit la convention `<scope>.<module|system>.<key>` et privilégie les personnalisations publiées (`src/lib/translations/generated`) puis les anciens fichiers `src/lib/i18n/generated` encore présents, avant les valeurs source. Les fichiers sont chargés à la compilation SvelteKit, sans API runtime et avec fallback par clé.
+
+Les libellés de pagination à paramètres (`bo.system.count` et `bo.system.page`) utilisent des modèles textuels avec placeholders limités (`{first}`, `{last}`, `{total}`, `{current}`). Les fonctions d'affichage les substituent sans évaluer de code, et conservent les formats FR/EN historiques.
