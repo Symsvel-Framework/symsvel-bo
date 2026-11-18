@@ -1,9 +1,11 @@
 # Interface BO commune
 
 Le BO hôte rend un shell unique via `src/routes/+layout.svelte` et
-`src/lib/components/AppShell.svelte`. Les routes `/`, `/login` et `/auth/*`
-(activation et récupération) restent publiques. Le shell appelle `currentBo()`
-avant de rendre les pages privées ; il persiste pendant les navigations internes.
+`src/lib/components/AppShell.svelte`. Les routes `/`, `/login`, `/auth/*`
+(activation et récupération) et `/two-factor` (challenge pré-session)
+sont rendues **sans shell authentifié** via `src/lib/bo/public-routes.ts`.
+Le shell appelle `currentBo()` avant de rendre les pages privées ; il persiste
+pendant les navigations internes.
 Le cookie HttpOnly et le Bearer restent gérés dans `src/lib/api/session.ts`.
 
 La sidebar contient Dashboard et les déclarations installées dans
@@ -124,3 +126,15 @@ Les libellés des composants natifs BO (`components.*`) utilisent ces dictionnai
 La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
 
 Après validation, `completeBoSecondFactor` appelle `/apibo/auth/browser/second-factor` avec le cookie HttpOnly géré par le serveur, vérifie `/apibo/auth/me` puis conserve uniquement l'access token en mémoire. La réponse peut afficher une seule fois les codes de secours ; les secrets refresh ne transitent pas par JavaScript. Le challenge disparaît après rechargement de page : il faut alors se reconnecter. La synchronisation du module Svelte et les CT de navigation sont requis avant release.
+
+La route `/two-factor` ne doit **jamais** monter `AppShell` : à ce stade, le
+challenge HTTP 202 n'a pas encore émis de cookie refresh, donc un
+`/apibo/auth/browser/refresh` déclenché par `currentBo()` retournerait
+légitimement `401 invalid_session` et interromprait le parcours. La route
+reste publique uniquement **au niveau du rendu Svelte** ; aucun token BO
+n'est accordé sans validation du code TOTP ou de secours par Auth. Le test
+`src/lib/bo/public-routes.test.ts` vérifie les routes pré-session et le
+maintien de la protection des routes privées. En CT, vérifier le parcours
+login → challenge 202 → saisie 2FA → dashboard **sans appel prématuré au
+refresh**, ainsi que le rechargement du dashboard avec cookie valide.
+
