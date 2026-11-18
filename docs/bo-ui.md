@@ -137,4 +137,3 @@ n'est accordé sans validation du code TOTP ou de secours par Auth. Le test
 maintien de la protection des routes privées. En CT, vérifier le parcours
 login → challenge 202 → saisie 2FA → dashboard **sans appel prématuré au
 refresh**, ainsi que le rechargement du dashboard avec cookie valide.
-
