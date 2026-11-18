@@ -64,3 +64,7 @@ Le tableau de bord de l'hôte BO est un composant natif : ses libellés sont dé
 ### Stabilité des dictionnaires TypeScript
 
 Le dossier `src/lib/translations/**` est exclu de Prettier : ses fichiers `.ts` sont des exports JSON strictement compatibles (`export default {"key":"value"} as const;`) que Tooling lit comme données, sans exécuter TypeScript. L'exclusion préserve l'intégrité des fichiers issus des modules et des dictionnaires publiés par Languages. Les autres sources BO continuent d'être formatées normalement.
+
+### Contrôle de CI sur branche de travail
+
+La CI a été exécutée sur la branche de traduction avec les runners locaux ; le déclencheur temporaire de cette branche a ensuite été retiré, et les règles de publication/restauration du workflow (`dev`, `main` et PR selon le dépôt) ont été conservées. Les CT XT restent requis avant merge.
