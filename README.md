@@ -72,3 +72,7 @@ La CI a été exécutée sur la branche de traduction avec les runners locaux ; 
 ### Shell BO : propriété des traductions (18/11/2026)
 
 La navigation native, les alertes et le menu du shell appartiennent à `bo.system.shell.*`. Les états de connexion et la déconnexion sont rattachés à Auth (`bo.auth.session.*`). Le libellé de compte administrateur est rattaché à Admins (`bo.admins.account.administrator`). Le composant conserve ses fallbacks historiques et n'effectue aucun appel de traduction runtime.
+
+### Validation finale de la passe dictionnaires (18/11/2026)
+
+La CI complète de la branche de traduction, incluant les tests de synchronisation et la documentation Maker pour Tooling, ou les composants natifs du shell pour BO, a réussi sur les runners locaux. Le déclencheur CI temporaire de la branche a été retiré. La validation ne remplace pas les crash-tests XT ni les essais de migration multibase avant merge.
