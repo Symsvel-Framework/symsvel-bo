@@ -48,3 +48,7 @@ Le runner doit rester disponible pour les événements `push` et `pull_request`.
 Les libellés intégrés de l'interface sont sélectionnés à partir de la langue d'interface (code ISO du navigateur ou du compte). Lorsque la locale n'a pas de dictionnaire intégré, les libellés français sont utilisés ; l'anglais reste disponible explicitement pour `en`. Le fallback ne modifie ni la langue ISO du site ni celle du compte et n'impose pas l'existence de traductions avant l'installation. Le repli doit être réalisé à la clé lors de l'introduction des dictionnaires dynamiques ; l'éditeur BO des traductions et le chargement fichier/BDD ne sont pas fournis par cette seule correction.
 
 Vérifications : tests de sélection FR/EN/autres locales et tests de build/CI. La validation finale nécessite les crash-tests locaux sur le parcours Setup, BO et App.
+
+## Traductions des composants natifs et des modules (18/11/2026)
+
+Les dictionnaires système vivent sous `src/lib/translations/system/<lang>.ts`. Tooling copie ceux des modules sous `src/lib/translations/<module>/<lang>.ts`. Le helper i18n lit la convention `<scope>.<module|system>.<key>` et privilégie les personnalisations publiées (`src/lib/translations/generated`) puis les anciens fichiers `src/lib/i18n/generated` encore présents, avant les valeurs source. Les fichiers sont chargés à la compilation SvelteKit, sans API runtime et avec fallback par clé.

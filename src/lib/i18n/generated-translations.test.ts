@@ -11,5 +11,7 @@ describe('generated translations', () => {
 	});
 	it('does not require generated files to exist for an initial build', () => {
 		expect(generatedTranslation('fr', 'nonexistent.testing')).toBeNull();
+		expect(generatedTranslation('fr', 'bo.system.first')).toBe('Première page');
+		expect(generatedTranslation('en', 'bo.system.next')).toBe('Next page');
 	});
 });
