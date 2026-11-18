@@ -3,7 +3,8 @@
 Le BO hôte rend un shell unique via `src/routes/+layout.svelte` et
 `src/lib/components/AppShell.svelte`. Les routes `/`, `/login`, `/auth/*`
 (activation et récupération) et `/two-factor` (challenge pré-session)
-sont rendues **sans shell authentifié** via `src/lib/bo/public-routes.ts`.
+sont rendues **sans shell authentifié** via `src/lib/bo/public-routes.ts`,
+importé relativement depuis le layout afin d'être résolu par Svelte/TypeScript.
 Le shell appelle `currentBo()` avant de rendre les pages privées ; il persiste
 pendant les navigations internes.
 Le cookie HttpOnly et le Bearer restent gérés dans `src/lib/api/session.ts`.

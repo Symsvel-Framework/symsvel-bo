@@ -1,7 +1,7 @@
 <script lang="ts">
 	import favicon from '#lib/assets/favicon.svg';
 	import AppShell from '#lib/components/AppShell.svelte';
-	import { isPublicBoRoute } from '#lib/bo/public-routes';
+	import { isPublicBoRoute } from '../lib/bo/public-routes';
 	import { page } from '$app/state';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
