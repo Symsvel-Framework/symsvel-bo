@@ -60,3 +60,7 @@ Compatibilité : lors de la migration de `components.*` vers `bo.system.*`, la l
 ### Propriété des clés natives BO (18/11/2026)
 
 Le tableau de bord de l'hôte BO est un composant natif : ses libellés sont déclarés sous `bo.system.dashboard.*` dans `src/lib/translations/system/{fr,en}.ts`. À l'inverse, la route native `/login` relève fonctionnellement du module Auth : elle consomme `bo.auth.signIn.*` fourni par `symsvel-module-auth`, avec les libellés français historiques comme fallback avant synchronisation. Les routes ne sont pas déplacées et les composants restent légers.
+
+### Stabilité des dictionnaires TypeScript
+
+Le dossier `src/lib/translations/**` est exclu de Prettier : ses fichiers `.ts` sont des exports JSON strictement compatibles (`export default {"key":"value"} as const;`) que Tooling lit comme données, sans exécuter TypeScript. L'exclusion préserve l'intégrité des fichiers issus des modules et des dictionnaires publiés par Languages. Les autres sources BO continuent d'être formatées normalement.
