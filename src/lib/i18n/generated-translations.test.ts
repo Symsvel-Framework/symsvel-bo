@@ -13,5 +13,6 @@ describe('generated translations', () => {
 		expect(generatedTranslation('fr', 'nonexistent.testing')).toBeNull();
 		expect(generatedTranslation('fr', 'bo.system.first')).toBe('Première page');
 		expect(generatedTranslation('en', 'bo.system.next')).toBe('Next page');
+		expect(generatedTranslation('fr', 'bo.system.page')).toBe('Page {current} / {total}');
 	});
 });
