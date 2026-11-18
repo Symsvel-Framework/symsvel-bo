@@ -49,12 +49,19 @@
 			loading: 'Checking permitted modules…'
 		}
 	};
-	const t = $derived(Object.fromEntries(Object.entries(copy[language]).map(([key, fallback]) => {
-	  const path = key === 'logout' || key === 'checking'
-	    ? `bo.auth.session.${key}`
-	    : key === 'administrator' ? 'bo.admins.account.administrator' : `bo.system.shell.${key}`;
-	  return [key, generatedTranslation($uiLanguage, path) ?? fallback];
-	})) as typeof copy.fr);
+	const t = $derived(
+		Object.fromEntries(
+			Object.entries(copy[language]).map(([key, fallback]) => {
+				const path =
+					key === 'logout' || key === 'checking'
+						? `bo.auth.session.${key}`
+						: key === 'administrator'
+							? 'bo.admins.account.administrator'
+							: `bo.system.shell.${key}`;
+				return [key, generatedTranslation($uiLanguage, path) ?? fallback];
+			})
+		) as typeof copy.fr
+	);
 
 	setContext<BoShellContext>(boShellKey, {
 		get identity() {
