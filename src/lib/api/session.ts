@@ -61,7 +61,7 @@ export function pendingBoSecondFactor(): SecondFactorChallenge | null {
 		clearPendingBoSecondFactor();
 		return null;
 	}
-	let raw: string | null = null;
+	let raw: string | null;
 	try {
 		raw = challengeStorage()?.getItem(BO_CHALLENGE_KEY) ?? null;
 	} catch {
