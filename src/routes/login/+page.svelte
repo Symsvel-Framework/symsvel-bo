@@ -3,6 +3,20 @@
 	import { loginBo, SecondFactorRequired } from '../../lib/api/session';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { uiLanguage } from '../../lib/api/locales';
+	import { generatedTranslation } from '../../lib/i18n/generated-translations';
+
+	// Auth owns the sign-in words even though this native route lives in BO.
+	const t = $derived({
+		title: generatedTranslation($uiLanguage, 'bo.auth.signIn.title') ?? 'Connexion',
+		intro: generatedTranslation($uiLanguage, 'bo.auth.signIn.intro') ?? 'Connectez-vous à l’administration.',
+		email: generatedTranslation($uiLanguage, 'bo.auth.signIn.email') ?? 'Adresse e-mail',
+		password: generatedTranslation($uiLanguage, 'bo.auth.signIn.password') ?? 'Mot de passe',
+		busy: generatedTranslation($uiLanguage, 'bo.auth.signIn.busy') ?? 'Connexion…',
+		submit: generatedTranslation($uiLanguage, 'bo.auth.signIn.submit') ?? 'Se connecter',
+		invalidCredentials: generatedTranslation($uiLanguage, 'bo.auth.signIn.invalidCredentials') ?? 'Identifiants incorrects.',
+		failure: generatedTranslation($uiLanguage, 'bo.auth.signIn.failure') ?? 'Connexion impossible pour le moment.'
+	});
 
 	let email = $state('');
 	let password = $state('');
@@ -29,8 +43,8 @@
 
 			error =
 				cause instanceof ApiError && cause.status === 401
-					? 'Identifiants incorrects.'
-					: 'Connexion impossible pour le moment.';
+					? t.invalidCredentials
+					: t.failure;
 		} finally {
 			loading = false;
 		}
@@ -38,19 +52,19 @@
 </script>
 
 <svelte:head>
-	<title>Connexion | SymSvel BO</title>
+	<title>{t.title} | SymSvel BO</title>
 </svelte:head>
 
 <main class="auth-shell">
 	<section class="auth-card" aria-labelledby="login-title">
 		<header><strong>SymSvel</strong><span>BO</span></header>
-		<h1 id="login-title">Connexion</h1>
-		<p>Connectez-vous à l’administration.</p>
+		<h1 id="login-title">{t.title}</h1>
+		<p>{t.intro}</p>
 		{#if error}<div class="alert" role="alert">{error}</div>{/if}
 		<form class="form" onsubmit={submit}>
-			<label for="email">Adresse e-mail</label>
+			<label for="email">{t.email}</label>
 			<input id="email" type="email" autocomplete="username" bind:value={email} required />
-			<label for="password">Mot de passe</label>
+			<label for="password">{t.password}</label>
 			<input
 				id="password"
 				type="password"
@@ -58,7 +72,7 @@
 				bind:value={password}
 				required
 			/>
-			<button type="submit" disabled={loading}>{loading ? 'Connexion…' : 'Se connecter'}</button>
+			<button type="submit" disabled={loading}>{loading ? t.busy : t.submit}</button>
 		</form>
 	</section>
 </main>

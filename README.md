@@ -56,3 +56,7 @@ Les dictionnaires système vivent sous `src/lib/translations/system/<lang>.ts`. 
 Les libellés de pagination à paramètres (`bo.system.count` et `bo.system.page`) utilisent des modèles textuels avec placeholders limités (`{first}`, `{last}`, `{total}`, `{current}`). Les fonctions d'affichage les substituent sans évaluer de code, et conservent les formats FR/EN historiques.
 
 Compatibilité : lors de la migration de `components.*` vers `bo.system.*`, la lecture des anciens fichiers `lib/i18n/generated` peut encore consulter `components.<clé>`. Languages copie les personnalisations BDD historiques vers `system.<clé>` sans détruire les anciennes lignes.
+
+### Propriété des clés natives BO (18/11/2026)
+
+Le tableau de bord de l'hôte BO est un composant natif : ses libellés sont déclarés sous `bo.system.dashboard.*` dans `src/lib/translations/system/{fr,en}.ts`. À l'inverse, la route native `/login` relève fonctionnellement du module Auth : elle consomme `bo.auth.signIn.*` fourni par `symsvel-module-auth`, avec les libellés français historiques comme fallback avant synchronisation. Les routes ne sont pas déplacées et les composants restent légers.

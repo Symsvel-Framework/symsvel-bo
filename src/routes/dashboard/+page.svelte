@@ -3,6 +3,7 @@
 	import type { Path } from '$app/types';
 	import { uiLanguage } from '../../lib/api/locales';
 	import { getBoShell } from '../../lib/bo/context';
+	import { generatedTranslation } from '../../lib/i18n/generated-translations';
 
 	const shell = getBoShell();
 	const modules = $derived(shell.modules);
@@ -27,7 +28,9 @@
 			unavailable: 'Modules were detected, but no read endpoint was permitted or available.'
 		}
 	};
-	const t = $derived(copy[language]);
+	const t = $derived(Object.fromEntries(Object.entries(copy[language]).map(([key, fallback]) => [
+		key, generatedTranslation($uiLanguage, `bo.system.dashboard.${key}`) ?? fallback
+	])) as typeof copy.fr);
 </script>
 
 <svelte:head><title>{t.dashboard} | SymSvel BO</title></svelte:head>

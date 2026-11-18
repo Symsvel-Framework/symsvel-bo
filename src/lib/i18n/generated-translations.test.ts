@@ -14,5 +14,7 @@ describe('generated translations', () => {
 		expect(generatedTranslation('fr', 'bo.system.first')).toBe('Première page');
 		expect(generatedTranslation('en', 'bo.system.next')).toBe('Next page');
 		expect(generatedTranslation('fr', 'bo.system.page')).toBe('Page {current} / {total}');
+		expect(generatedTranslation('fr', 'bo.system.dashboard.modules')).toBe('Modules disponibles');
+		expect(generatedTranslation('en', 'bo.system.dashboard.dashboard')).toBe('Dashboard');
 	});
 });

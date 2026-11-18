@@ -14,5 +14,14 @@ export default {
   "yes": "Oui",
   "no": "Non",
   "count": "{first}–{last} sur {total} résultats",
-  "page": "Page {current} / {total}"
+  "page": "Page {current} / {total}",
+  "dashboard": {
+    "dashboard": "Tableau de bord",
+    "session": "Session BO vérifiée.",
+    "modules": "Modules disponibles",
+    "detected": "Modules détectés dans ce build",
+    "loading": "Chargement des modules autorisés…",
+    "missingBuild": "Aucune navigation modulaire détectée dans ce build BO.",
+    "unavailable": "Modules détectés, mais aucun endpoint de lecture autorisé ou disponible."
+  }
 } as const;
