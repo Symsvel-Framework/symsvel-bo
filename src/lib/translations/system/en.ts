@@ -23,5 +23,13 @@ export default {
     "loading": "Checking permitted modules…",
     "missingBuild": "No installed module navigation detected in this BO build.",
     "unavailable": "Modules were detected, but no read endpoint was permitted or available."
+  },
+  "shell": {
+    "dashboard": "Dashboard",
+    "modules": "Modules",
+    "navigation": "Main navigation",
+    "account": "Administrator menu",
+    "alerts": "System alerts",
+    "loading": "Checking permitted modules…"
   }
 } as const;

@@ -14,6 +14,7 @@
 		type BoSystemAlert
 	} from '../bo/navigation';
 	import { boShellKey, type BoShellContext } from '../bo/context';
+	import { generatedTranslation } from '../i18n/generated-translations';
 
 	let { children }: { children: Snippet } = $props();
 	let identity = $state<BoIdentity | null>(null);
@@ -48,7 +49,12 @@
 			loading: 'Checking permitted modules…'
 		}
 	};
-	const t = $derived(copy[language]);
+	const t = $derived(Object.fromEntries(Object.entries(copy[language]).map(([key, fallback]) => {
+	  const path = key === 'logout' || key === 'checking'
+	    ? `bo.auth.session.${key}`
+	    : key === 'administrator' ? 'bo.admins.account.administrator' : `bo.system.shell.${key}`;
+	  return [key, generatedTranslation($uiLanguage, path) ?? fallback];
+	})) as typeof copy.fr);
 
 	setContext<BoShellContext>(boShellKey, {
 		get identity() {

@@ -23,5 +23,13 @@ export default {
     "loading": "Chargement des modules autorisés…",
     "missingBuild": "Aucune navigation modulaire détectée dans ce build BO.",
     "unavailable": "Modules détectés, mais aucun endpoint de lecture autorisé ou disponible."
+  },
+  "shell": {
+    "dashboard": "Tableau de bord",
+    "modules": "Modules",
+    "navigation": "Navigation principale",
+    "account": "Menu administrateur",
+    "alerts": "Alertes système",
+    "loading": "Chargement des modules autorisés…"
   }
 } as const;

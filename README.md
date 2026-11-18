@@ -68,3 +68,7 @@ Le dossier `src/lib/translations/**` est exclu de Prettier : ses fichiers `.ts` 
 ### Contrôle de CI sur branche de travail
 
 La CI a été exécutée sur la branche de traduction avec les runners locaux ; le déclencheur temporaire de cette branche a ensuite été retiré, et les règles de publication/restauration du workflow (`dev`, `main` et PR selon le dépôt) ont été conservées. Les CT XT restent requis avant merge.
+
+### Shell BO : propriété des traductions (18/11/2026)
+
+La navigation native, les alertes et le menu du shell appartiennent à `bo.system.shell.*`. Les états de connexion et la déconnexion sont rattachés à Auth (`bo.auth.session.*`). Le libellé de compte administrateur est rattaché à Admins (`bo.admins.account.administrator`). Le composant conserve ses fallbacks historiques et n'effectue aucun appel de traduction runtime.
