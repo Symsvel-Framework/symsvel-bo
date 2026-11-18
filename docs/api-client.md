@@ -142,3 +142,17 @@ Le transport cookie supporte aussi, en environnement Symfony dev uniquement, un 
 Le shell d'interface décrit dans [bo-ui.md](bo-ui.md) valide `currentBo()`
 une fois à son montage et conserve la navigation entre les pages. Chaque module
 appelle toujours `boApi` pour ses propres opérations ; l'ACL reste côté PHP.
+
+## Challenge BO 2FA par onglet (18/11/2026)
+
+Le client central `session.ts` conserve le challenge HTTP 202 du module Auth
+dans `sessionStorage` pour permettre à la page Svelte `/two-factor` de le
+récupérer après un rechargement complet (comportement déjà éprouvé dans XCore).
+Un contenu expiré, malformé ou excessif est purgé ; toute nouvelle connexion,
+déconnexion ou vérification 2FA réussie efface également la valeur. La réponse
+d'enrôlement contient temporairement la clé TOTP ; aucune identité authentifiée,
+aucun access token ni secret refresh n'est enregistré dans ce stockage. Le
+refresh HttpOnly n'est émis qu'après réussite du second facteur. L'absence de
+`sessionStorage` conserve le repli mémoire, limité à la vie du document.
+La CI couvre la restauration après réimport du module ; le CT sur un vrai
+navigateur et le backend local restent obligatoires.

@@ -124,9 +124,9 @@ Les libellés des composants natifs BO (`components.*`) utilisent ces dictionnai
 
 ## Connexion avec module 2FA optionnel (17/11/2026)
 
-La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
+La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire et dans `sessionStorage` propre à l'onglet** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
 
-Après validation, `completeBoSecondFactor` appelle `/apibo/auth/browser/second-factor` avec le cookie HttpOnly géré par le serveur, vérifie `/apibo/auth/me` puis conserve uniquement l'access token en mémoire. La réponse peut afficher une seule fois les codes de secours ; les secrets refresh ne transitent pas par JavaScript. Le challenge disparaît après rechargement de page : il faut alors se reconnecter. La synchronisation du module Svelte et les CT de navigation sont requis avant release.
+Après validation, `completeBoSecondFactor` appelle `/apibo/auth/browser/second-factor` avec le cookie HttpOnly géré par le serveur, vérifie `/apibo/auth/me` puis conserve uniquement l'access token en mémoire. La réponse peut afficher une seule fois les codes de secours ; les secrets refresh ne transitent pas par JavaScript. Le challenge persiste lors d'un rechargement de page dans le même onglet, jusqu'à son expiration côté serveur (5 minutes). Une nouvelle connexion, la déconnexion, une valeur invalide/expirée ou une validation 2FA réussie purgent ce stockage. Si `sessionStorage` est interdit par le navigateur, le challenge reste en mémoire jusqu'au rechargement. La synchronisation du module Svelte et les CT de navigation sont requis avant release.
 
 La route `/two-factor` ne doit **jamais** monter `AppShell` : à ce stade, le
 challenge HTTP 202 n'a pas encore émis de cookie refresh, donc un
@@ -138,3 +138,21 @@ n'est accordé sans validation du code TOTP ou de secours par Auth. Le test
 maintien de la protection des routes privées. En CT, vérifier le parcours
 login → challenge 202 → saisie 2FA → dashboard **sans appel prématuré au
 refresh**, ainsi que le rechargement du dashboard avec cookie valide.
+
+### Persistance pré-session du challenge (18/11/2026)
+
+Conformément au parcours XCore historique, le challenge 2FA est restauré depuis
+`sessionStorage['symsvel.bo.second-factor.challenge']` si la navigation a
+réinitialisé le module Svelte/JavaScript. Ce stockage est limité à l'onglet et
+ne contient **ni token access, ni token refresh, ni mot de passe**. Il contient
+le challenge opaque et, uniquement lors de l'enrôlement, la clé et l'URI TOTP
+déjà transmises à la page par Auth ; ces données sont sensibles, doivent rester
+éphémères et ne sont jamais recopiées vers `localStorage`.
+
+L'accès au stockage est protégé contre les refus du navigateur, les contenus
+corrompus ou anormalement volumineux sont supprimés, et l'expiration de la
+réponse Auth est revérifiée à chaque récupération. Le serveur conserve
+l'autorité sur l'expiration réelle, les essais TOTP et la consommation du
+challenge. Les tests unitaires simulent un rechargement de module, une
+expiration, un stockage inaccessible et la suppression après succès, nouvelle
+connexion et déconnexion. Crash-test local encore requis.

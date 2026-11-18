@@ -22,11 +22,65 @@ export class SecondFactorRequired extends Error {
 		this.name = 'SecondFactorRequired';
 	}
 }
+// This is a pre-authentication challenge, not an authenticated session.
+const BO_CHALLENGE_KEY = 'symsvel.bo.second-factor.challenge';
+const MAX_STORED_CHALLENGE_LENGTH = 8192;
 let pendingSecondFactor: SecondFactorChallenge | null = null;
+
+function challengeStorage(): Storage | null {
+	try {
+		return typeof window === 'undefined' ? null : window.sessionStorage;
+	} catch {
+		// Private browsing and hardened environments can reject storage access.
+		return null;
+	}
+}
+
+function clearPendingBoSecondFactor(): void {
+	pendingSecondFactor = null;
+	try {
+		challengeStorage()?.removeItem(BO_CHALLENGE_KEY);
+	} catch {
+		// Keep in-memory cleanup effective if storage is unavailable.
+	}
+}
+
+function savePendingBoSecondFactor(challenge: SecondFactorChallenge): void {
+	pendingSecondFactor = challenge;
+	try {
+		challengeStorage()?.setItem(BO_CHALLENGE_KEY, JSON.stringify(challenge));
+	} catch {
+		// Navigation in the same JS runtime can still use the memory copy.
+	}
+}
+
+/** Restore the short-lived challenge after a full page navigation in this tab. */
 export function pendingBoSecondFactor(): SecondFactorChallenge | null {
-	return pendingSecondFactor && Date.parse(pendingSecondFactor.challenge_expires_at) > Date.now()
-		? pendingSecondFactor
-		: null;
+	if (pendingSecondFactor !== null) {
+		if (validSecondFactor(pendingSecondFactor)) return pendingSecondFactor;
+		clearPendingBoSecondFactor();
+		return null;
+	}
+	let raw: string | null = null;
+	try {
+		raw = challengeStorage()?.getItem(BO_CHALLENGE_KEY) ?? null;
+	} catch {
+		return null;
+	}
+	if (raw === null) return null;
+	if (raw.length <= MAX_STORED_CHALLENGE_LENGTH) {
+		try {
+			const candidate: unknown = JSON.parse(raw);
+			if (validSecondFactor(candidate)) {
+				pendingSecondFactor = candidate;
+				return candidate;
+			}
+		} catch {
+			// Discard corrupt or tampered storage values.
+		}
+	}
+	clearPendingBoSecondFactor();
+	return null;
 }
 function validSecondFactor(value: unknown): value is SecondFactorChallenge {
 	if (!value || typeof value !== 'object') return false;
@@ -116,7 +170,7 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 	const previousRefresh = pendingRefresh?.promise;
 	const previousLogin = pendingLogin;
 	session = null;
-	pendingSecondFactor = null;
+	clearPendingBoSecondFactor();
 	pendingRefresh = null;
 	const operation = (async (): Promise<BoIdentity> => {
 		// Avoid an old in-flight response overwriting a newer session cookie.
@@ -130,7 +184,7 @@ export async function loginBo(email: string, password: string): Promise<BoIdenti
 		});
 		if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
 		if (validSecondFactor(access)) {
-			pendingSecondFactor = access;
+			savePendingBoSecondFactor(access);
 			throw new SecondFactorRequired();
 		}
 		if (!validAccess(access)) {
@@ -185,6 +239,8 @@ export async function completeBoSecondFactor(code: string): Promise<string[]> {
 		}
 	);
 	if (generation !== sessionGeneration) throw new Error('Authentication request superseded');
+	// The successful response consumed the challenge; do not retain a replayable copy.
+	clearPendingBoSecondFactor();
 	if (!validAccess(access)) throw new Error('Invalid second-factor response');
 	const identity = await api<BoIdentity>('/apibo/auth/me', { accessToken: access.access_token });
 	if (generation !== sessionGeneration || !validIdentity(identity)) {
@@ -195,7 +251,6 @@ export async function completeBoSecondFactor(code: string): Promise<string[]> {
 		expires_at: access.expires_at,
 		token_type: 'Bearer'
 	};
-	pendingSecondFactor = null;
 	return Array.isArray(access.recovery_codes) ? access.recovery_codes : [];
 }
 
@@ -222,7 +277,7 @@ export async function currentBo(): Promise<BoIdentity | null> {
 
 /** Revoke the backend refresh family even when no access token is in memory. */
 export async function logoutBo(): Promise<void> {
-	pendingSecondFactor = null;
+	clearPendingBoSecondFactor();
 	const generation = ++sessionGeneration;
 	const priorRefresh = pendingRefresh?.promise;
 	const priorLogin = pendingLogin;

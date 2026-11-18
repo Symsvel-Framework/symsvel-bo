@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./client', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('./client')>();
@@ -6,7 +6,15 @@ vi.mock('./client', async (importOriginal) => {
 });
 
 import { api, ApiError } from './client';
-import { boApi, currentBo, loginBo, logoutBo } from './session';
+import {
+	boApi,
+	completeBoSecondFactor,
+	currentBo,
+	loginBo,
+	logoutBo,
+	pendingBoSecondFactor,
+	SecondFactorRequired
+} from './session';
 
 const mockedApi = vi.mocked(api);
 const tokens = {
@@ -16,11 +24,53 @@ const tokens = {
 } as const;
 const identity = { id: 7, context: 'bo' };
 
+const CHALLENGE_KEY = 'symsvel.bo.second-factor.challenge';
+
+class MemoryStorage implements Storage {
+	private readonly values = new Map<string, string>();
+
+	get length(): number {
+		return this.values.size;
+	}
+	clear(): void {
+		this.values.clear();
+	}
+	getItem(key: string): string | null {
+		return this.values.get(key) ?? null;
+	}
+	key(index: number): string | null {
+		return [...this.values.keys()][index] ?? null;
+	}
+	removeItem(key: string): void {
+		this.values.delete(key);
+	}
+	setItem(key: string, value: string): void {
+		this.values.set(key, value);
+	}
+}
+
+const challengeResponse = () => ({
+	second_factor_required: true as const,
+	challenge: 'b'.repeat(43),
+	challenge_expires_at: new Date(Date.now() + 4 * 60_000).toISOString(),
+	enrollment_required: true,
+	totp_secret: 'JBSWY3DPEHPK3PXP',
+	provisioning_uri: 'otpauth://totp/SymSvel%20BO?secret=JBSWY3DPEHPK3PXP'
+});
+
 describe('BO browser cookie and access session', () => {
+	let browserStorage: MemoryStorage;
+
 	beforeEach(async () => {
 		vi.resetAllMocks();
 		await logoutBo();
 		vi.resetAllMocks();
+		browserStorage = new MemoryStorage();
+		vi.stubGlobal('window', { sessionStorage: browserStorage });
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
 	});
 
 	it('logs in without returning a JS refresh token and logs out through the cookie', async () => {
@@ -172,5 +222,88 @@ describe('BO browser cookie and access session', () => {
 			method: 'POST',
 			credentials: 'include'
 		});
+	});
+
+	it('stores only the pre-session 2FA challenge and restores it after a module reload', async () => {
+		const challenge = challengeResponse();
+		mockedApi.mockResolvedValueOnce(challenge);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toBeInstanceOf(
+			SecondFactorRequired
+		);
+		expect(pendingBoSecondFactor()).toEqual(challenge);
+		expect(JSON.parse(browserStorage.getItem(CHALLENGE_KEY)!)).toEqual(challenge);
+		expect(browserStorage.getItem(CHALLENGE_KEY)).not.toContain('refresh_token');
+
+		// A real navigation can load a new JS module instance while retaining sessionStorage.
+		vi.resetModules();
+		const reloaded = await import('./session');
+		expect(reloaded.pendingBoSecondFactor()).toEqual(challenge);
+		const calls = mockedApi.mock.calls.filter(([path]) => path === '/apibo/auth/browser/refresh');
+		expect(calls).toHaveLength(0);
+	});
+
+	it('clears a consumed 2FA challenge after the server issues tokens', async () => {
+		const challenge = challengeResponse();
+		mockedApi.mockResolvedValueOnce(challenge);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toBeInstanceOf(
+			SecondFactorRequired
+		);
+		mockedApi.mockResolvedValueOnce(tokens).mockResolvedValueOnce(identity);
+		expect(await completeBoSecondFactor('123456')).toEqual([]);
+		expect(browserStorage.getItem(CHALLENGE_KEY)).toBeNull();
+		expect(pendingBoSecondFactor()).toBeNull();
+		expect(mockedApi).toHaveBeenCalledWith('/apibo/auth/browser/second-factor', {
+			method: 'POST',
+			credentials: 'include',
+			body: JSON.stringify({ challenge: challenge.challenge, code: '123456' })
+		});
+	});
+
+	it('rejects expired, corrupt or oversized persisted challenges and removes them', () => {
+		for (const raw of [
+			JSON.stringify({ ...challengeResponse(), challenge_expires_at: '2000-01-01T00:00:00Z' }),
+			'{invalid-json',
+			'x'.repeat(8193)
+		]) {
+			browserStorage.setItem(CHALLENGE_KEY, raw);
+			expect(pendingBoSecondFactor()).toBeNull();
+			expect(browserStorage.getItem(CHALLENGE_KEY)).toBeNull();
+		}
+	});
+
+	it('clears an old challenge when a new login begins', async () => {
+		mockedApi.mockResolvedValueOnce(challengeResponse());
+		await expect(loginBo('admin@example.test', 'password')).rejects.toBeInstanceOf(
+			SecondFactorRequired
+		);
+		expect(browserStorage.getItem(CHALLENGE_KEY)).not.toBeNull();
+		mockedApi.mockRejectedValueOnce(new ApiError('Bad credentials', 401, 'invalid_credentials'));
+		await expect(loginBo('admin@example.test', 'wrong')).rejects.toMatchObject({ status: 401 });
+		expect(browserStorage.getItem(CHALLENGE_KEY)).toBeNull();
+		expect(pendingBoSecondFactor()).toBeNull();
+	});
+
+	it('purges a pending challenge on logout', async () => {
+		mockedApi.mockResolvedValueOnce(challengeResponse());
+		await expect(loginBo('admin@example.test', 'password')).rejects.toBeInstanceOf(
+			SecondFactorRequired
+		);
+		await logoutBo();
+		expect(browserStorage.getItem(CHALLENGE_KEY)).toBeNull();
+		expect(pendingBoSecondFactor()).toBeNull();
+	});
+
+	it('retains the memory challenge when sessionStorage is blocked', async () => {
+		vi.stubGlobal('window', {
+			get sessionStorage(): Storage {
+				throw new Error('Storage denied');
+			}
+		});
+		const challenge = challengeResponse();
+		mockedApi.mockResolvedValueOnce(challenge);
+		await expect(loginBo('admin@example.test', 'password')).rejects.toBeInstanceOf(
+			SecondFactorRequired
+		);
+		expect(pendingBoSecondFactor()).toEqual(challenge);
 	});
 });
