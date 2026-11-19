@@ -79,7 +79,7 @@
 							? 'bo.admins.account.administrator'
 							: key === 'profile'
 								? 'bo.admins.profile.title'
-							: `bo.system.shell.${key}`;
+								: `bo.system.shell.${key}`;
 				return [key, generatedTranslation($uiLanguage, path) ?? fallback];
 			})
 		) as typeof copy.fr
@@ -246,7 +246,11 @@
 					{#if menuOpen}
 						<div class="bo-account-menu" aria-label={t.account}>
 							<strong>{t.administrator} #{identity.id}</strong>
-							<a class="bo-profile-link" href={resolve('/profile' as Path)} onclick={() => (menuOpen = false)}>{t.profile}</a>
+							<a
+								class="bo-profile-link"
+								href={resolve('/profile' as Path)}
+								onclick={() => (menuOpen = false)}>{t.profile}</a
+							>
 							<div class="bo-theme-choice">
 								<span>{t.theme}</span>
 								<Dropdown
