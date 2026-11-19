@@ -672,5 +672,10 @@ a {
 }
 
 /* Host-controlled filters and account preferences use the same HP Dropdown. */
-.bo-data-table-filter-select { width: min(100%, 260px); min-width: 170px; }
-.bo-theme-choice .bo-dropdown { width: 100%; }
+.bo-data-table-filter-select {
+	width: min(100%, 260px);
+	min-width: 170px;
+}
+.bo-theme-choice .bo-dropdown {
+	width: 100%;
+}
