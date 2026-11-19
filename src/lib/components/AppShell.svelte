@@ -15,7 +15,12 @@
 	} from '../bo/navigation';
 	import { boShellKey, type BoShellContext } from '../bo/context';
 	import { generatedTranslation } from '../i18n/generated-translations';
-	import { isBoThemePreference, readBoThemePreference, saveBoThemePreference, type BoThemePreference } from '../theme/bo-theme';
+	import {
+		isBoThemePreference,
+		readBoThemePreference,
+		saveBoThemePreference,
+		type BoThemePreference
+	} from '../theme/bo-theme';
 
 	let { children }: { children: Snippet } = $props();
 	let identity = $state<BoIdentity | null>(null);
@@ -91,7 +96,9 @@
 	onMount(() => {
 		let mounted = true;
 		themePreference = readBoThemePreference();
-		const onThemeStorage = () => { themePreference = readBoThemePreference(); };
+		const onThemeStorage = () => {
+			themePreference = readBoThemePreference();
+		};
 		window.addEventListener('storage', onThemeStorage);
 		// Refresh module alerts after a settings change, without remounting the BO.
 		const refreshAlerts = (): void => {
@@ -219,12 +226,15 @@
 							<strong>{t.administrator} #{identity.id}</strong>
 							<label class="bo-theme-choice">
 								<span>{t.theme}</span>
-								<select value={themePreference} onchange={(event) => {
-									const choice = event.currentTarget.value;
-									if (!isBoThemePreference(choice)) return;
-									themePreference = choice;
-									saveBoThemePreference(choice);
-								}}>
+								<select
+									value={themePreference}
+									onchange={(event) => {
+										const choice = event.currentTarget.value;
+										if (!isBoThemePreference(choice)) return;
+										themePreference = choice;
+										saveBoThemePreference(choice);
+									}}
+								>
 									<option value="system">{t.themeSystem}</option>
 									<option value="light">{t.themeLight}</option>
 									<option value="dark">{t.themeDark}</option>

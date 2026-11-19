@@ -550,22 +550,50 @@ a:hover {
 		--bo-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
 	}
 }
-:root { color: var(--bo-text); background: var(--bo-bg); }
-body { color: var(--bo-text); background: var(--bo-bg); }
-a { color: var(--bo-primary); }
-.auth-shell, .bo-shell { background: var(--bo-bg); }
-.auth-card, .bo-topbar, .bo-alert-panel, .bo-account-menu {
+:root {
+	color: var(--bo-text);
+	background: var(--bo-bg);
+}
+body {
+	color: var(--bo-text);
+	background: var(--bo-bg);
+}
+a {
+	color: var(--bo-primary);
+}
+.auth-shell,
+.bo-shell {
+	background: var(--bo-bg);
+}
+.auth-card,
+.bo-topbar,
+.bo-alert-panel,
+.bo-account-menu {
 	background: var(--bo-surface);
 	color: var(--bo-text);
 	border-color: var(--bo-border);
 }
-.auth-card header, .bo-topbar, .bo-data-table-scroll th, .bo-data-table-scroll td {
+.auth-card header,
+.bo-topbar,
+.bo-data-table-scroll th,
+.bo-data-table-scroll td {
 	border-color: var(--bo-border);
 }
-.auth-card header span, .auth-card p, .bo-account, .welcome p,
-.bo-data-table-empty, .bo-pagination-count, .bo-account-menu strong { color: var(--bo-muted); }
-.form input, .bo-field input, .bo-data-table-filter input, .bo-data-table-filter select,
-.bo-pagination-size select, .bo-theme-choice select {
+.auth-card header span,
+.auth-card p,
+.bo-account,
+.welcome p,
+.bo-data-table-empty,
+.bo-pagination-count,
+.bo-account-menu strong {
+	color: var(--bo-muted);
+}
+.form input,
+.bo-field input,
+.bo-data-table-filter input,
+.bo-data-table-filter select,
+.bo-pagination-size select,
+.bo-theme-choice select {
 	background: var(--bo-input);
 	color: var(--bo-text);
 	border: 1px solid var(--bo-border);
@@ -574,34 +602,72 @@ a { color: var(--bo-primary); }
 	outline: 2px solid var(--bo-focus);
 	outline-offset: 2px;
 }
-.bo-sidebar { background: var(--bo-sidebar); color: var(--bo-sidebar-text); }
-.bo-nav a, .bo-nav-loading { color: var(--bo-sidebar-text); }
-.bo-nav a:hover, .bo-nav a:focus-visible { background: var(--bo-sidebar-hover); color: var(--bo-sidebar-text); }
-.bo-nav a.active { background: var(--bo-sidebar-current); color: var(--bo-sidebar-text); }
-.bo-nav-section > span, .bo-brand span { color: var(--bo-sidebar-text); }
-.bo-topbar button, .bo-button-secondary {
+.bo-sidebar {
+	background: var(--bo-sidebar);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a,
+.bo-nav-loading {
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a:hover,
+.bo-nav a:focus-visible {
+	background: var(--bo-sidebar-hover);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a.active {
+	background: var(--bo-sidebar-current);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav-section > span,
+.bo-brand span {
+	color: var(--bo-sidebar-text);
+}
+.bo-topbar button,
+.bo-button-secondary {
 	background: var(--bo-surface);
 	color: var(--bo-text);
 	border-color: var(--bo-border);
 }
-.bo-topbar .bo-avatar, .bo-button, .form button {
+.bo-topbar .bo-avatar,
+.bo-button,
+.form button {
 	background: var(--bo-primary);
 	color: var(--bo-primary-contrast);
 }
-.bo-button-secondary { background: var(--bo-surface); color: var(--bo-text); }
-.bo-button-danger { background: var(--bo-danger); color: var(--bo-danger-contrast); }
-.bo-alert-error { background: var(--bo-error-bg); color: var(--bo-error-text); }
-.bo-alert-success { background: var(--bo-success-bg); color: var(--bo-success-text); }
-.bo-alert-info { background: var(--bo-info-bg); color: var(--bo-info-text); }
-.bo-topbar .bo-alert-trigger, .bo-alert-panel a {
+.bo-button-secondary {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+}
+.bo-button-danger {
+	background: var(--bo-danger);
+	color: var(--bo-danger-contrast);
+}
+.bo-alert-error {
+	background: var(--bo-error-bg);
+	color: var(--bo-error-text);
+}
+.bo-alert-success {
+	background: var(--bo-success-bg);
+	color: var(--bo-success-text);
+}
+.bo-alert-info {
+	background: var(--bo-info-bg);
+	color: var(--bo-info-text);
+}
+.bo-topbar .bo-alert-trigger,
+.bo-alert-panel a {
 	background: var(--bo-info-bg);
 	color: var(--bo-info-text);
 	border-color: var(--bo-border);
 }
-.bo-alert-panel a:hover, .bo-topbar .bo-account-menu button:hover {
+.bo-alert-panel a:hover,
+.bo-topbar .bo-account-menu button:hover {
 	background: var(--bo-surface-muted);
 }
-.bo-account-menu { width: 230px; }
+.bo-account-menu {
+	width: 230px;
+}
 .bo-theme-choice {
 	display: grid;
 	gap: 6px;
@@ -615,4 +681,3 @@ a { color: var(--bo-primary); }
 	border-radius: 8px;
 	font: inherit;
 }
-
