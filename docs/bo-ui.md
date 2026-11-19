@@ -215,3 +215,9 @@ Lors de la suppression des anciens sélecteurs natifs du champ Pagination, la r�
 ### Écrans publics BO et thème (19/11/2026)
 
 Les écrans de connexion, d'activation d'invitation et de challenge 2FA utilisent tous le même `auth-shell`/`auth-card` hérité du BO hôte. Le focus des champs, l'alerte d'erreur publique et l'ombre des cartes sont désormais associés aux jetons `--bo-focus`, `--bo-primary`, `--bo-error-bg`, `--bo-error-text` et `--bo-shadow` plutôt qu'à l'ancienne palette statique. Cela préserve le contraste en clair/sombre avant l'établissement de la session ; les parcours d'authentification et leurs secrets restent inchangés.
+
+### Présentation native des tableaux (19/11/2026, correctif Languages)
+
+Le tableau **Langues** de Languages utilise `DataTable.svelte` du BO. La charte doit donc s'appliquer **au composant hôte**, pas à un style ad hoc de `languages/+page.svelte` : bordure arrondie, surface, en-tête atténué, lignes alternées et survol, boutons de tri neutres et actions compactes. Les styles de `src/app.css` utilisent exclusivement les jetons `--bo-*` du thème, y compris le focus, et restent applicables aux tableaux Admins, Roles, ACLs et Users. Aucune nouvelle colonne, permission, traduction ou règle de pagination n'est introduite. Les règles de mise en forme du tri supplantent explicitement la variante primaire du composant Button afin de restituer un **véritable en-tête de tableau**, pas un bouton de formulaire.
+
+Validation : CI BO, assemblages module, puis CT sur XT en modes clair et sombre, particulièrement la page `/languages`, son filtre, le tri et les actions Activer / Préouvrir.

@@ -462,6 +462,81 @@ a:hover {
 	font-variant-numeric: tabular-nums;
 }
 
+
+/* All DataTable instances, including Languages > Langues, share one HP-inspired
+   table surface. Keep these rules in the host, never in each module. */
+.bo-data-table-scroll {
+	border: 1px solid var(--bo-border);
+	border-radius: 12px;
+	background: var(--bo-surface);
+}
+.bo-data-table-scroll table {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+}
+.bo-data-table-scroll thead {
+	background: var(--bo-surface-muted);
+}
+.bo-data-table-scroll thead th {
+	color: var(--bo-muted);
+	font-size: 0.82rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}
+.bo-data-table-scroll tbody tr:nth-child(even) {
+	background: var(--bo-surface-muted);
+}
+.bo-data-table-scroll tbody tr:hover,
+.bo-data-table-scroll tbody tr:focus-within {
+	background: color-mix(in srgb, var(--bo-primary) 8%, var(--bo-surface));
+}
+.bo-data-table-scroll tbody td {
+	color: var(--bo-text);
+	vertical-align: middle;
+}
+.bo-data-table-scroll .bo-data-table-sort.bo-button {
+	padding: 4px 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+	text-align: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+}
+.bo-data-table-scroll .bo-data-table-sort.bo-button:hover:not(:disabled) {
+	color: var(--bo-primary);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button {
+	padding: 7px 11px;
+	border: 1px solid var(--bo-border);
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	font-size: 0.82rem;
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button:hover:not(:disabled) {
+	border-color: var(--bo-primary);
+	color: var(--bo-primary);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button:focus-visible,
+.bo-data-table-scroll .bo-data-table-sort.bo-button:focus-visible {
+	outline: 2px solid var(--bo-focus);
+	outline-offset: 2px;
+}
+.bo-data-table-filter {
+	color: var(--bo-muted);
+	font-size: 0.88rem;
+	font-weight: 650;
+}
+.bo-data-table-filter input {
+	min-height: 40px;
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border: 1px solid var(--bo-border);
+}
+
 /* Design System BO: semantic tokens. Visual source is HP, pending exact palette audit. */
 :root {
 	color-scheme: light;
