@@ -34,6 +34,7 @@ export default {
     "navigation": "Navigation principale",
     "account": "Menu administrateur",
     "alerts": "Alertes système",
+    "documentation": "Documentation",
     "loading": "Chargement des modules autorisés…"
   }
 } as const;

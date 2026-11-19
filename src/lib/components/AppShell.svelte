@@ -42,6 +42,7 @@
 			navigation: 'Navigation principale',
 			account: 'Menu administrateur',
 			profile: 'Mon profil',
+			documentation: 'Documentation',
 			administrator: 'Administrateur',
 			logout: 'Déconnexion',
 			alerts: 'Alertes système',
@@ -58,6 +59,7 @@
 			navigation: 'Main navigation',
 			account: 'Administrator menu',
 			profile: 'My profile',
+			documentation: 'Documentation',
 			administrator: 'Administrator',
 			logout: 'Log out',
 			alerts: 'System alerts',
@@ -254,6 +256,11 @@
 								class="bo-profile-link"
 								href={resolve('/profile' as Path)}
 								onclick={() => (menuOpen = false)}>{t.profile}</a
+							>
+							<a
+								class="bo-profile-link"
+								href={resolve('/documentation' as Path)}
+								onclick={() => (menuOpen = false)}>{t.documentation}</a
 							>
 							<div class="bo-theme-choice">
 								<span>{t.theme}</span>

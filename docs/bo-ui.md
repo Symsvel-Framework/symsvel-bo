@@ -369,3 +369,21 @@ CI et inspection XT clair/sombre requises.
 Pour créer des écrans de modules, consulter le guide des composants natifs (props, couleurs et exemples Svelte).
 
 [Guide développeur : composants BO, props et couleurs](dev/bo-components.md)
+
+## Documentation native dans le menu BO (19/11/2026)
+
+Le menu compte de l'AppShell conserve « Mon profil » et expose maintenant
+« Documentation » vers la route privée `/documentation`, apportée par le
+module Admins obligatoire. Ce lien n'accorde aucun droit : chaque requête
+passe par `boApi`, puis par l'endpoint Admins qui vérifie le Bearer BO et
+réserve la documentation `dev` à `ROLE_DEV`. Le BO hôte n'embarque aucun
+fichier Markdown et n'accède jamais directement aux sources du projet.
+La navigation reste dans le shell authentifié et les textes passent par
+`bo.system.shell.documentation` dans les dictionnaires du BO hôte.
+
+L'assemblage documentaire est une maintenance explicite
+`symsvel documentation:sync` dans CLI/Tooling, et ne s'exécute pas
+pendant le Setup ou le build Svelte. Si aucun corpus n'est publié,
+l'écran Admins affiche le message approprié. Tests Vitest et assemblage
+Svelte par CI puis CT XT des parcours `ROLE_DEV` et administrateur
+non-développeur sont obligatoires avant livraison.
