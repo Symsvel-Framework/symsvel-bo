@@ -96,6 +96,7 @@
 
 	onMount(() => {
 		let mounted = true;
+		let navigationRevision = 0;
 		themePreference = readBoThemePreference();
 		const onThemeStorage = () => {
 			themePreference = readBoThemePreference();
@@ -109,6 +110,17 @@
 			});
 		};
 		window.addEventListener('symsvel:alerts-changed', refreshAlerts);
+		const refreshNavigation = (): void => {
+			if (!mounted || !identity) return;
+			const revision = ++navigationRevision;
+			void availableBoNavigation(declaredBoNavigation(), (path) => boApi(path)).then((allowed) => {
+				if (!mounted || !identity || revision !== navigationRevision) return;
+				modules = allowed;
+				modulesPending = false;
+				refreshAlerts();
+			});
+		};
+		window.addEventListener('symsvel:navigation-changed', refreshNavigation);
 		void currentBo()
 			.then(async (result) => {
 				if (!mounted) return;
@@ -117,8 +129,9 @@
 					return;
 				}
 				identity = result;
+				const revision = ++navigationRevision;
 				const allowed = await availableBoNavigation(declaredBoNavigation(), (path) => boApi(path));
-				if (!mounted) return;
+				if (!mounted || revision !== navigationRevision) return;
 				modules = allowed;
 				modulesPending = false;
 				refreshAlerts();
@@ -129,6 +142,7 @@
 		return () => {
 			mounted = false;
 			window.removeEventListener('symsvel:alerts-changed', refreshAlerts);
+			window.removeEventListener('symsvel:navigation-changed', refreshNavigation);
 			window.removeEventListener('storage', onThemeStorage);
 		};
 	});

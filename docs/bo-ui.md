@@ -256,3 +256,19 @@ Validation restante : `npm run qa`, CI du BO, assemblage des modules et
 crash-tests XT, notamment la sauvegarde de plusieurs paramètres Settings
 dans des accordéons différents, la création/édition modale et le retour
 sans rechargement réseau du document.
+
+## Navigation conditionnelle après modification Settings (19/11/2026)
+
+Un module peut conditionner sa visibilité dans le menu BO en refusant
+sa sonde `boNavigation.probe` lorsque sa fonction n'est pas disponible.
+Countries utilise le paramètre existant `languages.multilingual` :
+le module reste installé et les API publiques actives en mode monolingue,
+mais sa sonde `/apibo/countries` renvoie 404 et son lien est masqué.
+
+Lorsqu'un paramètre change cette disponibilité, la page peut émettre
+`symsvel:navigation-changed` après sauvegarde. Le shell relance la
+découverte des **modules installés**, avec les sondes ACL existantes, sans
+navigation ni rechargement du document. Les réponses périmées sont ignorées.
+Les alertes sont recalculées d'après la nouvelle navigation autorisée.
+Aucun accès BO ne découle de ce seul événement : les ACL continuent d'être
+imposées par les APIs du module. Tests de contrat ajoutés, CI et CT XT requis.
