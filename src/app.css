@@ -462,7 +462,6 @@ a:hover {
 	font-variant-numeric: tabular-nums;
 }
 
-
 /* All DataTable instances, including Languages > Langues, share one HP-inspired
    table surface. Keep these rules in the host, never in each module. */
 .bo-data-table-scroll {
