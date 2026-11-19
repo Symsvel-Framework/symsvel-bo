@@ -138,6 +138,7 @@
 								{#each actions as action (action.key)}
 									<Button
 										type="button"
+										variant={typeof action.variant === 'function' ? action.variant(row) : (action.variant ?? 'secondary')}
 										disabled={loading || action.disabled?.(row)}
 										onclick={() => action.onClick(row)}
 										>{typeof action.label === 'function' ? action.label(row) : action.label}</Button

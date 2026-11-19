@@ -807,3 +807,97 @@ a {
 :root .bo-content .panel :is(input, textarea)::placeholder {
 	color: var(--bo-muted);
 }
+
+/* Semantic button intentions. Components and module actions consume this one
+   palette; light/dark contrast and disabled behavior belong to the host. */
+:root {
+	--bo-action-success: #176c48;
+	--bo-action-warning: #97500b;
+	--bo-action-active: #145f8c;
+	--bo-action-inactive: #97500b;
+	--bo-action-contrast: #ffffff;
+	--bo-action-disabled-bg: #e1e6ea;
+	--bo-action-disabled-fg: #566372;
+	--bo-action-disabled-border: #cbd4db;
+}
+:root[data-theme='dark'] {
+	--bo-action-success: #18734c;
+	--bo-action-warning: #a75a0c;
+	--bo-action-active: #21658e;
+	--bo-action-inactive: #a75a0c;
+	--bo-action-disabled-bg: #48535e;
+	--bo-action-disabled-fg: rgba(255, 255, 255, 0.8);
+	--bo-action-disabled-border: #5a6671;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--bo-action-success: #18734c;
+		--bo-action-warning: #a75a0c;
+		--bo-action-active: #21658e;
+		--bo-action-inactive: #a75a0c;
+		--bo-action-disabled-bg: #48535e;
+		--bo-action-disabled-fg: rgba(255, 255, 255, 0.8);
+		--bo-action-disabled-border: #5a6671;
+	}
+}
+
+/* The table host previously flattened all action buttons to a neutral style.
+   Resolve the same semantic variables for standard buttons and DataTable. */
+.bo-button {
+	--bo-button-bg: var(--bo-primary);
+	--bo-button-fg: var(--bo-primary-contrast);
+	--bo-button-border: transparent;
+	border: 1px solid var(--bo-button-border);
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	transition: filter 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+.bo-button.bo-button-secondary {
+	--bo-button-bg: var(--bo-surface);
+	--bo-button-fg: var(--bo-text);
+	--bo-button-border: var(--bo-border);
+}
+.bo-button.bo-button-success {
+	--bo-button-bg: var(--bo-action-success);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-warning {
+	--bo-button-bg: var(--bo-action-warning);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-danger {
+	--bo-button-bg: var(--bo-danger);
+	--bo-button-fg: var(--bo-danger-contrast);
+}
+.bo-button.bo-button-active {
+	--bo-button-bg: var(--bo-action-active);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-inactive {
+	--bo-button-bg: var(--bo-action-inactive);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button {
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	border-color: var(--bo-button-border);
+}
+.bo-button:hover:not(:disabled),
+.bo-data-table-scroll .bo-data-table-actions .bo-button:hover:not(:disabled) {
+	filter: brightness(0.92);
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	border-color: var(--bo-button-border);
+}
+.bo-button:disabled,
+.bo-data-table-scroll .bo-data-table-actions .bo-button:disabled {
+	opacity: 1;
+	background: var(--bo-action-disabled-bg);
+	color: var(--bo-action-disabled-fg);
+	border: 1px solid var(--bo-action-disabled-border);
+	cursor: not-allowed;
+	filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.bo-button { transition: none; }
+}

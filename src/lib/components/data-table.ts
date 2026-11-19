@@ -1,4 +1,5 @@
 import type { PageSize } from './pagination';
+import type { BoButtonVariant } from './button';
 
 export type DataRow = Record<string, unknown>;
 export type SortOrder = 'asc' | 'desc';
@@ -15,6 +16,8 @@ export type DataAction<T extends object> = {
 	key: string;
 	label: string | ((row: T) => string);
 	onClick: (row: T) => void;
+	/** Action intent or state-specific style, independent of translation. */
+	variant?: BoButtonVariant | ((row: T) => BoButtonVariant);
 	disabled?: (row: T) => boolean;
 };
 

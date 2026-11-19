@@ -328,3 +328,38 @@ session précédente est expirée. Le token à usage unique est vérifié par Au
 et exclusivement consommé sur le backend dans le contexte BO.
 `/profile` reste une page authentifiée. La liste des routes publiques
 autorise seulement la page de confirmation, sans élargir l'accès au profil.
+
+## Sémantique des boutons et actions BO (19/11/2026)
+
+Le Design System utilise désormais un contrat unique dans
+`src/lib/components/Button.svelte` et `DataTable.svelte`.
+Les actions ne déduisent **jamais** leur finalité d'un libellé traduit :
+
+| Variante | Intention | Couleur |
+| --- | --- | --- |
+| `primary` | Créer, ouvrir une action principale | Bleu pétrole de la charte |
+| `secondary` | Annuler, revenir, actualiser, éditer | Surface neutre bordée |
+| `success` | Valider, enregistrer, accorder, activer | Vert |
+| `danger` | Supprimer, révoquer définitivement | Rouge |
+| `warning` | Désactiver, retirer un droit réversible | Orange |
+| `active` | État actuellement actif | Bleu |
+| `inactive` | État actuellement désactivé | Orange |
+
+`DataAction<T>.variant` accepte une variante fixe ou une fonction
+`(row) => variant`, afin que les boutons Activer/Désactiver suivent
+**l'action qui va être réalisée** et non un libellé figé. Les actions
+des tableaux restent neutres par défaut ; la variante destructive doit
+être explicitement fournie par le module propriétaire.
+
+Un bouton désactivé devient gris clair à texte atténué en thème clair,
+avec une variante gris moyen et texte `rgba(255,255,255,.8)` en sombre.
+Le blanc transparent sur un gris très pâle aurait un contraste illisible ;
+le thème clair utilise donc un gris foncé lisible. Les états disabled
+priment sur toute couleur destructive ou positive, sans simple diminution
+d'opacité de l'ensemble du bouton. Hover et focus restent visibles,
+les transitions respectent `prefers-reduced-motion`.
+
+La palette centralisée appartient au BO hôte. Les modules n'injectent
+pas leur propre CSS de boutons et doivent déclarer `variant` au
+point d'utilisation. Tests de composant et des intentions de DataAction ;
+CI et inspection XT clair/sombre requises.

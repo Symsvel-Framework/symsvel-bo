@@ -3,6 +3,7 @@
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 	import { uiLanguage } from '../api/locales';
 	import { boComponentCopy } from './texts';
+	import type { BoButtonVariant } from './button';
 
 	let {
 		children,
@@ -14,7 +15,7 @@
 	}: HTMLButtonAttributes & {
 		children: Snippet;
 		loading?: boolean;
-		variant?: 'primary' | 'secondary' | 'danger';
+		variant?: BoButtonVariant;
 	} = $props();
 	const t = $derived(boComponentCopy($uiLanguage));
 </script>

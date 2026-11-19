@@ -21,3 +21,22 @@ describe('BO Button submission contract', () => {
 			.toHaveAttribute('type', 'submit');
 	});
 });
+
+describe('Semantic BO button variants', () => {
+	it('keeps success, danger, warning, active and inactive intents explicit', async () => {
+		for (const variant of ['success', 'danger', 'warning', 'active', 'inactive'] as const) {
+			const { unmount } = render(Button, { children, variant });
+			await expect.element(page.getByRole('button', { name: 'Enregistrer' }))
+				.toHaveClass('bo-button-' + variant);
+			unmount();
+		}
+	});
+
+	it('keeps the disabled property and loading lock', async () => {
+		const { unmount } = render(Button, { children, variant: 'danger', disabled: true });
+		await expect.element(page.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+		unmount();
+		render(Button, { children, loading: true, variant: 'success' });
+		await expect.element(page.getByRole('button')).toBeDisabled();
+	});
+});
