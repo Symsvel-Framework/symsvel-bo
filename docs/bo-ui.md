@@ -288,3 +288,19 @@ Les libellés sont fournis par les traductions du module Admins
 (`bo.admins.profile.title`) lorsqu'il est installé. L'assemblage
 BO/Admins doit être validé en CI et sur XT ; ne pas présenter le
 parcours d'email/mot de passe comme réalisé.
+
+## Branding dynamique : nom public du projet (19/11/2026)
+
+Le BO récupère le seul champ public `data.name` via
+`GET /apiopen/project`, sans Authorization ni cookie. Le nom provient
+de la configuration de projet validée par le Setup, projetée côté Back :
+aucun accès du navigateur à `.symsvel/project.json`. Le sidebar et la
+page de connexion affichent ce titre ; le fallback est `SymSvel` en
+cas d'API absente, d'erreur ou de donnée invalide. L'affichage est
+échappé par Svelte et n'injecte jamais du HTML non fiable.
+
+Le thème, la session et les sondes de modules BO restent indépendants
+de cette récupération. Le changement de nom peut être lu au prochain
+montage de l'écran sans rebuild des fichiers statiques ; le
+rebranding des images/logos n'entre pas dans ce correctif. Le
+contrat attend la CI et le CT XT.
