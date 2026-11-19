@@ -4,7 +4,11 @@ import { api } from './api/client';
 export function normalizedProjectName(value: unknown): string {
 	if (typeof value !== 'string') return 'SymSvel';
 	const name = value.trim();
-	if (!name || [...name].length > 120 || /[\x00-\x1f\x7f]/.test(name)) return 'SymSvel';
+	const hasControls = [...name].some((character) => {
+		const point = character.codePointAt(0);
+		return point !== undefined && (point < 32 || point === 127);
+	});
+	if (!name || [...name].length > 120 || hasControls) return 'SymSvel';
 	return name;
 }
 

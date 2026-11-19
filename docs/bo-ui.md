@@ -311,3 +311,11 @@ Les helpers et composants conservent le format Prettier du BO hôte.
 La correction est purement stylistique, conserve le rendu du titre,
 le repli SymSvel et l'annulation des mises à jour après démontage ;
 le contrat HTTP et les règles de validation restent inchangés.
+
+### Validation Unicode du titre (19/11/2026)
+
+Le validateur de nom public teste les codes Unicode des caractères
+(`codePointAt`) pour refuser les contrôles ASCII, sans expression
+régulière contenant ces caractères. Le même contrat de sécurité et
+le repli `SymSvel` sont préservés. Correction pour `no-control-regex`
+en CI, sans modifier l'API, la session ou le rendu du projet.
