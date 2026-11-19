@@ -363,3 +363,9 @@ La palette centralisée appartient au BO hôte. Les modules n'injectent
 pas leur propre CSS de boutons et doivent déclarer `variant` au
 point d'utilisation. Tests de composant et des intentions de DataAction ;
 CI et inspection XT clair/sombre requises.
+
+## Guide pour les développeurs de modules BO
+
+Pour créer des écrans de modules, consulter le guide des composants natifs (props, couleurs et exemples Svelte).
+
+[Guide développeur : composants BO, props et couleurs](dev/bo-components.md)
