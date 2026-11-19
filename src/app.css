@@ -754,3 +754,44 @@ a {
 .bo-theme-choice .bo-dropdown {
 	width: 100%;
 }
+
+/*
+ * Cross-version BO compatibility.
+ * Composer modules can still provide Svelte pages compiled before theme tokens.
+ * Their scoped ".panel { background: white }" rules must not win over the
+ * host's current dark palette when only the BO is updated.
+ * Keep the scope under .bo-content so public authentication is unaffected.
+ */
+:root .bo-content .panel {
+	background-color: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel .module-group {
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel .module-group summary {
+	background: var(--bo-surface-muted);
+	color: var(--bo-text);
+}
+:root .bo-content .panel .module-group summary:is(:hover, :focus-visible) {
+	background: var(--bo-surface);
+}
+:root .bo-content .panel .module-group summary small,
+:root .bo-content :is(.page-heading, .heading) p {
+	color: var(--bo-muted);
+}
+:root .bo-content .panel .module-group[open] summary,
+:root .bo-content .panel .setting {
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel :is(input, textarea)::placeholder {
+	color: var(--bo-muted);
+}
+
