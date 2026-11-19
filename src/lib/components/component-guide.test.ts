@@ -35,6 +35,8 @@ describe('BO developer guide matches public component contracts', () => {
 		expect(tableSource).toContain('variant?: BoButtonVariant | ((row: T) => BoButtonVariant)');
 		expect(guide).toContain('onSortChange');
 		expect(guide).toContain('avant');
-		expect(guide).toContain("variant: (row) => row.enabled ? 'warning' : 'success'");
+		expect(guide).toMatch(
+			/variant:\s*\(row\)\s*=>\s*\(?\s*row\.enabled\s*\?\s*'warning'\s*:\s*'success'/
+		);
 	});
 });

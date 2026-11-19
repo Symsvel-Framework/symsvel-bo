@@ -513,3 +513,10 @@ lorsqu'un module et l'hôte n'ont pas la même version.
 - `src/app.css`, pour les jetons clair/sombre et les variantes
 - [Fonctionnement du BO hôte](../bo-ui.md)
 - [Contrat de synchronisation des modules](https://github.com/Symsvel-Framework/symsvel-tooling/blob/dev/docs/modules/contrat.md)
+
+### Robustesse de la documentation face au formatage (19/11/2026)
+
+Les exemples Svelte/TypeScript de ce guide sont reformatés par Prettier au
+même titre que les sources. Le test de contrat vérifie la variante selon
+sa **sémantique** et non l'absence de parenthèses ajoutées au formatage.
+Un guide reformaté doit rester conforme et passer en CI.
