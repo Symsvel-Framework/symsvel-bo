@@ -229,3 +229,30 @@ Validation : CI BO, assemblages module, puis CT sur XT en modes clair et sombre,
 **Contrat de compatibilité hôte :** `src/app.css` déclare sous `:root .bo-content` les styles sémantiques des panneaux `.panel`, de leurs champs, des en-têtes `.module-group`/Settings et des textes secondaires. La spécificité de cette règle dépasse celle des anciens CSS scoped Svelte, y compris si un seul paquet a été mis à jour. Les variables `--bo-*` demeurent l'unique source de couleur, le reste du layout de chaque module est préservé. Cette passerelle reste confinée au BO authentifié ; login, activation et challenge 2FA ne sont pas modifiés.
 
 L'installation XT complète exige malgré tout `symsvel update` sur le canal `dev` pour récupérer les **nouveaux composants** et comportements des modules. Ce pont CSS corrige seulement l'incohérence du thème lorsqu'un module ancien cohabite temporairement avec le BO nouveau. Régression couverte par le test du contrat CSS du BO, compilation et CT visuel clair/sombre requis.
+
+## Validation des formulaires sans rechargement (19/11/2026)
+
+Audit des routes BO existantes : Settings, Languages (langues et traductions),
+Admins, Roles, ACLs, Users, activation Auth et challenge TwoFactor. Les
+soumissions de formulaires utilisent `onsubmit` avec `preventDefault()`,
+puis un appel API asynchrone. Les actions de tableau et les sélecteurs
+déclarent un bouton de type `button`. Les navigations Auth après validation
+de l'identité ou expiration de session sont volontaires.
+
+Pour prévenir une soumission HTML accidentelle sur de nouveaux écrans,
+`Button.svelte` utilise désormais `type="button"` **par défaut**. Toute
+action qui doit réellement soumettre un formulaire doit déclarer explicitement
+`type="submit"`. Le contrat est couvert par un test du composant rendu
+dans un navigateur, sans ajout de dépendance.
+
+Une synchronisation de **liste de données** (`load` ou `refresh`) après
+écriture dans Admins, Roles ou Users n'est pas une navigation ni un
+rechargement du document. Settings et Languages mettent à jour la ligne
+enregistrée directement dans l'état Svelte. Dans Settings, les autres
+brouillons, l'accordéon et le défilement doivent rester inchangés.
+L'actualisation volontaire par le bouton dédié reste possible.
+
+Validation restante : `npm run qa`, CI du BO, assemblage des modules et
+crash-tests XT, notamment la sauvegarde de plusieurs paramètres Settings
+dans des accordéons différents, la création/édition modale et le retour
+sans rechargement réseau du document.

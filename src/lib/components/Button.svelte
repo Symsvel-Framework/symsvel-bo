@@ -6,6 +6,7 @@
 
 	let {
 		children,
+		type = 'button',
 		loading = false,
 		variant = 'primary',
 		class: className = '',
@@ -19,6 +20,7 @@
 </script>
 
 <button
+	{type}
 	{...rest}
 	class={`bo-button bo-button-${variant} ${className}`}
 	disabled={Boolean(rest.disabled) || loading}
