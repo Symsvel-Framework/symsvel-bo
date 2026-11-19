@@ -344,7 +344,12 @@ si ce dernier reçoit déjà sa prop `pagination`.
 	// Exemple de logique métier à fournir par votre module.
 	declare function toggleFromApi(row: Row): Promise<void>;
 
-	const visible = $derived(rows.slice((page - 1) * limit, page * limit));
+	const sorted = $derived(
+		[...rows].sort((a, b) =>
+			sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+		)
+	);
+	const visible = $derived(sorted.slice((page - 1) * limit, page * limit));
 </script>
 
 <DataTable
@@ -352,7 +357,7 @@ si ce dernier reçoit déjà sa prop `pagination`.
 	{columns}
 	{actions}
 	rowKey="id"
-	{loading}
+	loading={busy}
 	sortKey="name"
 	{sortOrder}
 	onSortChange={(_, order) => {
@@ -375,9 +380,9 @@ si ce dernier reçoit déjà sa prop `pagination`.
 ```
 
 L'exemple montre le **contrat des props**, pas un module prêt à exécuter :
-`toggleFromApi` et le tri réel sont à implémenter côté module. Pour un
-tableau triable, le parent doit réellement trier `rows` **avant**
-`slice` ; `DataTable` ne trie pas les données par magie.
+`toggleFromApi` doit appeler l'API réelle de votre module puis remplacer la
+ligne concernée en mémoire. Le tri est ici appliqué au tableau `sorted`
+**avant** `slice` ; `DataTable` ne trie pas les données par magie.
 
 | Prop             | Type / défaut                                                    | Comportement                                                |
 | ---------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
