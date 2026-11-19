@@ -187,3 +187,9 @@ Le layout importe le helper de thème par chemin relatif (`../lib/theme/bo-theme
 ### Ajustement sombre sur les captures HP (19/11/2026)
 
 Les valeurs sombres des jetons BO ont été rapprochées des aplats visibles sur les captures de la page Traductions et de la modale HP : fond très sombre, surface ardoise, champs légèrement plus clairs. Ce sont des échantillons d'image, pas encore les variables officielles du CSS HP. La palette claire et les accents définitifs seront comparés au code source HP lors de sa mise à disposition.
+
+## Sélection Dropdown HP (19/11/2026)
+
+Le composant BO natif `src/lib/components/Dropdown.svelte` est une sélection contrôlée sans appel API et sans reload, recevant `value`, `options` (`value`, `label`, `code?`, `icon?`), `label`, `onChange(value)` et `disabled?`. Le clavier gère flèches, Home/End, Entrée/Espace, Échap et Tab ; la fermeture hors panneau et le retour du focus sont prévus. Le style utilise les variables `--bo-*`, sans bibliothèque supplémentaire. Il est introduit d'abord dans Languages, puis réutilisé par les modules lors de leurs reprises UX.
+
+Le helper `dropdown.ts` reprend **exactement la correspondance de pays explicitée par HP** (`localeToCountry.ts`) : FR→🇫🇷, EN→🇬🇧, IT→🇮🇹, ES→🇪🇸, DE→🇩🇪, PT→🇵🇹, NL→🇳🇱, PL→🇵🇱, SV→🇸🇪. Une langue hors de cette liste utilise 🌐, sans inventer de pays. Tests des options contrôlées, du clavier et des drapeaux. La CI et le CT sur XT doivent valider le comportement réel en thèmes clair et sombre.
