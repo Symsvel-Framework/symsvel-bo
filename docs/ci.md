@@ -35,3 +35,7 @@ Les modules installés fournissent chacun leur entrée `bo/src/lib/modules/<slug
 Le dashboard affiche désormais le nombre de modules déclarés dans le build SvelteKit. Si le compteur vaut zéro, l'assemblage du BO servi au navigateur ne contient pas les déclarations `src/lib/modules/*/navigation.ts` : vérifier la synchronisation Svelte puis reconstruire et republier `bo/build`. Si le compteur est supérieur à zéro mais qu'aucun lien n'apparaît, vérifier les appels GET protégés `/apibo/admins`, `/apibo/users`, `/apibo/settings` dans l'onglet Réseau et leurs codes HTTP. Les ACL continuent de s'appliquer en backend, jamais par simple affichage de liens.
 
 Les chemins du dashboard sont compilés via `import.meta.glob` au build, et non chargés à l'exécution. Une simple installation Composer sans nouveau build BO peut donc laisser un ancien JavaScript dans le navigateur. Le nouveau transport de session est détaillé dans `docs/api-client.md`; même un reload du dashboard doit pouvoir retrouver son access token grâce au refresh cookie HttpOnly une fois la mise à jour Auth et Back déployée.
+
+## CI des branches de chantier (19/11/2026)
+
+Les pushes sur `feat/**` déclenchent désormais la CI locale du BO avant toute intégration sur `dev`. Cela permet de vérifier le design system sur `feat/bo-theme-design-system` sans ouvrir une seconde PR dans le dépôt. La CI reste sur runners auto-hébergés ; la CD conserve son déclenchement séparé. Éviter les pushes de correction redondants tant qu'un run est en cours.
