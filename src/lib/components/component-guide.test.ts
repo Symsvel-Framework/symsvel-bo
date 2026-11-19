@@ -7,7 +7,15 @@ const tableSource = readFileSync(new URL('./data-table.ts', import.meta.url), 'u
 
 describe('BO developer guide matches public component contracts', () => {
 	it('documents each public primitive and keeps AppShell internal', () => {
-		for (const name of ['Button', 'Alert', 'InputField', 'Dropdown', 'Modal', 'DataTable', 'Pagination']) {
+		for (const name of [
+			'Button',
+			'Alert',
+			'InputField',
+			'Dropdown',
+			'Modal',
+			'DataTable',
+			'Pagination'
+		]) {
 			expect(guide).toContain('### ' + name);
 		}
 		expect(guide).toContain('AppShell');
@@ -17,7 +25,7 @@ describe('BO developer guide matches public component contracts', () => {
 		const variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'active', 'inactive'];
 		const variantTypes = readFileSync(new URL('./button.ts', import.meta.url), 'utf8');
 		for (const variant of variants) {
-			expect(variantTypes).toContain("'"+variant+"'");
+			expect(variantTypes).toContain("'" + variant + "'");
 			expect(guide).toContain('`' + variant + '`');
 		}
 		expect(buttonSource).toContain("type = 'button'");

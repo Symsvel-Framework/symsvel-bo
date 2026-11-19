@@ -20,12 +20,12 @@ Les imports utilisés dans les modules natifs suivent le chemin relatif
 
 ```svelte
 <script lang="ts">
-  import Button from '../../../../components/Button.svelte';
-  import Alert from '../../../../components/Alert.svelte';
-  import Dropdown from '../../../../components/Dropdown.svelte';
-  import DataTable from '../../../../components/DataTable.svelte';
-  import type { DataAction, DataColumn } from '../../../../components/data-table';
-  import { boApi } from '../../../../api/session';
+	import Button from '../../../../components/Button.svelte';
+	import Alert from '../../../../components/Alert.svelte';
+	import Dropdown from '../../../../components/Dropdown.svelte';
+	import DataTable from '../../../../components/DataTable.svelte';
+	import type { DataAction, DataColumn } from '../../../../components/data-table';
+	import { boApi } from '../../../../api/session';
 </script>
 ```
 
@@ -37,15 +37,15 @@ d'une option visuelle.
 
 ### Inventaire des composants publics
 
-| Composant | Fichier hôte | Fonction |
-| --- | --- | --- |
-| **Button** | `components/Button.svelte` | Bouton d'action, variantes, attente, état indisponible |
-| **Alert** | `components/Alert.svelte` | Message d'erreur, de succès ou informatif |
-| **InputField** | `components/InputField.svelte` | Champ HTML lié avec libellé associé |
-| **Dropdown** | `components/Dropdown.svelte` | Choix contrôlé, clavier et options enrichies |
-| **Modal** | `components/Modal.svelte` | Dialogue natif, contenu libre, fermeture contrôlée |
-| **DataTable** | `components/DataTable.svelte` | Tableau avec tri déclaré, filtres, actions et pagination |
-| **Pagination** | `components/Pagination.svelte` | Sélecteur 10/20/50/100 et navigation de pages |
+| Composant      | Fichier hôte                   | Fonction                                                 |
+| -------------- | ------------------------------ | -------------------------------------------------------- |
+| **Button**     | `components/Button.svelte`     | Bouton d'action, variantes, attente, état indisponible   |
+| **Alert**      | `components/Alert.svelte`      | Message d'erreur, de succès ou informatif                |
+| **InputField** | `components/InputField.svelte` | Champ HTML lié avec libellé associé                      |
+| **Dropdown**   | `components/Dropdown.svelte`   | Choix contrôlé, clavier et options enrichies             |
+| **Modal**      | `components/Modal.svelte`      | Dialogue natif, contenu libre, fermeture contrôlée       |
+| **DataTable**  | `components/DataTable.svelte`  | Tableau avec tri déclaré, filtres, actions et pagination |
+| **Pagination** | `components/Pagination.svelte` | Sélecteur 10/20/50/100 et navigation de pages            |
 
 `AppShell.svelte` est un composant **interne au BO hôte**, pas une primitive
 à importer dans les modules. Il n'existe pas encore de composant public
@@ -59,15 +59,15 @@ le composant. On ne la colle pas manuellement sur un bouton natif de module
 pour contourner ce contrat. Les CSS centralisés sont dans
 `symsvel-bo/src/app.css`.
 
-| `variant` | Usage conseillé | Raison de la couleur | Jeton principal |
-| --- | --- | --- | --- |
-| `primary` | Action principale, créer, avancer | Bleu pétrole : appel à l'action neutre, sans annoncer de succès | `--bo-primary` |
-| `secondary` | Éditer, annuler, revenir, rafraîchir | Neutre : action secondaire, non destructive | `--bo-surface` / `--bo-text` |
-| `success` | Enregistrer, valider, autoriser, activer | Vert : confirmation ou effet positif de l'action | `--bo-action-success` |
-| `danger` | Supprimer, détruire définitivement | Rouge : perte ou conséquence destructive à examiner | `--bo-danger` |
-| `warning` | Désactiver, suspendre, révoquer un droit réversible | Orange : retrait réversible demandant l'attention | `--bo-action-warning` |
-| `active` | Afficher une **action** explicitement liée à l'état actif | Bleu : signale une situation active, sans suggérer une suppression | `--bo-action-active` |
-| `inactive` | Afficher une **action** explicitement liée à l'état inactif | Orange : signale une situation désactivée | `--bo-action-inactive` |
+| `variant`   | Usage conseillé                                             | Raison de la couleur                                               | Jeton principal              |
+| ----------- | ----------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------- |
+| `primary`   | Action principale, créer, avancer                           | Bleu pétrole : appel à l'action neutre, sans annoncer de succès    | `--bo-primary`               |
+| `secondary` | Éditer, annuler, revenir, rafraîchir                        | Neutre : action secondaire, non destructive                        | `--bo-surface` / `--bo-text` |
+| `success`   | Enregistrer, valider, autoriser, activer                    | Vert : confirmation ou effet positif de l'action                   | `--bo-action-success`        |
+| `danger`    | Supprimer, détruire définitivement                          | Rouge : perte ou conséquence destructive à examiner                | `--bo-danger`                |
+| `warning`   | Désactiver, suspendre, révoquer un droit réversible         | Orange : retrait réversible demandant l'attention                  | `--bo-action-warning`        |
+| `active`    | Afficher une **action** explicitement liée à l'état actif   | Bleu : signale une situation active, sans suggérer une suppression | `--bo-action-active`         |
+| `inactive`  | Afficher une **action** explicitement liée à l'état inactif | Orange : signale une situation désactivée                          | `--bo-action-inactive`       |
 
 La couleur s'applique à la **finalité du bouton**. Par exemple, si un pays
 est actif, l'action « Désactiver » utilise `warning`, **pas** `active` ;
@@ -100,18 +100,18 @@ Les jetons sont résolus automatiquement par le thème clair, sombre ou
 `prefers-color-scheme`. **Ne pas recopier leurs valeurs hexadécimales dans
 le module**. Les couleurs ont une signification visuelle distincte :
 
-| Famille | Jetons CSS | Pourquoi |
-| --- | --- | --- |
-| Surfaces | `--bo-bg`, `--bo-surface`, `--bo-surface-muted` | Séparer fond, panneau et sous-zone sans inventer de blanc fixe |
-| Champs | `--bo-input`, `--bo-border` | Assurer une saisie lisible sur les deux thèmes |
-| Textes | `--bo-text`, `--bo-muted` | Hiérarchie de lecture, aide et métadonnées |
-| Navigation / accent | `--bo-primary`, `--bo-primary-contrast` | Identité visuelle et actions primaires |
-| Focus | `--bo-focus` | Repère clavier distinct du survol |
-| Suppression | `--bo-danger`, `--bo-danger-contrast` | Action destructive |
-| Actions | `--bo-action-success`, `--bo-action-warning`, `--bo-action-active`, `--bo-action-inactive`, `--bo-action-contrast` | Finalité et état des boutons |
-| Désactivé | `--bo-action-disabled-bg`, `--bo-action-disabled-fg`, `--bo-action-disabled-border` | État indisponible prioritaire |
-| Messages | `--bo-success-bg/text`, `--bo-error-bg/text`, `--bo-info-bg/text` | Retours d'opération, **pas** boutons |
-| Effet de surface | `--bo-shadow` | Élévation commune des panneaux/dialogues |
+| Famille             | Jetons CSS                                                                                                         | Pourquoi                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Surfaces            | `--bo-bg`, `--bo-surface`, `--bo-surface-muted`                                                                    | Séparer fond, panneau et sous-zone sans inventer de blanc fixe |
+| Champs              | `--bo-input`, `--bo-border`                                                                                        | Assurer une saisie lisible sur les deux thèmes                 |
+| Textes              | `--bo-text`, `--bo-muted`                                                                                          | Hiérarchie de lecture, aide et métadonnées                     |
+| Navigation / accent | `--bo-primary`, `--bo-primary-contrast`                                                                            | Identité visuelle et actions primaires                         |
+| Focus               | `--bo-focus`                                                                                                       | Repère clavier distinct du survol                              |
+| Suppression         | `--bo-danger`, `--bo-danger-contrast`                                                                              | Action destructive                                             |
+| Actions             | `--bo-action-success`, `--bo-action-warning`, `--bo-action-active`, `--bo-action-inactive`, `--bo-action-contrast` | Finalité et état des boutons                                   |
+| Désactivé           | `--bo-action-disabled-bg`, `--bo-action-disabled-fg`, `--bo-action-disabled-border`                                | État indisponible prioritaire                                  |
+| Messages            | `--bo-success-bg/text`, `--bo-error-bg/text`, `--bo-info-bg/text`                                                  | Retours d'opération, **pas** boutons                           |
+| Effet de surface    | `--bo-shadow`                                                                                                      | Élévation commune des panneaux/dialogues                       |
 
 Pour les jetons de messages, employer les noms complets :
 `--bo-success-bg` et `--bo-success-text`, `--bo-error-bg` et
@@ -122,12 +122,16 @@ Exemple d'un état textuel **sans inventer de composant Badge** :
 
 ```svelte
 <span class="account-state" class:is-active={account.enabled}>
-  {account.enabled ? t.active : t.inactive}
+	{account.enabled ? t.active : t.inactive}
 </span>
 
 <style>
-  .account-state { color: var(--bo-muted); }
-  .account-state.is-active { color: var(--bo-success-text); }
+	.account-state {
+		color: var(--bo-muted);
+	}
+	.account-state.is-active {
+		color: var(--bo-success-text);
+	}
 </style>
 ```
 
@@ -139,25 +143,19 @@ doit pas être véhiculée par la couleur seule.
 ### Button
 
 ```svelte
-<Button
-  type="submit"
-  variant="success"
-  loading={saving}
-  disabled={!valid}
-  class="my-layout-class"
->
-  {t.save}
+<Button type="submit" variant="success" loading={saving} disabled={!valid} class="my-layout-class">
+	{t.save}
 </Button>
 ```
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `children` | `Snippet` obligatoire | Contenu affiché hors attente |
-| `type` | HTML `button` / défaut `"button"` | **Jamais de submit implicite** ; passer `"submit"` dans un formulaire |
-| `variant` | `BoButtonVariant` / `"primary"` | Sept variantes définies dans `components/button.ts` |
-| `loading` | `boolean` / `false` | Désactive le bouton et affiche « Patientez… » traduit par le BO |
-| `disabled` | Attribut HTML / `false` | Forcé également par `loading` |
-| `onclick`, `aria-*`, `title`, `class`… | `HTMLButtonAttributes` | Attributs HTML standard, sans API métier ajoutée |
+| Prop                                   | Type / défaut                     | Comportement                                                          |
+| -------------------------------------- | --------------------------------- | --------------------------------------------------------------------- |
+| `children`                             | `Snippet` obligatoire             | Contenu affiché hors attente                                          |
+| `type`                                 | HTML `button` / défaut `"button"` | **Jamais de submit implicite** ; passer `"submit"` dans un formulaire |
+| `variant`                              | `BoButtonVariant` / `"primary"`   | Sept variantes définies dans `components/button.ts`                   |
+| `loading`                              | `boolean` / `false`               | Désactive le bouton et affiche « Patientez… » traduit par le BO       |
+| `disabled`                             | Attribut HTML / `false`           | Forcé également par `loading`                                         |
+| `onclick`, `aria-*`, `title`, `class`… | `HTMLButtonAttributes`            | Attributs HTML standard, sans API métier ajoutée                      |
 
 Les libellés des modules viennent de leurs dictionnaires, pas d'une
 chaîne française codée en dur. `class` sert au layout (espacement,
@@ -171,10 +169,10 @@ largeur), **pas** à remplacer la sémantique de `variant`.
 <Alert kind="info">{t.help}</Alert>
 ```
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `kind` | `"error" \| "success" \| "info"` / `"error"` | Fond et texte via jetons du thème |
-| `children` | `Snippet` obligatoire | Contenu du message |
+| Prop       | Type / défaut                                | Comportement                      |
+| ---------- | -------------------------------------------- | --------------------------------- |
+| `kind`     | `"error" \| "success" \| "info"` / `"error"` | Fond et texte via jetons du thème |
+| `children` | `Snippet` obligatoire                        | Contenu du message                |
 
 `error` rend `role="alert"` ; `success` et `info` rendent
 `role="status"`. Ce composant n'a ni `variant` ni prop `onClose`.
@@ -183,22 +181,22 @@ largeur), **pas** à remplacer la sémantique de `variant`.
 
 ```svelte
 <InputField
-  id="module-label"
-  label={t.label}
-  type="text"
-  bind:value={label}
-  required
-  maxlength={150}
+	id="module-label"
+	label={t.label}
+	type="text"
+	bind:value={label}
+	required
+	maxlength={150}
 />
 ```
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `id` | `string` obligatoire | Associe le `label` au champ |
-| `label` | `string` obligatoire | Texte affiché |
-| `value` | `string` bindable / `""` | État réactif via `bind:value` |
-| `type` | `HTMLInputAttributes["type"]` / `"text"` | Type de saisie HTML |
-| `required`, `disabled`, `placeholder`, `autocomplete`… | `HTMLInputAttributes` | Attributs natifs disponibles |
+| Prop                                                   | Type / défaut                            | Comportement                  |
+| ------------------------------------------------------ | ---------------------------------------- | ----------------------------- |
+| `id`                                                   | `string` obligatoire                     | Associe le `label` au champ   |
+| `label`                                                | `string` obligatoire                     | Texte affiché                 |
+| `value`                                                | `string` bindable / `""`                 | État réactif via `bind:value` |
+| `type`                                                 | `HTMLInputAttributes["type"]` / `"text"` | Type de saisie HTML           |
+| `required`, `disabled`, `placeholder`, `autocomplete`… | `HTMLInputAttributes`                    | Attributs natifs disponibles  |
 
 `InputField` est un champ texte HTML, pas un sélecteur, un validateur
 métier, ni un widget de mot de passe complet. La validation et les
@@ -208,31 +206,33 @@ erreurs du module restent sous la responsabilité du parent et du Back.
 
 ```svelte
 <script lang="ts">
-  let country = $state('FR');
-  const options = [
-    { value: 'FR', label: 'France', code: 'FR', icon: '🇫🇷' },
-    { value: 'BE', label: 'Belgique', code: 'BE', icon: '🇧🇪' }
-  ];
+	let country = $state('FR');
+	const options = [
+		{ value: 'FR', label: 'France', code: 'FR', icon: '🇫🇷' },
+		{ value: 'BE', label: 'Belgique', code: 'BE', icon: '🇧🇪' }
+	];
 </script>
 
 <Dropdown
-  value={country}
-  {options}
-  label={t.country}
-  placeholder={t.choose}
-  disabled={saving}
-  onChange={(value) => { country = value; }}
+	value={country}
+	{options}
+	label={t.country}
+	placeholder={t.choose}
+	disabled={saving}
+	onChange={(value) => {
+		country = value;
+	}}
 />
 ```
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `value` | `string` obligatoire | Option courante, contrôlée par le parent |
-| `options` | `DropdownOption[]` obligatoire | `{ value: string, label: string, code?: string, icon?: string }` |
-| `label` | `string` obligatoire | Libellé accessible du déclencheur |
-| `onChange` | `(value: string) => void` obligatoire | Appelé seulement si la sélection change |
-| `disabled` | `boolean` / `false` | Interdit l'ouverture et la sélection |
-| `placeholder` | `string` / `"—"` | Affiché quand aucune valeur ne correspond |
+| Prop          | Type / défaut                         | Comportement                                                     |
+| ------------- | ------------------------------------- | ---------------------------------------------------------------- |
+| `value`       | `string` obligatoire                  | Option courante, contrôlée par le parent                         |
+| `options`     | `DropdownOption[]` obligatoire        | `{ value: string, label: string, code?: string, icon?: string }` |
+| `label`       | `string` obligatoire                  | Libellé accessible du déclencheur                                |
+| `onChange`    | `(value: string) => void` obligatoire | Appelé seulement si la sélection change                          |
+| `disabled`    | `boolean` / `false`                   | Interdit l'ouverture et la sélection                             |
+| `placeholder` | `string` / `"—"`                      | Affiché quand aucune valeur ne correspond                        |
 
 Navigation clavier : flèches, Home/End, Entrée/Espace, Échap et Tab.
 Le panneau possède `role="listbox"`. Le composant ne crée pas de
@@ -247,23 +247,35 @@ Tester le menu ouvert devant les éléments suivants.
 ### Modal
 
 ```svelte
-<Modal open={editing !== null} title={t.edit} onClose={() => { editing = null; }}>
-  <form onsubmit={save}>
-    <InputField id="name" label={t.name} bind:value={name} required />
-    <Button type="button" variant="secondary" onclick={() => { editing = null; }}>
-      {t.cancel}
-    </Button>
-    <Button type="submit" variant="success" loading={saving}>{t.save}</Button>
-  </form>
+<Modal
+	open={editing !== null}
+	title={t.edit}
+	onClose={() => {
+		editing = null;
+	}}
+>
+	<form onsubmit={save}>
+		<InputField id="name" label={t.name} bind:value={name} required />
+		<Button
+			type="button"
+			variant="secondary"
+			onclick={() => {
+				editing = null;
+			}}
+		>
+			{t.cancel}
+		</Button>
+		<Button type="submit" variant="success" loading={saving}>{t.save}</Button>
+	</form>
 </Modal>
 ```
 
-| Prop | Type | Comportement |
-| --- | --- | --- |
-| `open` | `boolean` obligatoire | Synchronise l'ouverture de `<dialog>` natif |
-| `title` | `string` obligatoire | Titre relié au dialogue par `aria-labelledby` |
-| `onClose` | `() => void` obligatoire | Fermer via Échap ou bouton ✕ ; **remettre `open` à faux dans le parent** |
-| `children` | `Snippet` obligatoire | Contenu libre, formulaire inclus |
+| Prop       | Type                     | Comportement                                                             |
+| ---------- | ------------------------ | ------------------------------------------------------------------------ |
+| `open`     | `boolean` obligatoire    | Synchronise l'ouverture de `<dialog>` natif                              |
+| `title`    | `string` obligatoire     | Titre relié au dialogue par `aria-labelledby`                            |
+| `onClose`  | `() => void` obligatoire | Fermer via Échap ou bouton ✕ ; **remettre `open` à faux dans le parent** |
+| `children` | `Snippet` obligatoire    | Contenu libre, formulaire inclus                                         |
 
 Le composant ne soumet pas de formulaire, ne crée pas d'API
 et ne choisit pas les traductions du module.
@@ -272,23 +284,28 @@ et ne choisit pas les traductions du module.
 
 ```svelte
 <Pagination
-  page={page}
-  limit={limit}
-  total={filtered.length}
-  loading={loading}
-  onPageChange={(next) => { page = next; }}
-  onLimitChange={(next) => { limit = next; page = 1; }}
+	{page}
+	{limit}
+	total={filtered.length}
+	{loading}
+	onPageChange={(next) => {
+		page = next;
+	}}
+	onLimitChange={(next) => {
+		limit = next;
+		page = 1;
+	}}
 />
 ```
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `page` | `number` obligatoire | Index **commençant à 1** |
-| `limit` | `10 \| 20 \| 50 \| 100` / `20` | Nombre de lignes par page |
-| `total` | `number` obligatoire | Taille de la liste filtrée, **avant découpage** |
-| `loading` | `boolean` / `false` | Verrouille les interactions |
-| `onPageChange` | `(page: number) => void` obligatoire | Le parent met à jour son état |
-| `onLimitChange` | `(limit: PageSize) => void` obligatoire | Le parent ajuste taille et page |
+| Prop            | Type / défaut                           | Comportement                                    |
+| --------------- | --------------------------------------- | ----------------------------------------------- |
+| `page`          | `number` obligatoire                    | Index **commençant à 1**                        |
+| `limit`         | `10 \| 20 \| 50 \| 100` / `20`          | Nombre de lignes par page                       |
+| `total`         | `number` obligatoire                    | Taille de la liste filtrée, **avant découpage** |
+| `loading`       | `boolean` / `false`                     | Verrouille les interactions                     |
+| `onPageChange`  | `(page: number) => void` obligatoire    | Le parent met à jour son état                   |
+| `onLimitChange` | `(limit: PageSize) => void` obligatoire | Le parent ajuste taille et page                 |
 
 Ne pas cumuler une pagination autonome avec celle de `DataTable`
 si ce dernier reçoit déjà sa prop `pagination`.
@@ -297,49 +314,63 @@ si ce dernier reçoit déjà sa prop `pagination`.
 
 ```svelte
 <script lang="ts">
-  import DataTable from '../../../../components/DataTable.svelte';
-  import type { DataAction, DataColumn, SortOrder } from '../../../../components/data-table';
-  import type { PageSize } from '../../../../components/pagination';
+	import DataTable from '../../../../components/DataTable.svelte';
+	import type { DataAction, DataColumn, SortOrder } from '../../../../components/data-table';
+	import type { PageSize } from '../../../../components/pagination';
 
-  type Row = { id: number; name: string; enabled: boolean };
-  let rows = $state<Row[]>([]);
-  let page = $state(1);
-  let limit = $state<PageSize>(20);
-  let sortOrder = $state<SortOrder>('asc');
-  let busy = $state(false);
+	type Row = { id: number; name: string; enabled: boolean };
+	let rows = $state<Row[]>([]);
+	let page = $state(1);
+	let limit = $state<PageSize>(20);
+	let sortOrder = $state<SortOrder>('asc');
+	let busy = $state(false);
 
-  const columns: DataColumn<Row>[] = [
-    { key: 'name', label: 'Nom', sortable: true },
-    { key: 'enabled', label: 'État', format: (_, row) => row.enabled ? 'Actif' : 'Inactif' }
-  ];
-  const actions: DataAction<Row>[] = [{
-    key: 'toggle',
-    label: (row) => row.enabled ? 'Désactiver' : 'Activer',
-    variant: (row) => row.enabled ? 'warning' : 'success',
-    disabled: () => busy,
-    onClick: (row) => { void toggleFromApi(row); }
-  }];
+	const columns: DataColumn<Row>[] = [
+		{ key: 'name', label: 'Nom', sortable: true },
+		{ key: 'enabled', label: 'État', format: (_, row) => (row.enabled ? 'Actif' : 'Inactif') }
+	];
+	const actions: DataAction<Row>[] = [
+		{
+			key: 'toggle',
+			label: (row) => (row.enabled ? 'Désactiver' : 'Activer'),
+			variant: (row) => (row.enabled ? 'warning' : 'success'),
+			disabled: () => busy,
+			onClick: (row) => {
+				void toggleFromApi(row);
+			}
+		}
+	];
 
-  // Exemple de logique métier à fournir par votre module.
-  declare function toggleFromApi(row: Row): Promise<void>;
+	// Exemple de logique métier à fournir par votre module.
+	declare function toggleFromApi(row: Row): Promise<void>;
 
-  const visible = $derived(rows.slice((page - 1) * limit, page * limit));
+	const visible = $derived(rows.slice((page - 1) * limit, page * limit));
 </script>
 
 <DataTable
-  rows={visible}
-  {columns}
-  {actions}
-  rowKey="id"
-  {loading}
-  sortKey="name"
-  {sortOrder}
-  onSortChange={(_, order) => { sortOrder = order; page = 1; }}
-  pagination={{
-    page, limit, total: rows.length,
-    onPageChange: (next) => { page = next; },
-    onLimitChange: (next) => { limit = next; page = 1; }
-  }}
+	rows={visible}
+	{columns}
+	{actions}
+	rowKey="id"
+	{loading}
+	sortKey="name"
+	{sortOrder}
+	onSortChange={(_, order) => {
+		sortOrder = order;
+		page = 1;
+	}}
+	pagination={{
+		page,
+		limit,
+		total: rows.length,
+		onPageChange: (next) => {
+			page = next;
+		},
+		onLimitChange: (next) => {
+			limit = next;
+			page = 1;
+		}
+	}}
 />
 ```
 
@@ -348,31 +379,31 @@ L'exemple montre le **contrat des props**, pas un module prêt à exécuter :
 tableau triable, le parent doit réellement trier `rows` **avant**
 `slice` ; `DataTable` ne trie pas les données par magie.
 
-| Prop | Type / défaut | Comportement |
-| --- | --- | --- |
-| `rows` | `T[]` obligatoire | **Lignes déjà préparées et paginées** par le parent |
-| `columns` | `DataColumn<T>[]` obligatoire | `key`, `label`, `sortable?`, `align?`, `format?(value,row)` |
-| `actions` | `DataAction<T>[]` / `[]` | Actions déclaratives, boutons du Design System |
-| `filters` | `DataFilter[]` / `[]` | Filtres `search` ou `select`, non appliqués automatiquement |
-| `filterValues` | `Record<string,string>` / `{}` | Valeurs contrôlées des filtres |
-| `sortKey` | `string \| null` / `null` | Colonne triée pour l'affichage de l'indicateur |
-| `sortOrder` | `"asc" \| "desc"` / `"asc"` | Ordre sélectionné |
-| `pagination` | `{ page, limit, total, onPageChange, onLimitChange }` facultatif | Affiche la pagination partagée |
-| `loading` | `boolean` / `false` | Désactive tri, filtres et actions |
-| `emptyMessage` | `string` optionnel | Message lorsque `rows` est vide |
-| `rowKey` | `string` / `"id"` | Clé stable pour les lignes |
-| `onSortChange` | `(key, order) => void` optionnel | Signale la demande de tri ; le parent applique le tri |
-| `onFilterChange` | `(key, value) => void` optionnel | Signale un changement ; le parent filtre les données |
+| Prop             | Type / défaut                                                    | Comportement                                                |
+| ---------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| `rows`           | `T[]` obligatoire                                                | **Lignes déjà préparées et paginées** par le parent         |
+| `columns`        | `DataColumn<T>[]` obligatoire                                    | `key`, `label`, `sortable?`, `align?`, `format?(value,row)` |
+| `actions`        | `DataAction<T>[]` / `[]`                                         | Actions déclaratives, boutons du Design System              |
+| `filters`        | `DataFilter[]` / `[]`                                            | Filtres `search` ou `select`, non appliqués automatiquement |
+| `filterValues`   | `Record<string,string>` / `{}`                                   | Valeurs contrôlées des filtres                              |
+| `sortKey`        | `string \| null` / `null`                                        | Colonne triée pour l'affichage de l'indicateur              |
+| `sortOrder`      | `"asc" \| "desc"` / `"asc"`                                      | Ordre sélectionné                                           |
+| `pagination`     | `{ page, limit, total, onPageChange, onLimitChange }` facultatif | Affiche la pagination partagée                              |
+| `loading`        | `boolean` / `false`                                              | Désactive tri, filtres et actions                           |
+| `emptyMessage`   | `string` optionnel                                               | Message lorsque `rows` est vide                             |
+| `rowKey`         | `string` / `"id"`                                                | Clé stable pour les lignes                                  |
+| `onSortChange`   | `(key, order) => void` optionnel                                 | Signale la demande de tri ; le parent applique le tri       |
+| `onFilterChange` | `(key, value) => void` optionnel                                 | Signale un changement ; le parent filtre les données        |
 
 #### Détail de `DataAction<T>`
 
 ```ts
 type DataAction<T extends object> = {
-  key: string;
-  label: string | ((row: T) => string);
-  onClick: (row: T) => void;
-  variant?: BoButtonVariant | ((row: T) => BoButtonVariant);
-  disabled?: (row: T) => boolean;
+	key: string;
+	label: string | ((row: T) => string);
+	onClick: (row: T) => void;
+	variant?: BoButtonVariant | ((row: T) => BoButtonVariant);
+	disabled?: (row: T) => boolean;
 };
 ```
 
@@ -386,18 +417,18 @@ leurs traductions pour décider de la couleur dans le composant.
 
 ```ts
 type DataFilter = {
-  key: string;
-  label: string;
-  type: 'search' | 'select';
-  placeholder?: string;
-  options?: { value: string; label: string }[];
+	key: string;
+	label: string;
+	type: 'search' | 'select';
+	placeholder?: string;
+	options?: { value: string; label: string }[];
 };
 type DataColumn<T extends object> = {
-  key: string;
-  label: string;
-  sortable?: boolean;
-  align?: 'left' | 'center' | 'right';
-  format?: (value: unknown, row: T) => string;
+	key: string;
+	label: string;
+	sortable?: boolean;
+	align?: 'left' | 'center' | 'right';
+	format?: (value: unknown, row: T) => string;
 };
 ```
 
@@ -411,27 +442,37 @@ de la pagination et des mises à jour locales après sauvegarde.
 
 ```svelte
 <div class="module-page">
-  <header class="page-heading">
-    <h1>{t.heading}</h1>
-    <Button variant="secondary" onclick={refresh}>{t.refresh}</Button>
-  </header>
-  <section class="panel">
-    <h2>{t.list}</h2>
-    <!-- Composants natifs ici -->
-  </section>
+	<header class="page-heading">
+		<h1>{t.heading}</h1>
+		<Button variant="secondary" onclick={refresh}>{t.refresh}</Button>
+	</header>
+	<section class="panel">
+		<h2>{t.list}</h2>
+		<!-- Composants natifs ici -->
+	</section>
 </div>
 
 <style>
-  .module-page { max-width: 1200px; margin: auto; display: grid; gap: 20px; }
-  .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .panel {
-    background: var(--bo-surface);
-    color: var(--bo-text);
-    border: 1px solid var(--bo-border);
-    border-radius: 14px;
-    padding: 24px;
-    min-width: 0;
-  }
+	.module-page {
+		max-width: 1200px;
+		margin: auto;
+		display: grid;
+		gap: 20px;
+	}
+	.page-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.panel {
+		background: var(--bo-surface);
+		color: var(--bo-text);
+		border: 1px solid var(--bo-border);
+		border-radius: 14px;
+		padding: 24px;
+		min-width: 0;
+	}
 </style>
 ```
 
