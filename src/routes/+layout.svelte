@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import favicon from '#lib/assets/favicon.svg';
-	import { installBoTheme } from '#lib/theme/bo-theme';
+	import { installBoTheme } from '../lib/theme/bo-theme';
 	import AppShell from '#lib/components/AppShell.svelte';
 	import { isPublicBoRoute } from '../lib/bo/public-routes';
 	import { page } from '$app/state';
