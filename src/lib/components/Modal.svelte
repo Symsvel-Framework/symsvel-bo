@@ -46,10 +46,10 @@
 		max-height: min(90vh, 900px);
 		margin: auto;
 		padding: 0;
-		border: 1px solid #d8e0ea;
+		border: 1px solid var(--bo-border);
 		border-radius: 14px;
-		box-shadow: 0 22px 75px rgba(15, 23, 42, 0.28);
-		background: #fff;
+		box-shadow: var(--bo-shadow);
+		background: var(--bo-surface);
 		color: inherit;
 	}
 	dialog::backdrop {
@@ -61,7 +61,7 @@
 		justify-content: space-between;
 		gap: 16px;
 		padding: 18px 24px;
-		border-bottom: 1px solid #edf0f4;
+		border-bottom: 1px solid var(--bo-border);
 	}
 	h2 {
 		font-size: 1.2rem;
@@ -77,10 +77,10 @@
 		min-height: 36px;
 	}
 	.bo-modal-close:hover {
-		background: #f3f5f8;
+		background: var(--bo-surface-muted);
 	}
 	.bo-modal-close:focus-visible {
-		outline: 2px solid #2457d6;
+		outline: 2px solid var(--bo-focus);
 	}
 	.bo-modal-body {
 		padding: 24px;

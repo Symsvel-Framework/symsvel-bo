@@ -468,3 +468,151 @@ a:hover {
 	color: #667085;
 	font-variant-numeric: tabular-nums;
 }
+
+/* Design System BO: semantic tokens. Visual source is HP, pending exact palette audit. */
+:root {
+	color-scheme: light;
+	--bo-bg: #f2f5f7;
+	--bo-surface: #ffffff;
+	--bo-surface-muted: #f7fafb;
+	--bo-input: #ffffff;
+	--bo-text: #182b36;
+	--bo-muted: #596b78;
+	--bo-border: #d4e0e6;
+	--bo-primary: #087d92;
+	--bo-primary-contrast: #ffffff;
+	--bo-focus: #148fa4;
+	--bo-sidebar: #102632;
+	--bo-sidebar-text: #dae7ed;
+	--bo-sidebar-hover: #20404f;
+	--bo-sidebar-current: #285262;
+	--bo-danger: #c13943;
+	--bo-danger-contrast: #ffffff;
+	--bo-success-bg: #e5f5ed;
+	--bo-success-text: #146647;
+	--bo-error-bg: #fcecef;
+	--bo-error-text: #922d39;
+	--bo-info-bg: #e8f5fa;
+	--bo-info-text: #18546c;
+	--bo-shadow: 0 16px 48px rgba(12, 29, 40, 0.12);
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--bo-bg: #081923;
+	--bo-surface: #102633;
+	--bo-surface-muted: #162f3e;
+	--bo-input: #182f3c;
+	--bo-text: #e5f0f3;
+	--bo-muted: #adc0c9;
+	--bo-border: #38515e;
+	--bo-primary: #12a1b3;
+	--bo-primary-contrast: #061d27;
+	--bo-focus: #36c6d1;
+	--bo-sidebar: #06141d;
+	--bo-sidebar-text: #d2e4ec;
+	--bo-sidebar-hover: #1c3846;
+	--bo-sidebar-current: #225064;
+	--bo-danger: #c9424b;
+	--bo-danger-contrast: #ffffff;
+	--bo-success-bg: #123a30;
+	--bo-success-text: #8ce3bd;
+	--bo-error-bg: #46212b;
+	--bo-error-text: #ffc1ca;
+	--bo-info-bg: #163848;
+	--bo-info-text: #9edce9;
+	--bo-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--bo-bg: #081923;
+		--bo-surface: #102633;
+		--bo-surface-muted: #162f3e;
+		--bo-input: #182f3c;
+		--bo-text: #e5f0f3;
+		--bo-muted: #adc0c9;
+		--bo-border: #38515e;
+		--bo-primary: #12a1b3;
+		--bo-primary-contrast: #061d27;
+		--bo-focus: #36c6d1;
+		--bo-sidebar: #06141d;
+		--bo-sidebar-text: #d2e4ec;
+		--bo-sidebar-hover: #1c3846;
+		--bo-sidebar-current: #225064;
+		--bo-danger: #c9424b;
+		--bo-danger-contrast: #ffffff;
+		--bo-success-bg: #123a30;
+		--bo-success-text: #8ce3bd;
+		--bo-error-bg: #46212b;
+		--bo-error-text: #ffc1ca;
+		--bo-info-bg: #163848;
+		--bo-info-text: #9edce9;
+		--bo-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+	}
+}
+:root { color: var(--bo-text); background: var(--bo-bg); }
+body { color: var(--bo-text); background: var(--bo-bg); }
+a { color: var(--bo-primary); }
+.auth-shell, .bo-shell { background: var(--bo-bg); }
+.auth-card, .bo-topbar, .bo-alert-panel, .bo-account-menu {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+.auth-card header, .bo-topbar, .bo-data-table-scroll th, .bo-data-table-scroll td {
+	border-color: var(--bo-border);
+}
+.auth-card header span, .auth-card p, .bo-account, .welcome p,
+.bo-data-table-empty, .bo-pagination-count, .bo-account-menu strong { color: var(--bo-muted); }
+.form input, .bo-field input, .bo-data-table-filter input, .bo-data-table-filter select,
+.bo-pagination-size select, .bo-theme-choice select {
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border: 1px solid var(--bo-border);
+}
+:where(input, select, textarea, button, a):focus-visible {
+	outline: 2px solid var(--bo-focus);
+	outline-offset: 2px;
+}
+.bo-sidebar { background: var(--bo-sidebar); color: var(--bo-sidebar-text); }
+.bo-nav a, .bo-nav-loading { color: var(--bo-sidebar-text); }
+.bo-nav a:hover, .bo-nav a:focus-visible { background: var(--bo-sidebar-hover); color: var(--bo-sidebar-text); }
+.bo-nav a.active { background: var(--bo-sidebar-current); color: var(--bo-sidebar-text); }
+.bo-nav-section > span, .bo-brand span { color: var(--bo-sidebar-text); }
+.bo-topbar button, .bo-button-secondary {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+.bo-topbar .bo-avatar, .bo-button, .form button {
+	background: var(--bo-primary);
+	color: var(--bo-primary-contrast);
+}
+.bo-button-secondary { background: var(--bo-surface); color: var(--bo-text); }
+.bo-button-danger { background: var(--bo-danger); color: var(--bo-danger-contrast); }
+.bo-alert-error { background: var(--bo-error-bg); color: var(--bo-error-text); }
+.bo-alert-success { background: var(--bo-success-bg); color: var(--bo-success-text); }
+.bo-alert-info { background: var(--bo-info-bg); color: var(--bo-info-text); }
+.bo-topbar .bo-alert-trigger, .bo-alert-panel a {
+	background: var(--bo-info-bg);
+	color: var(--bo-info-text);
+	border-color: var(--bo-border);
+}
+.bo-alert-panel a:hover, .bo-topbar .bo-account-menu button:hover {
+	background: var(--bo-surface-muted);
+}
+.bo-account-menu { width: 230px; }
+.bo-theme-choice {
+	display: grid;
+	gap: 6px;
+	padding: 8px 10px;
+	font-size: 0.85rem;
+	color: var(--bo-text);
+}
+.bo-theme-choice select {
+	width: 100%;
+	padding: 7px 10px;
+	border-radius: 8px;
+	font: inherit;
+}
+

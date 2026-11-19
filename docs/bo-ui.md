@@ -177,3 +177,7 @@ Le thème est une responsabilité du BO hôte : `src/lib/theme/bo-theme.ts` gèr
 ### Choix de thème dans AppShell (19/11/2026)
 
 Le menu du compte propose un sélecteur accessible **Apparence : Système / Clair / Sombre**. Les libellés appartiennent aux textes natifs `bo.system.shell.*`, avec repli FR/EN. Changer de thème ne relance pas l'authentification, ne change pas de route et ne recharge pas le BO. Aucun rôle ni ACL supplémentaire n'est nécessaire pour une préférence locale de présentation.
+
+### Jetons graphiques communs (19/11/2026)
+
+Le BO hôte expose dans `src/app.css` les jetons `--bo-bg`, `--bo-surface`, `--bo-input`, `--bo-text`, `--bo-muted`, `--bo-border`, `--bo-primary`, `--bo-focus`, `--bo-danger`, états et sidebar. Ils sont définis pour clair, sombre et préférence système sans JavaScript préalable. Les composants natifs consomment ces jetons ; la modale HTML native en hérite aussi. Les couleurs sont provisoires avant confrontation au ZIP HP : aucune approximation ne doit être présentée comme un code couleur HP vérifié. Les modules devront progressivement migrer leurs CSS codés en dur vers ce même contrat.
