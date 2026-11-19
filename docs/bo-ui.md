@@ -335,15 +335,15 @@ Le Design System utilise désormais un contrat unique dans
 `src/lib/components/Button.svelte` et `DataTable.svelte`.
 Les actions ne déduisent **jamais** leur finalité d'un libellé traduit :
 
-| Variante | Intention | Couleur |
-| --- | --- | --- |
-| `primary` | Créer, ouvrir une action principale | Bleu pétrole de la charte |
-| `secondary` | Annuler, revenir, actualiser, éditer | Surface neutre bordée |
-| `success` | Valider, enregistrer, accorder, activer | Vert |
-| `danger` | Supprimer, révoquer définitivement | Rouge |
-| `warning` | Désactiver, retirer un droit réversible | Orange |
-| `active` | État actuellement actif | Bleu |
-| `inactive` | État actuellement désactivé | Orange |
+| Variante    | Intention                               | Couleur                   |
+| ----------- | --------------------------------------- | ------------------------- |
+| `primary`   | Créer, ouvrir une action principale     | Bleu pétrole de la charte |
+| `secondary` | Annuler, revenir, actualiser, éditer    | Surface neutre bordée     |
+| `success`   | Valider, enregistrer, accorder, activer | Vert                      |
+| `danger`    | Supprimer, révoquer définitivement      | Rouge                     |
+| `warning`   | Désactiver, retirer un droit réversible | Orange                    |
+| `active`    | État actuellement actif                 | Bleu                      |
+| `inactive`  | État actuellement désactivé             | Orange                    |
 
 `DataAction<T>.variant` accepte une variante fixe ou une fonction
 `(row) => variant`, afin que les boutons Activer/Désactiver suivent

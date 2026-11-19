@@ -850,7 +850,10 @@ a {
 	border: 1px solid var(--bo-button-border);
 	background: var(--bo-button-bg);
 	color: var(--bo-button-fg);
-	transition: filter 120ms ease, background-color 120ms ease, border-color 120ms ease;
+	transition:
+		filter 120ms ease,
+		background-color 120ms ease,
+		border-color 120ms ease;
 }
 .bo-button.bo-button-secondary {
 	--bo-button-bg: var(--bo-surface);
@@ -899,5 +902,7 @@ a {
 	filter: none;
 }
 @media (prefers-reduced-motion: reduce) {
-	.bo-button { transition: none; }
+	.bo-button {
+		transition: none;
+	}
 }
