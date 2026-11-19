@@ -195,3 +195,7 @@ Le composant BO natif `src/lib/components/Dropdown.svelte` est une sélection co
 Le helper `dropdown.ts` reprend **exactement la correspondance de pays explicitée par HP** (`localeToCountry.ts`) : FR→🇫🇷, EN→🇬🇧, IT→🇮🇹, ES→🇪🇸, DE→🇩🇪, PT→🇵🇹, NL→🇳🇱, PL→🇵🇱, SV→🇸🇪. Une langue hors de cette liste utilise 🌐, sans inventer de pays. Tests des options contrôlées, du clavier et des drapeaux. La CI et le CT sur XT doivent valider le comportement réel en thèmes clair et sombre.
 
 Le composant concret utilise un déclencheur `<button aria-haspopup="listbox">`, une liste de choix clavier/souris dans `<div role="listbox">` et des options focusables (`role="option"`). Échap et sélection restituent le focus au déclencheur ; un clic hors du composant replie le panneau. L'identifiant interne est créé avec `$props.id()` et le menu n'est monté que lorsqu'il est ouvert.
+
+### Pagination et sélecteur de taille HP (19/11/2026)
+
+`Pagination.svelte` conserve son contrat public (`page`, `limit`, `total`, `loading`, `onPageChange`, `onLimitChange`) et ses tailles natives 10/20/50/100. Le sélecteur de taille utilise désormais le **Dropdown commun du BO**, sans `select` natif visible : même apparence en clair/sombre et même navigation clavier que les filtres Languages. Il n'appelle ni API ni navigation et le parent reste propriétaire du tableau, du filtre et de la page courante. Les pages qui utilisent déjà `DataTable` continuent à fonctionner sans changement. Validation de la compilation Svelte et tests de pagination, suivis du CT XT.

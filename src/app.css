@@ -681,3 +681,9 @@ a {
 	border-radius: 8px;
 	font: inherit;
 }
+
+/* Shared size selector uses the same HP-style Dropdown as module filters. */
+.bo-pagination-size-control {
+	width: 92px;
+	min-width: 92px;
+}

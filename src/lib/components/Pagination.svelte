@@ -6,6 +6,8 @@
 	import { uiLanguage } from '../api/locales';
 	import { boComponentCopy } from './texts';
 	import Button from './Button.svelte';
+	import Dropdown from './Dropdown.svelte';
+	import { PAGE_SIZES } from './pagination';
 	let {
 		page,
 		limit = 20,
@@ -23,14 +25,14 @@
 	} = $props();
 
 	const t = $derived(boComponentCopy($uiLanguage));
-	const limitId = $props.id();
+	const sizeOptions = PAGE_SIZES.map((size) => ({ value: String(size), label: String(size) }));
 	let pages = $derived(Math.max(1, Math.ceil(Math.max(0, total) / limit)));
 	let current = $derived(Math.min(Math.max(1, page), pages));
 	let first = $derived(total === 0 ? 0 : (current - 1) * limit + 1);
 	let last = $derived(Math.min(current * limit, total));
 
-	function changeLimit(event: Event) {
-		const value = Number((event.currentTarget as HTMLSelectElement).value);
+	function changeLimit(selected: string) {
+		const value = Number(selected);
 		if (value !== 10 && value !== 20 && value !== 50 && value !== 100) return;
 		if (value !== limit) onLimitChange(value);
 	}
@@ -42,18 +44,16 @@
 
 <nav class="bo-pagination" aria-label={t.pagination}>
 	<div class="bo-pagination-size">
-		<label for={limitId}>{t.perPage}</label>
-		<select
-			id={limitId}
-			value={limit}
-			onchange={changeLimit}
-			disabled={loading}
-			aria-label={t.perPage}
-		>
-			{#each [10, 20, 50, 100] as size (size)}
-				<option value={size}>{size}</option>
-			{/each}
-		</select>
+		<span>{t.perPage}</span>
+		<div class="bo-pagination-size-control">
+			<Dropdown
+				value={String(limit)}
+				options={sizeOptions}
+				label={t.perPage}
+				onChange={changeLimit}
+				disabled={loading}
+			/>
+		</div>
 	</div>
 
 	<span class="bo-pagination-count" aria-live="polite">
