@@ -173,3 +173,7 @@ statique et le CT local du scan restent requis.
 ## Première fondation du Design System BO (19/11/2026)
 
 Le thème est une responsabilité du BO hôte : `src/lib/theme/bo-theme.ts` gère le choix `system`, `light` ou `dark`, sans API ni changement d'authentification. Le layout appelle `installBoTheme` y compris pour le login et la 2FA. Le thème système suit `prefers-color-scheme` et les changements de préférence d'un autre onglet. Le choix utilisateur sera exposé par le menu administrateur et enregistré sous `localStorage['symsvel.bo.theme']` (pas de données sensibles). Le composant ne recharge jamais la page. Les tests unitaires vérifient les préférences. Les couleurs communes restent des jetons CSS gérés par le BO et non par les modules.
+
+### Choix de thème dans AppShell (19/11/2026)
+
+Le menu du compte propose un sélecteur accessible **Apparence : Système / Clair / Sombre**. Les libellés appartiennent aux textes natifs `bo.system.shell.*`, avec repli FR/EN. Changer de thème ne relance pas l'authentification, ne change pas de route et ne recharge pas le BO. Aucun rôle ni ACL supplémentaire n'est nécessaire pour une préférence locale de présentation.

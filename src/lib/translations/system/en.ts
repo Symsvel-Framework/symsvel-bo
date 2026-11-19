@@ -21,6 +21,10 @@ export default {
     "modules": "Available modules",
     "detected": "Modules detected in this build",
     "loading": "Checking permitted modules…",
+    "theme": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
     "missingBuild": "No installed module navigation detected in this BO build.",
     "unavailable": "Modules were detected, but no read endpoint was permitted or available."
   },

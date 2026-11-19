@@ -15,6 +15,7 @@
 	} from '../bo/navigation';
 	import { boShellKey, type BoShellContext } from '../bo/context';
 	import { generatedTranslation } from '../i18n/generated-translations';
+	import { isBoThemePreference, readBoThemePreference, saveBoThemePreference, type BoThemePreference } from '../theme/bo-theme';
 
 	let { children }: { children: Snippet } = $props();
 	let identity = $state<BoIdentity | null>(null);
@@ -23,6 +24,7 @@
 	let modulesPending = $state(true);
 	let menuOpen = $state(false);
 	let alertsOpen = $state(false);
+	let themePreference = $state<BoThemePreference>('system');
 	const detectedModules = declaredBoNavigation().length;
 	const language = $derived(($uiLanguage ?? 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en');
 	const copy = {
@@ -35,7 +37,11 @@
 			logout: 'Déconnexion',
 			alerts: 'Alertes système',
 			checking: 'Vérification de la session…',
-			loading: 'Chargement des modules autorisés…'
+			loading: 'Chargement des modules autorisés…',
+			theme: 'Apparence',
+			themeSystem: 'Système',
+			themeLight: 'Clair',
+			themeDark: 'Sombre'
 		},
 		en: {
 			dashboard: 'Dashboard',
@@ -46,7 +52,11 @@
 			logout: 'Log out',
 			alerts: 'System alerts',
 			checking: 'Checking session…',
-			loading: 'Checking permitted modules…'
+			loading: 'Checking permitted modules…',
+			theme: 'Appearance',
+			themeSystem: 'System',
+			themeLight: 'Light',
+			themeDark: 'Dark'
 		}
 	};
 	const t = $derived(
@@ -80,6 +90,9 @@
 
 	onMount(() => {
 		let mounted = true;
+		themePreference = readBoThemePreference();
+		const onThemeStorage = () => { themePreference = readBoThemePreference(); };
+		window.addEventListener('storage', onThemeStorage);
 		// Refresh module alerts after a settings change, without remounting the BO.
 		const refreshAlerts = (): void => {
 			if (!mounted || !identity) return;
@@ -108,6 +121,7 @@
 		return () => {
 			mounted = false;
 			window.removeEventListener('symsvel:alerts-changed', refreshAlerts);
+			window.removeEventListener('storage', onThemeStorage);
 		};
 	});
 
@@ -203,6 +217,19 @@
 					{#if menuOpen}
 						<div class="bo-account-menu" aria-label={t.account}>
 							<strong>{t.administrator} #{identity.id}</strong>
+							<label class="bo-theme-choice">
+								<span>{t.theme}</span>
+								<select value={themePreference} onchange={(event) => {
+									const choice = event.currentTarget.value;
+									if (!isBoThemePreference(choice)) return;
+									themePreference = choice;
+									saveBoThemePreference(choice);
+								}}>
+									<option value="system">{t.themeSystem}</option>
+									<option value="light">{t.themeLight}</option>
+									<option value="dark">{t.themeDark}</option>
+								</select>
+							</label>
 							<button type="button" onclick={logout}>{t.logout}</button>
 						</div>
 					{/if}
