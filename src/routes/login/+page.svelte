@@ -34,8 +34,12 @@
 
 	onMount(() => {
 		let mounted = true;
-		void publicProjectName().then((name) => { if (mounted) brandName = name; });
-		return () => { mounted = false; };
+		void publicProjectName().then((name) => {
+			if (mounted) brandName = name;
+		});
+		return () => {
+			mounted = false;
+		};
 	});
 
 	async function submit(event: SubmitEvent) {

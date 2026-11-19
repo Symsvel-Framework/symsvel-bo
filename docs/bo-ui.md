@@ -304,3 +304,10 @@ de cette récupération. Le changement de nom peut être lu au prochain
 montage de l'écran sans rebuild des fichiers statiques ; le
 rebranding des images/logos n'entre pas dans ce correctif. Le
 contrat attend la CI et le CT XT.
+
+### Normalisation du code de branding (19/11/2026)
+
+Les helpers et composants conservent le format Prettier du BO hôte.
+La correction est purement stylistique, conserve le rendu du titre,
+le repli SymSvel et l'annulation des mises à jour après démontage ;
+le contrat HTTP et les règles de validation restent inchangés.

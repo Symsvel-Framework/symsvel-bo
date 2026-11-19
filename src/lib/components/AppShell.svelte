@@ -102,7 +102,9 @@
 
 	onMount(() => {
 		let mounted = true;
-		void publicProjectName().then((name) => { if (mounted) brandName = name; });
+		void publicProjectName().then((name) => {
+			if (mounted) brandName = name;
+		});
 		let navigationRevision = 0;
 		themePreference = readBoThemePreference();
 		const onThemeStorage = () => {
