@@ -102,7 +102,8 @@
 		onkeydown={triggerKeydown}
 	>
 		<span class="bo-dropdown__main">
-			{#if selected?.icon}<span aria-hidden="true" class="bo-dropdown__icon">{selected.icon}</span>{/if}
+			{#if selected?.icon}<span aria-hidden="true" class="bo-dropdown__icon">{selected.icon}</span
+				>{/if}
 			<span class="bo-dropdown__label">{selected?.label ?? placeholder}</span>
 		</span>
 		<span class="bo-dropdown__meta">
@@ -111,7 +112,14 @@
 		</span>
 	</button>
 	{#if open}
-		<div id={listId} class="bo-dropdown__menu" role="listbox" tabindex="-1" aria-label={label} onkeydown={menuKeydown}>
+		<div
+			id={listId}
+			class="bo-dropdown__menu"
+			role="listbox"
+			tabindex="-1"
+			aria-label={label}
+			onkeydown={menuKeydown}
+		>
 			{#each options as option, index (option.value)}
 				<button
 					type="button"
@@ -125,7 +133,8 @@
 					onclick={() => choose(option)}
 				>
 					<span class="bo-dropdown__main">
-						{#if option.icon}<span aria-hidden="true" class="bo-dropdown__icon">{option.icon}</span>{/if}
+						{#if option.icon}<span aria-hidden="true" class="bo-dropdown__icon">{option.icon}</span
+							>{/if}
 						<span class="bo-dropdown__label">{option.label}</span>
 					</span>
 					{#if option.code}<span class="bo-dropdown__code">{option.code}</span>{/if}
@@ -136,44 +145,110 @@
 </div>
 
 <style>
-	.bo-dropdown { position: relative; width: 100%; min-width: 0; }
+	.bo-dropdown {
+		position: relative;
+		width: 100%;
+		min-width: 0;
+	}
 	.bo-dropdown__trigger {
-		display: flex; align-items: center; justify-content: space-between;
-		gap: 14px; width: 100%; min-height: 44px; padding: 0 14px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		width: 100%;
+		min-height: 44px;
+		padding: 0 14px;
 		border: 1px solid var(--bo-border, #b8c1cc);
-		border-radius: 14px; background: var(--bo-surface-muted, #f6f8fa);
-		color: var(--bo-text, #0f2a38); cursor: pointer; text-align: left;
-		font: inherit; transition: background 120ms, border-color 120ms;
+		border-radius: 14px;
+		background: var(--bo-surface-muted, #f6f8fa);
+		color: var(--bo-text, #0f2a38);
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		transition:
+			background 120ms,
+			border-color 120ms;
 	}
 	.bo-dropdown__trigger:hover:not(:disabled),
 	.bo-dropdown__trigger[aria-expanded='true'] {
 		background: var(--bo-surface, #fff);
 		border-color: var(--bo-primary, #1fa6a6);
 	}
-	.bo-dropdown__trigger:disabled { opacity: 0.55; cursor: not-allowed; }
-	.bo-dropdown__trigger:focus-visible, .bo-dropdown__option:focus-visible {
-		outline: 2px solid var(--bo-focus, #1fa6a6); outline-offset: 2px;
+	.bo-dropdown__trigger:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
 	}
-	.bo-dropdown__main { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
-	.bo-dropdown__icon { flex-shrink: 0; font-size: 1.15rem; line-height: 1; }
-	.bo-dropdown__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.91rem; font-weight: 650; }
-	.bo-dropdown__meta { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
-	.bo-dropdown__code { color: var(--bo-muted, #667085); font-size: 0.76rem; font-weight: 800; letter-spacing: 0.04em; }
-	.bo-dropdown__chevron { color: var(--bo-muted, #667085); font-size: 0.85rem; }
+	.bo-dropdown__trigger:focus-visible,
+	.bo-dropdown__option:focus-visible {
+		outline: 2px solid var(--bo-focus, #1fa6a6);
+		outline-offset: 2px;
+	}
+	.bo-dropdown__main {
+		display: inline-flex;
+		align-items: center;
+		gap: 9px;
+		min-width: 0;
+	}
+	.bo-dropdown__icon {
+		flex-shrink: 0;
+		font-size: 1.15rem;
+		line-height: 1;
+	}
+	.bo-dropdown__label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.91rem;
+		font-weight: 650;
+	}
+	.bo-dropdown__meta {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		flex-shrink: 0;
+	}
+	.bo-dropdown__code {
+		color: var(--bo-muted, #667085);
+		font-size: 0.76rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+	}
+	.bo-dropdown__chevron {
+		color: var(--bo-muted, #667085);
+		font-size: 0.85rem;
+	}
 	.bo-dropdown__menu {
-		position: absolute; z-index: 50; top: calc(100% + 7px); right: 0;
-		min-width: 100%; max-height: min(320px, 55vh); overflow: auto;
-		padding: 5px; border: 1px solid var(--bo-border, #b8c1cc);
-		border-radius: 14px; background: var(--bo-surface, #fff);
+		position: absolute;
+		z-index: 50;
+		top: calc(100% + 7px);
+		right: 0;
+		min-width: 100%;
+		max-height: min(320px, 55vh);
+		overflow: auto;
+		padding: 5px;
+		border: 1px solid var(--bo-border, #b8c1cc);
+		border-radius: 14px;
+		background: var(--bo-surface, #fff);
 		box-shadow: var(--bo-shadow, 0 16px 44px rgba(0, 0, 0, 0.24));
 	}
 	.bo-dropdown__option {
-		display: flex; align-items: center; justify-content: space-between;
-		gap: 14px; width: 100%; min-height: 42px; padding: 9px 10px;
-		border: 0; border-radius: 8px; background: transparent;
-		color: var(--bo-text, #0f2a38); cursor: pointer; font: inherit; text-align: left;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		width: 100%;
+		min-height: 42px;
+		padding: 9px 10px;
+		border: 0;
+		border-radius: 8px;
+		background: transparent;
+		color: var(--bo-text, #0f2a38);
+		cursor: pointer;
+		font: inherit;
+		text-align: left;
 	}
-	.bo-dropdown__option:hover, .bo-dropdown__option:focus-visible {
+	.bo-dropdown__option:hover,
+	.bo-dropdown__option:focus-visible {
 		background: var(--bo-surface-muted, #f4f6f8);
 	}
 	.bo-dropdown__option.active {
