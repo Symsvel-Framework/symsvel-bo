@@ -76,3 +76,12 @@ La navigation native, les alertes et le menu du shell appartiennent à `bo.syste
 ### Validation finale de la passe dictionnaires (18/11/2026)
 
 La CI complète de la branche de traduction, incluant les tests de synchronisation et la documentation Maker pour Tooling, ou les composants natifs du shell pour BO, a réussi sur les runners locaux. Le déclencheur CI temporaire de la branche a été retiré. La validation ne remplace pas les crash-tests XT ni les essais de migration multibase avant merge.
+
+## Guide développeur BO
+
+Le référentiel du **Design System** et des composants que les modules peuvent
+importer se trouve dans [`docs/dev/bo-components.md`](docs/dev/bo-components.md).
+Il documente les composants réellement livrés, leurs props, les exemples
+Svelte, les variantes sémantiques des boutons, les jetons de couleur et
+les règles clair/sombre. Il ne remplace pas la documentation propre à
+chaque module.
