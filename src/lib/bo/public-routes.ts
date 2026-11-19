@@ -7,6 +7,7 @@ export function isPublicBoRoute(pathname: string): boolean {
 		pathname === '/' ||
 		pathname === '/login' ||
 		pathname === '/two-factor' ||
+		pathname === '/verify-email-change' ||
 		pathname.startsWith('/auth/')
 	);
 }

@@ -319,3 +319,12 @@ Le validateur de nom public teste les codes Unicode des caractères
 régulière contenant ces caractères. Le même contrat de sécurité et
 le repli `SymSvel` sont préservés. Correction pour `no-control-regex`
 en CI, sans modifier l'API, la session ou le rendu du projet.
+
+## Confirmation publique d'une nouvelle adresse (19/11/2026)
+
+`/verify-email-change` est volontairement une page publique sans AppShell :
+le clic sur le lien envoyé à la nouvelle boîte doit fonctionner même si la
+session précédente est expirée. Le token à usage unique est vérifié par Auth
+et exclusivement consommé sur le backend dans le contexte BO.
+`/profile` reste une page authentifiée. La liste des routes publiques
+autorise seulement la page de confirmation, sans élargir l'accès au profil.
