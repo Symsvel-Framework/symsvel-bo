@@ -272,3 +272,19 @@ navigation ni rechargement du document. Les réponses périmées sont ignorées.
 Les alertes sont recalculées d'après la nouvelle navigation autorisée.
 Aucun accès BO ne découle de ce seul événement : les ACL continuent d'être
 imposées par les APIs du module. Tests de contrat ajoutés, CI et CT XT requis.
+
+## Profil personnel administrateur (19/11/2026)
+
+Le module natif obligatoire Admins fournit la route Svelte `/profile`
+et ses endpoints `/apibo/admins/profile` pour une lecture du compte courant
+et la mise à jour de sa langue. La topbar BO affiche désormais « Mon profil »
+dans le menu administrateur ; elle n'expose pas de lien de gestion de
+tous les administrateurs ni de droit de modifier une identité tierce.
+Les permissions d'administration restent distinctes de l'accès
+personnel authentifié ; l'API tranche la portée et la validité du token.
+
+Le lien utilise le routeur SvelteKit et conserve la coque sans reload.
+Les libellés sont fournis par les traductions du module Admins
+(`bo.admins.profile.title`) lorsqu'il est installé. L'assemblage
+BO/Admins doit être validé en CI et sur XT ; ne pas présenter le
+parcours d'email/mot de passe comme réalisé.

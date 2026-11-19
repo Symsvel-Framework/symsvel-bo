@@ -303,6 +303,19 @@ a:hover {
 	display: grid;
 	gap: 4px;
 }
+.bo-account-menu .bo-profile-link {
+  display: block;
+  padding: 10px;
+  border-radius: 7px;
+  color: var(--bo-text);
+  text-decoration: none;
+  font-weight: 650;
+}
+.bo-account-menu .bo-profile-link:hover,
+.bo-account-menu .bo-profile-link:focus-visible {
+  background: var(--bo-surface-muted);
+  color: var(--bo-primary);
+}
 .bo-account-menu strong {
 	padding: 8px 10px;
 	font-size: 0.85rem;

@@ -39,6 +39,7 @@
 			modules: 'Modules',
 			navigation: 'Navigation principale',
 			account: 'Menu administrateur',
+			profile: 'Mon profil',
 			administrator: 'Administrateur',
 			logout: 'Déconnexion',
 			alerts: 'Alertes système',
@@ -54,6 +55,7 @@
 			modules: 'Modules',
 			navigation: 'Main navigation',
 			account: 'Administrator menu',
+			profile: 'My profile',
 			administrator: 'Administrator',
 			logout: 'Log out',
 			alerts: 'System alerts',
@@ -73,6 +75,8 @@
 						? `bo.auth.session.${key}`
 						: key === 'administrator'
 							? 'bo.admins.account.administrator'
+							: key === 'profile'
+								? 'bo.admins.profile.title'
 							: `bo.system.shell.${key}`;
 				return [key, generatedTranslation($uiLanguage, path) ?? fallback];
 			})
@@ -239,6 +243,7 @@
 					{#if menuOpen}
 						<div class="bo-account-menu" aria-label={t.account}>
 							<strong>{t.administrator} #{identity.id}</strong>
+							<a class="bo-profile-link" href={resolve('/profile' as Path)} onclick={() => (menuOpen = false)}>{t.profile}</a>
 							<div class="bo-theme-choice">
 								<span>{t.theme}</span>
 								<Dropdown
