@@ -181,7 +181,9 @@
 {#if identity}
 	<div class="bo-shell">
 		<aside class="bo-sidebar">
-			<a class="bo-brand" href={resolve('/dashboard')}><strong>{brandName}</strong><span>BO</span></a>
+			<a class="bo-brand" href={resolve('/dashboard')}
+				><strong>{brandName}</strong><span>BO</span></a
+			>
 			<nav class="bo-nav" aria-label={t.navigation}>
 				<a
 					class:active={active('/dashboard')}
