@@ -199,3 +199,11 @@ Le composant concret utilise un déclencheur `<button aria-haspopup="listbox">`,
 ### Pagination et sélecteur de taille HP (19/11/2026)
 
 `Pagination.svelte` conserve son contrat public (`page`, `limit`, `total`, `loading`, `onPageChange`, `onLimitChange`) et ses tailles natives 10/20/50/100. Le sélecteur de taille utilise désormais le **Dropdown commun du BO**, sans `select` natif visible : même apparence en clair/sombre et même navigation clavier que les filtres Languages. Il n'appelle ni API ni navigation et le parent reste propriétaire du tableau, du filtre et de la page courante. Les pages qui utilisent déjà `DataTable` continuent à fonctionner sans changement. Validation de la compilation Svelte et tests de pagination, suivis du CT XT.
+
+## Normalisation globale du Design System BO (19/11/2026)
+
+Les primitives BO exposent un seul contrat visuel pour les modules : `--bo-bg`, `--bo-surface`, `--bo-surface-muted`, `--bo-input`, `--bo-text`, `--bo-muted`, `--bo-border`, `--bo-primary`, `--bo-primary-contrast`, `--bo-focus`, `--bo-shadow`, états et navigation. Aucun module ne code une palette clair/sombre parallèle. Les écrans BO utilisent `Button`, `Alert`, `Modal`, `DataTable`, `Pagination`, `Dropdown` lorsque le contrat convient ; aucune bibliothèque de composants supplémentaire.
+
+Le sélecteur **Apparence** du compte et les filtres à choix de `DataTable` utilisent `Dropdown.svelte` au lieu des sélecteurs du navigateur. `Pagination` le possède déjà. Les boutons, cartes dashboard et fermeture des modales respectent les jetons de thème. Le choix des langues, valeurs par défaut et droits reste géré par les modules, pas par les composants.
+
+Les modules existants conservent leurs tableaux, formulaires et règles métier. Seuls leurs styles et sélecteurs communs sont normalisés, en maintenant les appels API asynchrones, la pagination, le focus et le scroll. Tests BO et assemblage des modules exigés avant CT XT sur les deux thèmes. L'écran de double authentification conserve **un fond QR blanc** pour la lisibilité des codes, même en mode sombre.

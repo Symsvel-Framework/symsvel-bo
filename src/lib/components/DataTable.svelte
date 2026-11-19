@@ -1,6 +1,7 @@
 <script lang="ts" generics="T extends object">
 	import Pagination from './Pagination.svelte';
 	import Button from './Button.svelte';
+	import Dropdown from './Dropdown.svelte';
 	import { uiLanguage } from '../api/locales';
 	import { boComponentCopy } from './texts';
 	import type {
@@ -50,8 +51,8 @@
 		onSortChange(next.key, next.order);
 	}
 
-	function changeFilter(key: string, event: Event) {
-		onFilterChange?.(key, (event.currentTarget as HTMLInputElement | HTMLSelectElement).value);
+	function changeFilter(key: string, value: string) {
+		onFilterChange?.(key, value);
 	}
 </script>
 
@@ -67,19 +68,21 @@
 							value={filterValues[filter.key] ?? ''}
 							placeholder={filter.placeholder ?? ''}
 							disabled={loading}
-							oninput={(event) => changeFilter(filter.key, event)}
+							oninput={(event) => changeFilter(filter.key, event.currentTarget.value)}
 						/>
 					{:else}
-						<select
-							value={filterValues[filter.key] ?? ''}
-							disabled={loading}
-							onchange={(event) => changeFilter(filter.key, event)}
-						>
-							<option value="">{filter.placeholder ?? t.all}</option>
-							{#each filter.options ?? [] as option (option.value)}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
+						<div class="bo-data-table-filter-select">
+							<Dropdown
+								value={filterValues[filter.key] ?? ''}
+								options={[
+									{ value: '', label: filter.placeholder ?? t.all },
+									...(filter.options ?? [])
+								]}
+								label={filter.label}
+								disabled={loading}
+								onChange={(value) => changeFilter(filter.key, value)}
+							/>
+						</div>
 					{/if}
 				</label>
 			{/each}

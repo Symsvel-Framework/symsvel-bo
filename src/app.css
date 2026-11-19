@@ -435,8 +435,7 @@ a:hover {
 	display: grid;
 	gap: 5px;
 }
-.bo-data-table-filter input,
-.bo-data-table-filter select {
+.bo-data-table-filter input {
 	border: 1px solid #ccd4df;
 	border-radius: 7px;
 	padding: 7px 9px;
@@ -456,13 +455,6 @@ a:hover {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-}
-.bo-pagination-size select {
-	padding: 7px 9px;
-	border: 1px solid #ccd4df;
-	border-radius: 7px;
-	font: inherit;
-	background: white;
 }
 .bo-pagination-count {
 	color: #667085;
@@ -591,9 +583,7 @@ a {
 .form input,
 .bo-field input,
 .bo-data-table-filter input,
-.bo-data-table-filter select,
-.bo-pagination-size select,
-.bo-theme-choice select {
+
 	background: var(--bo-input);
 	color: var(--bo-text);
 	border: 1px solid var(--bo-border);
@@ -675,15 +665,13 @@ a {
 	font-size: 0.85rem;
 	color: var(--bo-text);
 }
-.bo-theme-choice select {
-	width: 100%;
-	padding: 7px 10px;
-	border-radius: 8px;
-	font: inherit;
-}
 
 /* Shared size selector uses the same HP-style Dropdown as module filters. */
 .bo-pagination-size-control {
 	width: 92px;
 	min-width: 92px;
 }
+
+/* Host-controlled filters and account preferences use the same HP Dropdown. */
+.bo-data-table-filter-select { width: min(100%, 260px); min-width: 170px; }
+.bo-theme-choice .bo-dropdown { width: 100%; }

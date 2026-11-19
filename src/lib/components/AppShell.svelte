@@ -15,6 +15,7 @@
 	} from '../bo/navigation';
 	import { boShellKey, type BoShellContext } from '../bo/context';
 	import { generatedTranslation } from '../i18n/generated-translations';
+	import Dropdown from './Dropdown.svelte';
 	import {
 		isBoThemePreference,
 		readBoThemePreference,
@@ -224,22 +225,23 @@
 					{#if menuOpen}
 						<div class="bo-account-menu" aria-label={t.account}>
 							<strong>{t.administrator} #{identity.id}</strong>
-							<label class="bo-theme-choice">
+							<div class="bo-theme-choice">
 								<span>{t.theme}</span>
-								<select
+								<Dropdown
 									value={themePreference}
-									onchange={(event) => {
-										const choice = event.currentTarget.value;
+									label={t.theme}
+									options={[
+										{ value: 'system', label: t.themeSystem },
+										{ value: 'light', label: t.themeLight },
+										{ value: 'dark', label: t.themeDark }
+									]}
+									onChange={(choice) => {
 										if (!isBoThemePreference(choice)) return;
 										themePreference = choice;
 										saveBoThemePreference(choice);
 									}}
-								>
-									<option value="system">{t.themeSystem}</option>
-									<option value="light">{t.themeLight}</option>
-									<option value="dark">{t.themeDark}</option>
-								</select>
-							</label>
+								/>
+							</div>
 							<button type="button" onclick={logout}>{t.logout}</button>
 						</div>
 					{/if}

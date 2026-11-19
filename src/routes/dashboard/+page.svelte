@@ -84,17 +84,17 @@
 	}
 	.module-card {
 		display: block;
-		border: 1px solid #d4dce8;
-		background: white;
+		border: 1px solid var(--bo-border);
+		background: var(--bo-surface);
 		padding: 20px;
 		border-radius: 12px;
 		font-weight: 700;
 		text-decoration: none;
-		color: #18202b;
+		color: var(--bo-text);
 	}
 	.module-card:hover,
 	.module-card:focus-visible {
-		border-color: #2457d6;
-		background: #f4f7ff;
+		border-color: var(--bo-primary);
+		background: var(--bo-surface-muted);
 	}
 </style>

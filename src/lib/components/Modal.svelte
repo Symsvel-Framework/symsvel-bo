@@ -73,6 +73,7 @@
 		border-radius: 8px;
 		font-size: 1.7rem;
 		cursor: pointer;
+		color: var(--bo-text);
 		min-width: 36px;
 		min-height: 36px;
 	}
