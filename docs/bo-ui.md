@@ -183,3 +183,7 @@ Le menu du compte propose un sélecteur accessible **Apparence : Système / Clai
 Le BO hôte expose dans `src/app.css` les jetons `--bo-bg`, `--bo-surface`, `--bo-input`, `--bo-text`, `--bo-muted`, `--bo-border`, `--bo-primary`, `--bo-focus`, `--bo-danger`, états et sidebar. Ils sont définis pour clair, sombre et préférence système sans JavaScript préalable. Les composants natifs consomment ces jetons ; la modale HTML native en hérite aussi. Les couleurs sont provisoires avant confrontation au ZIP HP : aucune approximation ne doit être présentée comme un code couleur HP vérifié. Les modules devront progressivement migrer leurs CSS codés en dur vers ce même contrat.
 
 Le layout importe le helper de thème par chemin relatif (`../lib/theme/bo-theme`) : pour les fichiers du routeur, le module TypeScript de résolution `#lib` n'est pas universellement accepté pendant le contrôle Svelte. Ce choix suit le pattern existant des routes publiques et évite d'introduire un alias parallèle.
+
+### Ajustement sombre sur les captures HP (19/11/2026)
+
+Les valeurs sombres des jetons BO ont été rapprochées des aplats visibles sur les captures de la page Traductions et de la modale HP : fond très sombre, surface ardoise, champs légèrement plus clairs. Ce sont des échantillons d'image, pas encore les variables officielles du CSS HP. La palette claire et les accents définitifs seront comparés au code source HP lors de sa mise à disposition.
