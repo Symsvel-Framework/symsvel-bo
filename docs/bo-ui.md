@@ -169,3 +169,7 @@ La clé manuelle reste disponible dans un volet de secours.
 Sur un projet existant, lancer `symsvel update bo` **avant** de synchroniser
 la nouvelle version de TwoFactor pour disposer des dépendances npm. Le build
 statique et le CT local du scan restent requis.
+
+## Première fondation du Design System BO (19/11/2026)
+
+Le thème est une responsabilité du BO hôte : `src/lib/theme/bo-theme.ts` gère le choix `system`, `light` ou `dark`, sans API ni changement d'authentification. Le layout appelle `installBoTheme` y compris pour le login et la 2FA. Le thème système suit `prefers-color-scheme` et les changements de préférence d'un autre onglet. Le choix utilisateur sera exposé par le menu administrateur et enregistré sous `localStorage['symsvel.bo.theme']` (pas de données sensibles). Le composant ne recharge jamais la page. Les tests unitaires vérifient les préférences. Les couleurs communes restent des jetons CSS gérés par le BO et non par les modules.

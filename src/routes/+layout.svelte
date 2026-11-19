@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import favicon from '#lib/assets/favicon.svg';
+	import { installBoTheme } from '#lib/theme/bo-theme';
 	import AppShell from '#lib/components/AppShell.svelte';
 	import { isPublicBoRoute } from '../lib/bo/public-routes';
 	import { page } from '$app/state';
@@ -9,6 +11,7 @@
 	let { children }: LayoutProps = $props();
 	// Auth, activation, recovery and pending 2FA must render without a BO session.
 	const publicRoute = $derived(isPublicBoRoute(page.url.pathname));
+	onMount(installBoTheme);
 </script>
 
 <svelte:head>
