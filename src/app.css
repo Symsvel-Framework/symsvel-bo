@@ -794,4 +794,3 @@ a {
 :root .bo-content .panel :is(input, textarea)::placeholder {
 	color: var(--bo-muted);
 }
-
