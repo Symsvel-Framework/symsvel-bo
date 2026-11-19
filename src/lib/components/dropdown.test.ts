@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { languageFlag, nextDropdownIndex, selectedDropdownIndex } from './dropdown';
 
 describe('BO dropdown (HP UX)', () => {
-	const options = [{ value: 'fr', label: 'Français' }, { value: 'en', label: 'English' }];
+	const options = [
+		{ value: 'fr', label: 'Français' },
+		{ value: 'en', label: 'English' }
+	];
 	it('preserves controlled selection without implicit value', () => {
 		expect(selectedDropdownIndex(options, 'en')).toBe(1);
 		expect(selectedDropdownIndex(options, 'xx')).toBe(-1);

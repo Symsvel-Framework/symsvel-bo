@@ -20,8 +20,15 @@ export function nextDropdownIndex(length: number, current: number, key: string):
 
 /** Explicit locale-to-country mapping, taken from the HP BO source. */
 const countryByLanguage: Record<string, string> = {
-	fr: 'FR', en: 'GB', it: 'IT', es: 'ES', de: 'DE',
-	pt: 'PT', nl: 'NL', pl: 'PL', sv: 'SE'
+	fr: 'FR',
+	en: 'GB',
+	it: 'IT',
+	es: 'ES',
+	de: 'DE',
+	pt: 'PT',
+	nl: 'NL',
+	pl: 'PL',
+	sv: 'SE'
 };
 
 export function languageFlag(locale: string): string {
