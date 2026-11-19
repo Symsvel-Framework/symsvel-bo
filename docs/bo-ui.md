@@ -207,3 +207,7 @@ Les primitives BO exposent un seul contrat visuel pour les modules : `--bo-bg`, 
 Le sélecteur **Apparence** du compte et les filtres à choix de `DataTable` utilisent `Dropdown.svelte` au lieu des sélecteurs du navigateur. `Pagination` le possède déjà. Les boutons, cartes dashboard et fermeture des modales respectent les jetons de thème. Le choix des langues, valeurs par défaut et droits reste géré par les modules, pas par les composants.
 
 Les modules existants conservent leurs tableaux, formulaires et règles métier. Seuls leurs styles et sélecteurs communs sont normalisés, en maintenant les appels API asynchrones, la pagination, le focus et le scroll. Tests BO et assemblage des modules exigés avant CT XT sur les deux thèmes. L'écran de double authentification conserve **un fond QR blanc** pour la lisibilité des codes, même en mode sombre.
+
+### Correctif de stabilité CSS (19/11/2026)
+
+Lors de la suppression des anciens sélecteurs natifs du champ Pagination, la règle commune des champs dans `src/app.css` a conservé une virgule isolée et perdu son accolade ouvrante. La CI BO et les assemblages modules l'ont détecté avant validation : la règle a été restaurée pour `.form input`, `.bo-field input` et `.bo-data-table-filter input`. Aucune modification des comportements utilisateur.

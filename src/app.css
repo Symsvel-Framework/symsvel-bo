@@ -582,8 +582,7 @@ a {
 }
 .form input,
 .bo-field input,
-.bo-data-table-filter input,
-
+.bo-data-table-filter input {
 	background: var(--bo-input);
 	color: var(--bo-text);
 	border: 1px solid var(--bo-border);
