@@ -211,3 +211,7 @@ Les modules existants conservent leurs tableaux, formulaires et règles métier.
 ### Correctif de stabilité CSS (19/11/2026)
 
 Lors de la suppression des anciens sélecteurs natifs du champ Pagination, la règle commune des champs dans `src/app.css` a conservé une virgule isolée et perdu son accolade ouvrante. La CI BO et les assemblages modules l'ont détecté avant validation : la règle a été restaurée pour `.form input`, `.bo-field input` et `.bo-data-table-filter input`. Aucune modification des comportements utilisateur.
+
+### Écrans publics BO et thème (19/11/2026)
+
+Les écrans de connexion, d'activation d'invitation et de challenge 2FA utilisent tous le même `auth-shell`/`auth-card` hérité du BO hôte. Le focus des champs, l'alerte d'erreur publique et l'ombre des cartes sont désormais associés aux jetons `--bo-focus`, `--bo-primary`, `--bo-error-bg`, `--bo-error-text` et `--bo-shadow` plutôt qu'à l'ancienne palette statique. Cela préserve le contraste en clair/sombre avant l'établissement de la session ; les parcours d'authentification et leurs secrets restent inchangés.
