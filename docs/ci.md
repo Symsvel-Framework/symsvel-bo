@@ -24,7 +24,7 @@ Plusieurs exécutions CI peuvent démarrer sur la même branche de PR après des
 
 ## CD des releases sur runners locaux (16/11/2026)
 
-La release déclenchée par un tag `vX.Y.Z` utilise maintenant `[self-hosted, linux, ARM64, symsvel]`. Le setup Node.js 24, les tests Playwright et la génération SvelteKit demeurent ; `npx playwright install chromium` réutilise le fonctionnement de la CI sans installer de paquets système. La publication GitHub conserve les notes statiques initiales et vérifie le tag via `actions/github-script@v7`, sans dépendre du binaire `gh` (non garanti sur le runner). L'autorisation `contents: write` est maintenue, aucun tag n'est créé ici. Validation par release réelle et CT de l'artefact requise.
+La release déclenchée par un tag `vX.Y.Z` utilise maintenant `[self-hosted, linux, ARM64, symsvel]`. Le setup Node.js 24, les tests Playwright et la génération SvelteKit demeurent ; `npx playwright install chromium` réutilise le fonctionnement de la CI sans installer de paquets système. La publication GitHub génère des notes de changements réelles et vérifie le tag via `actions/github-script@v7`, sans dépendre du binaire `gh` (non garanti sur le runner). L'autorisation `contents: write` est maintenue, aucun tag n'est créé ici. Validation par release réelle et CT de l'artefact requise.
 
 ## Navigation BO des modules (16/11/2026)
 
@@ -39,3 +39,7 @@ Les chemins du dashboard sont compilés via `import.meta.glob` au build, et non 
 ## CI des branches de chantier (19/11/2026)
 
 Les pushes sur `feat/**` déclenchent désormais la CI locale du BO avant toute intégration sur `dev`. Cela permet de vérifier le design system sur `feat/bo-theme-design-system` sans ouvrir une seconde PR dans le dépôt. La CI reste sur runners auto-hébergés ; la CD conserve son déclenchement séparé. Éviter les pushes de correction redondants tant qu'un run est en cours.
+
+## Première release fonctionnelle (20/11/2026)
+
+Le libellé historique « Aucun changement fonctionnel » est remplacé par des notes générées à partir des changements réels. La QA doit précéder la GitHub Release, déclenchée exclusivement par un tag Git vérifié. Le CT final sans `--dev` est distinct des quatre CT de développement.
