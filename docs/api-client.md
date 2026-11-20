@@ -1,0 +1,158 @@
+# BO API client and language contract
+
+The BO uses `src/lib/api/client.ts` for HTTP requests and `src/lib/api/locales.ts` for language selection. Functional modules should use this client rather than implementing independent fetch wrappers.
+
+## Routing
+
+- `/apibo`: back-office APIs.
+- `/api`: application APIs.
+- `/apiopen`: public APIs and unauthenticated reference data, where provided by the backend.
+
+A route prefix does **not** determine authentication by itself. Public login and registration operations can exist in their respective API areas. Actual endpoints must be declared by the owning module; the client does not manufacture them.
+
+## Languages
+
+Every normal request appends `ui_lang` (interface language) and `translation_lang` (content language). The interface language uses the administrator preference when populated, otherwise the browser language, falling back to `en`. The content language is independent and defaults to the interface language. Existing URL parameters take precedence. Per-request overrides `uiLang` and `translationLang` are available; `skipLocales` disables both additions.
+
+The Auth module will supply the administrator preference after profile loading. Translation dictionaries, fallback rules and cache invalidation remain backend responsibilities.
+
+## Public requests and authentication integration
+
+Pass `public: true` for endpoints that must never send a token or cookies, such as login or unauthenticated reference data. The client removes any Authorization header and sets `credentials: 'omit'`. Non-public requests receive `accessToken` from the central `session.ts` lifecycle. The BO browser login/refresh/logout calls are intentionally credentialed requests with `credentials: include`, whereas module APIs always use `credentials: omit` and a short-lived Bearer. Do not duplicate its session lifecycle in functional modules.
+
+The client uses `PUBLIC_API_URL` when set; otherwise, in a browser, it resolves `bo.example` to `backend.example`. Outside the browser an explicit URL is required. The client accepts root-relative paths only.
+
+Responses follow the SymSvel envelope (`{data: ...}`, `{error: {code, message}}`, or HTTP 204). Errors throw `ApiError` with HTTP status and optional API code.
+
+## Validation
+
+Run `npm run check`, `npm run lint`, `npm run build` and `npm run test:unit -- --run`. Full QA and real browser/backend crash tests are required before completion. Verify backend route contracts, CORS and Auth integration separately.
+
+## Première passe visuelle BO (14/11/2026)
+
+Les vues `/login` et `/dashboard` reprennent les styles et la structure de XCore (`src/app.css`, coque d'authentification et coque BO). L'accueil redirige vers `/login`. Le formulaire envoie une requête publique `POST /apibo/auth/login` et utilise désormais `loginBo()` pour vérifier l'identité BO. Le transport durable sécurisé reste à raccorder ; la session éphémère permet l'accès au dashboard tant que la page n'est pas rechargée.
+
+Raccordements encore requis : transport HttpOnly/CSRF/CORS et tests réels navigateur/backend. La vérification d'accès, le renouvellement à la demande et la déconnexion sont désormais câblés en mode éphémère. Aucun écran 2FA, récupération de mot de passe ou création de compte App n'est inclus dans cette passe.
+
+Le formulaire utilise provisoirement l'import relatif `../../lib/api/client`, résolu sans alias par TypeScript. La configuration actuelle de `tsconfig.json` étend `$app/tsconfig` et ne prouve pas la résolution de l'alias `#lib` dans `svelte-check` ; la CI valide ce point.
+
+Les redirections internes SvelteKit passent par `resolve('/login')` avant `goto(...)`, conformément à la règle ESLint `svelte/no-navigation-without-resolve` du projet.
+
+## Ancien transport BO éphémère, remplacé le 16/11/2026 (historique)
+
+Le formulaire `/login` utilise maintenant `loginBo` (`src/lib/api/session.ts`) : `POST /apibo/auth/login`, puis vérification de l'identité par `GET /apibo/auth/me`. Le dashboard n'est rendu qu'après une nouvelle vérification `/me` ; en cas d'échec, retour à `/login`. La déconnexion appelle `POST /apibo/auth/logout` et efface immédiatement les secrets en mémoire, même si la requête réseau échoue.
+
+**Limitation volontaire de sécurité :** les tokens restent uniquement en mémoire JavaScript, jamais en localStorage, sessionStorage ni cookie lisible par JS. Un rechargement complet perd donc la session et oblige à se reconnecter. Ce mécanisme transitoire ne remplace pas un transport serveur par cookies HttpOnly/Secure avec politique CSRF et CORS validée. Les tokens exposés au JavaScript restent vulnérables en cas de XSS. Pas de protection globale de toutes les routes ni de validation navigateur/backend : ne pas considérer cette passe comme prête pour la production.
+
+## Prévention des courses de session
+
+Chaque tentative de connexion et déconnexion incrémente une génération de session. Une réponse tardive de login ou de vérification `/me` ne peut plus rétablir un état après déconnexion ou remplacer une session plus récente. `src/lib/api/session.test.ts` couvre la connexion vérifiée, le logout, le refus d'un contexte App et la réponse de login arrivée après logout. La CI et le crash-test navigateur restent nécessaires.
+
+## Rotation de session BO (15/11/2026)
+
+`currentBo()` renouvelle les tokens si l'access token expire dans moins de 30 secondes via `POST /apibo/auth/refresh`, puis vérifie l'identité avec le nouvel access token. Les appels simultanés partagent une seule rotation pour éviter le rejeu du refresh. Les réponses tardives ne peuvent pas restaurer une session déconnectée. En cas de refus ou d'expiration du refresh, la session en mémoire est effacée et l'accès reste fermé. Test de rotation ajouté dans `session.test.ts`.
+
+La rotation est **déclenchée par les vérifications de session**, pas par une minuterie permanente ; un écran ouvert sans nouvelle vérification ne renouvelle pas la session. Les tokens restent exposés au JavaScript en mémoire : le transport serveur HttpOnly, les règles CSRF/CORS et les crash-tests navigateur sont encore nécessaires avant production.
+
+### Isolation des rotations concurrentes
+
+La rotation en cours est associée à la génération de session et à l'objet token d'origine. Une déconnexion ou une nouvelle connexion invalide ce rattachement : une requête tardive de l'ancienne session ne peut pas être réutilisée par la nouvelle. Un test simule deux vérifications BO concurrentes et exige un seul appel HTTP de refresh. Les tests CI restent nécessaires avant validation.
+
+### Validation des dates de session
+
+Les réponses de connexion et de renouvellement doivent contenir deux dates valides et futures : expiration de l'access token et du refresh token. Une réponse contenant une date absente, invalide ou déjà dépassée est refusée ; lors du renouvellement, la session locale est immédiatement invalidée. Un échec HTTP de renouvellement ferme également la session et n'entraîne pas de boucle de retry. Tests unitaires ajoutés pour les cas d'expiration et de refus.
+
+## Tests du client HTTP (15/11/2026)
+
+`src/lib/api/client.test.ts` couvre l'absence de cookies et de header Authorization sur les appels publics, l'envoi du Bearer sur les appels authentifiés, le refus des URL commençant par `//` et la propagation du statut/code d'erreur du backend. Les tests sont unitaires avec `fetch` simulé ; ils ne prouvent pas la configuration CORS réelle.
+
+### Crash-test unitaire : déconnexion pendant le refresh
+
+Un test supplémentaire retarde volontairement la réponse de `/apibo/auth/refresh`, déconnecte l'administrateur, puis libère la réponse. La vérification doit retourner `null` et aucun token renouvelé ne doit rétablir la session locale. Ce test ne remplace pas un crash-test HTTP réel : si le serveur a déjà effectué une rotation au moment de la déconnexion, la révocation côté backend doit être contrôlée séparément.
+
+## Lot de durcissement client et session (15/11/2026)
+
+Le client HTTP retire désormais explicitement les entêtes `Authorization`, `Cookie` et `Proxy-Authorization` sur les requêtes `public: true`, en plus de `credentials: omit`. Les chemins commençant par `//`, contenant un antislash ou des retours à la ligne sont rejetés avant `fetch`. Le code HTTP 204 n'est accepté comme succès que si `response.ok` ; les erreurs sans JSON ou dont les champs `message`/`code` ont un type inattendu reçoivent un message sûr. Ces contrôles ne remplacent pas la politique CORS côté serveur.
+
+Les tests du client couvrent désormais ces entêtes, les chemins malformés, les erreurs vides et les payloads d'erreur invalides. Les tests de session couvrent en plus les refresh tokens déjà expirés à la connexion, les access tokens déjà expirés après rotation et le refus de renouveler lorsque la durée de vie du refresh est dépassée. Le mécanisme de session demeure éphémère et limité au BO. Exécuter la CI puis les crash-tests locaux avant validation fonctionnelle.
+
+## Client BO authentifié pour les modules (15/11/2026)
+
+Les futurs écrans des modules BO utilisent `boApi<T>('/apibo/...', init)` exporté par `src/lib/api/session.ts`, et non `api()` avec une gestion de Bearer propre à chaque module. Ce point d'entrée réutilise le refresh partagé, injecte l'access token courant, interdit les chemins hors `/apibo/`, les appels publics et l'injection manuelle de tokens ou de credentials. Le transport est explicitement `credentials: omit` tant que la session est éphémère. Une session absente entraîne `ApiError(401)` sans appel réseau ; un HTTP 401 du module invalide la session courante. Les réponses tardives arrivées après logout ou changement de session sont rejetées.
+
+Les tests unitaires vérifient le Bearer, les chemins et options interdits, l'absence d'appel sans session, l'invalidation 401 et les réponses tardives. Ce mécanisme ne remplace pas les contrôles d'autorisation ACL côté backend, ni les tests d'intégration navigateur. Le passage futur aux cookies HttpOnly devra adapter ce point d'entrée central, sans multiplier les implémentations dans les modules.
+
+### Correction des tests du client authentifié (15/11/2026)
+
+Le mock Vitest de `./client` doit conserver l'export réel `ApiError` via `importOriginal`, en remplaçant uniquement `api` par un mock. Sans cela, les scénarios de refus HTTP échouent avec une erreur de mock, indépendamment du comportement de production. Pour le test de déconnexion pendant un appel module, attendre explicitement que le mock ait reçu la requête avant de déclencher le logout ; sinon la course est non déterministe et peut bloquer le test sur une promesse jamais résolue. Le test attache son assertion de rejet dès le lancement de la requête pour éviter les rejets non gérés.
+
+## Tests navigateur BO avec Playwright (15/11/2026)
+
+`src/routes/auth.e2e.ts` ajoute trois parcours navigateur à la suite QA : connexion BO réussie avec contrôle des headers et du corps HTTP, vérification du dashboard puis déconnexion ; refus des identifiants incorrects avec message utilisateur ; refus d'accès direct au dashboard sans session. Les routes `/apibo/auth/*` sont simulées avec `page.route` afin de tester le comportement réel de SvelteKit dans Chromium sans dépendre d'une base de données ni d'un backend installé. Le scénario de connexion confirme que le login public n'envoie pas d'Authorization, que les requêtes `/me` et `/logout` portent le Bearer attendu et que la déconnexion redirige vers `/login`.
+
+Ces tests navigateur simulés **ne sont pas** les crash-tests locaux du module Auth. Il restera à vérifier le CORS, les cookies et le transport définitif, la rotation DBAL et les endpoints réels sur une installation SymSvel, avec validation de l'utilisateur avant de déclarer le chantier terminé.
+
+## Robustesse des réponses d'authentification et tests navigateur complémentaires (15/11/2026)
+
+Le contrat des endpoints Auth impose des objets JSON valides pour les tokens et l'identité BO. Le client refuse désormais explicitement une réponse JSON `null` pour `login`, `refresh` ou `me`, sans conserver de session utilisable. `boApi` refuse également un header `Authorization` fourni manuellement par un module : seul le point d'entrée central doit injecter le Bearer courant. Quatre tests unitaires couvrent ces conditions.
+
+Deux tests Playwright supplémentaires vérifient le refus d'une identité de contexte `app` lors d'une connexion BO et la disparition volontaire de la session après rechargement complet de la page. Cette dernière limite est attendue tant que le transport sécurisé persistant n'a pas été validé et mis en place. Les tests restent simulés et ne constituent pas une validation de l'intégration HTTP réelle avec le module Auth.
+
+## Préparation des crash-tests BO/Auth réels (15/11/2026)
+
+La CI couvre maintenant aussi deux scénarios navigateur supplémentaires : révocation du token entre login et vérification du dashboard (retour à la page de connexion), et présence de `ui_lang` et `translation_lang` sur la requête de login. Les réponses restent simulées avec Playwright.
+
+**Préconditions du crash-test manuel :** installation SymSvel opérationnelle, module Auth chargé, migrations appliquées, compte administrateur de test, domaine BO et backend configurés avec les origines effectivement utilisées. Ne pas déclarer ce crash-test réussi sur la seule base des mocks Playwright.
+
+**Séquence de validation sur installation :**
+
+1. Ouvrir la page BO sans session, confirmer le refus d'accès au dashboard.
+2. Tenter un mot de passe incorrect, vérifier le HTTP 401 et l'absence de session.
+3. Se connecter avec l'administrateur de test ; vérifier les requêtes `/apibo/auth/login` puis `/apibo/auth/me`, les deux paramètres de langue et le Bearer sur `me`.
+4. Lancer des appels BO authentifiés et contrôler les autorisations backend ; vérifier qu'aucun endpoint `/api` ou `/apiopen` ne reçoit le Bearer BO par ce client.
+5. Forcer l'expiration de l'access token, puis vérifier la rotation du refresh token et la poursuite de la session. Refaire l'essai avec refresh expiré ou révoqué : retour à la connexion.
+6. Se déconnecter, vérifier la révocation côté serveur, puis confirmer qu'un ancien token est refusé.
+7. Recharger complètement le BO : une reconnexion est attendue avec le transport éphémère actuel. Le transport HttpOnly et sa protection CSRF restent un chantier distinct.
+8. Vérifier les réponses CORS sur les véritables domaines et le comportement en cas d'interruption réseau.
+
+**Critère de clôture :** CI verte, crash-tests locaux observés et validés par l'utilisateur, documentation mise à jour, aucune dette technique ouverte. Les étapes ci-dessus sont un protocole, pas un compte rendu de tests déjà effectués.
+
+### Stabilisation du test de révocation navigateur
+
+Le scénario Playwright de révocation attend maintenant explicitement la deuxième requête `/apibo/auth/me` via `expect.poll` avant de vérifier la redirection vers `/login`. En effet, cette URL est également celle du formulaire initial : une assertion immédiate pouvait réussir avant la fin de la connexion et observer une seule requête `me`. La correction concerne uniquement la synchronisation du test, pas le comportement de production.
+
+## Indicateur de robustesse sur les écrans de création de mot de passe (16/11/2026)
+
+Le helper natif `src/lib/password/strength.ts` calcule sur la saisie un indicateur **descriptif** de diversité (longueur, catégories de caractères) et applique exactement le contrat serveur actuel : 12 à 1024 **octets UTF-8**, sans NUL. Le score de 0 à 4 n'est ni une estimation cryptographique ni une exigence supplémentaire ; la saisie n'est pas rejetée pour l'absence d'une majuscule ou d'un symbole. Les modules peuvent réutiliser ce helper dans leurs formulaires sans dupliquer les règles, avec libellés externalisés FR/EN. Vitest protège les limites, Unicode, NUL et score. CT navigateur et CI requis.
+
+## Session BO persistante par cookie de refresh (16/11/2026)
+
+Le transport transitoire ci-dessus a été **remplacé**. Les secrets refresh ne sont plus renvoyés au JavaScript : `loginBo()` appelle `POST /apibo/auth/browser/login`, qui répond avec `access_token` et `expires_at` uniquement, tout en envoyant un cookie backend `__Host-symsvel-bo-refresh; Secure; HttpOnly; SameSite=Strict; Path=/`. `currentBo()` effectue une rotation `POST /apibo/auth/browser/refresh` avec `credentials: include` lorsque la mémoire est vide après reload ou que l'access token expire. La rotation est mutualisée entre appels concurrents, et l'ancien secret est révoqué par le TokenStore. `logoutBo()` efface l'état JS immédiatement, attend les éventuelles rotations en cours, puis appelle `POST /apibo/auth/browser/logout` pour révoquer la famille et expirer le cookie. Une requête tardive d'une ancienne génération ne doit pas restaurer la session.
+
+Les appels métiers `boApi` restent inchangés dans leur contrat : `Authorization: Bearer <access_token>`, **`credentials: omit`**, refus de fournir les tokens ou cookies depuis un module. Les appels de login au transport navigateur ne sont volontairement pas marqués `public: true` car cette option force `credentials: omit` ; seul le transport Auth BO peut utiliser `credentials: include`. L'App garde ses propres endpoints. Les deux hôtes BO et backend doivent être HTTPS, de même site pour le cookie `SameSite=Strict`, et leur origine contrôlée par Auth via le Setup. Le CORS côté Back n'autorise les credentials que sur `/apibo/auth/browser/*`. La politique finale doit être validée en navigateur réel, notamment le rechargement, le refresh, les sessions expirées, le logout, les origines étrangères et les en-têtes Set-Cookie.
+
+Les tests Vitest couvrent l'absence de refresh secret en JS, le bootstrap après reload, les rotations concurrentes, les courses logout/login, la séparation des modules et les erreurs 401. Playwright couvre le parcours écran avec rechargement sur endpoints simulés. Ces tests ne remplacent pas le CT HTTPS/SMTP XT ni la validation des cookies et CORS sur les vrais domaines.
+
+### Domaine HTTP local au Setup (16/11/2026)
+
+Le transport cookie supporte aussi, en environnement Symfony dev uniquement, un domaine réservé local de type `http://bo.xt.localhost` vers `http://backend.xt.localhost` (et ports de développement). Dans ce cas Auth valide précisément le domaine issu du Setup et fournit un cookie `symsvel-bo-refresh-local` qui reste `HttpOnly`, `SameSite=Strict` et host-only, mais ne porte pas `Secure`. En HTTPS, le cookie normal `__Host-symsvel-bo-refresh` garde `Secure`. Le BO ne lit aucun secret depuis JavaScript dans les deux cas ; la production exige HTTPS. Le Setup, le serveur BO et le backend doivent partager la même origine de site pour que `SameSite=Strict` soit utilisable.
+
+## Shell BO persistant (16/11/2026)
+
+Le shell d'interface décrit dans [bo-ui.md](bo-ui.md) valide `currentBo()`
+une fois à son montage et conserve la navigation entre les pages. Chaque module
+appelle toujours `boApi` pour ses propres opérations ; l'ACL reste côté PHP.
+
+## Challenge BO 2FA par onglet (18/11/2026)
+
+Le client central `session.ts` conserve le challenge HTTP 202 du module Auth
+dans `sessionStorage` pour permettre à la page Svelte `/two-factor` de le
+récupérer après un rechargement complet (comportement déjà éprouvé dans XCore).
+Un contenu expiré, malformé ou excessif est purgé ; toute nouvelle connexion,
+déconnexion ou vérification 2FA réussie efface également la valeur. La réponse
+d'enrôlement contient temporairement la clé TOTP ; aucune identité authentifiée,
+aucun access token ni secret refresh n'est enregistré dans ce stockage. Le
+refresh HttpOnly n'est émis qu'après réussite du second facteur. L'absence de
+`sessionStorage` conserve le repli mémoire, limité à la vie du document.
+La CI couvre la restauration après réimport du module ; le CT sur un vrai
+navigateur et le backend local restent obligatoires.

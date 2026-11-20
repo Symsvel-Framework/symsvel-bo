@@ -1,0 +1,40 @@
+export default {
+  "wait": "Patientez…",
+  "loading": "Chargement…",
+  "empty": "Aucun résultat",
+  "all": "Tous",
+  "actions": "Actions",
+  "filters": "Filtres du tableau",
+  "pagination": "Pagination",
+  "perPage": "Lignes par page",
+  "first": "Première page",
+  "previous": "Page précédente",
+  "next": "Page suivante",
+  "last": "Dernière page",
+  "yes": "Oui",
+  "no": "Non",
+  "count": "{first}–{last} sur {total} résultats",
+  "page": "Page {current} / {total}",
+  "dashboard": {
+    "dashboard": "Tableau de bord",
+    "session": "Session BO vérifiée.",
+    "modules": "Modules disponibles",
+    "detected": "Modules détectés dans ce build",
+    "loading": "Chargement des modules autorisés…",
+    "theme": "Apparence",
+    "themeSystem": "Système",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "missingBuild": "Aucune navigation modulaire détectée dans ce build BO.",
+    "unavailable": "Modules détectés, mais aucun endpoint de lecture autorisé ou disponible."
+  },
+  "shell": {
+    "dashboard": "Tableau de bord",
+    "modules": "Modules",
+    "navigation": "Navigation principale",
+    "account": "Menu administrateur",
+    "alerts": "Alertes système",
+    "documentation": "Documentation",
+    "loading": "Chargement des modules autorisés…"
+  }
+} as const;

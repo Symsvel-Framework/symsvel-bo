@@ -42,3 +42,46 @@ Le workflow `.github/workflows/ci.yml` s'exécute sur le runner Docker auto-héb
 La CI conserve `npm run qa` (contrôles Svelte/TypeScript, lint, build statique, tests unitaires et Playwright) ainsi que la vérification des fichiers `build/index.html`, `build/.htaccess` et `build/robots.txt`. L'ancien workflow hébergé est archivé dans `.github/workflows/ci.yml.stub` pour référence et n'est pas exécuté.
 
 Le runner doit rester disponible pour les événements `push` et `pull_request`. La validation de cette migration dépend du résultat effectif de la CI GitHub Actions.
+
+## Fallback français des libellés d'interface (17/11/2026)
+
+Les libellés intégrés de l'interface sont sélectionnés à partir de la langue d'interface (code ISO du navigateur ou du compte). Lorsque la locale n'a pas de dictionnaire intégré, les libellés français sont utilisés ; l'anglais reste disponible explicitement pour `en`. Le fallback ne modifie ni la langue ISO du site ni celle du compte et n'impose pas l'existence de traductions avant l'installation. Le repli doit être réalisé à la clé lors de l'introduction des dictionnaires dynamiques ; l'éditeur BO des traductions et le chargement fichier/BDD ne sont pas fournis par cette seule correction.
+
+Vérifications : tests de sélection FR/EN/autres locales et tests de build/CI. La validation finale nécessite les crash-tests locaux sur le parcours Setup, BO et App.
+
+## Traductions des composants natifs et des modules (18/11/2026)
+
+Les dictionnaires système vivent sous `src/lib/translations/system/<lang>.ts`. Tooling copie ceux des modules sous `src/lib/translations/<module>/<lang>.ts`. Le helper i18n lit la convention `<scope>.<module|system>.<key>` et privilégie les personnalisations publiées (`src/lib/translations/generated`) puis les anciens fichiers `src/lib/i18n/generated` encore présents, avant les valeurs source. Les fichiers sont chargés à la compilation SvelteKit, sans API runtime et avec fallback par clé.
+
+Les libellés de pagination à paramètres (`bo.system.count` et `bo.system.page`) utilisent des modèles textuels avec placeholders limités (`{first}`, `{last}`, `{total}`, `{current}`). Les fonctions d'affichage les substituent sans évaluer de code, et conservent les formats FR/EN historiques.
+
+Compatibilité : lors de la migration de `components.*` vers `bo.system.*`, la lecture des anciens fichiers `lib/i18n/generated` peut encore consulter `components.<clé>`. Languages copie les personnalisations BDD historiques vers `system.<clé>` sans détruire les anciennes lignes.
+
+### Propriété des clés natives BO (18/11/2026)
+
+Le tableau de bord de l'hôte BO est un composant natif : ses libellés sont déclarés sous `bo.system.dashboard.*` dans `src/lib/translations/system/{fr,en}.ts`. À l'inverse, la route native `/login` relève fonctionnellement du module Auth : elle consomme `bo.auth.signIn.*` fourni par `symsvel-module-auth`, avec les libellés français historiques comme fallback avant synchronisation. Les routes ne sont pas déplacées et les composants restent légers.
+
+### Stabilité des dictionnaires TypeScript
+
+Le dossier `src/lib/translations/**` est exclu de Prettier : ses fichiers `.ts` sont des exports JSON strictement compatibles (`export default {"key":"value"} as const;`) que Tooling lit comme données, sans exécuter TypeScript. L'exclusion préserve l'intégrité des fichiers issus des modules et des dictionnaires publiés par Languages. Les autres sources BO continuent d'être formatées normalement.
+
+### Contrôle de CI sur branche de travail
+
+La CI a été exécutée sur la branche de traduction avec les runners locaux ; le déclencheur temporaire de cette branche a ensuite été retiré, et les règles de publication/restauration du workflow (`dev`, `main` et PR selon le dépôt) ont été conservées. Les CT XT restent requis avant merge.
+
+### Shell BO : propriété des traductions (18/11/2026)
+
+La navigation native, les alertes et le menu du shell appartiennent à `bo.system.shell.*`. Les états de connexion et la déconnexion sont rattachés à Auth (`bo.auth.session.*`). Le libellé de compte administrateur est rattaché à Admins (`bo.admins.account.administrator`). Le composant conserve ses fallbacks historiques et n'effectue aucun appel de traduction runtime.
+
+### Validation finale de la passe dictionnaires (18/11/2026)
+
+La CI complète de la branche de traduction, incluant les tests de synchronisation et la documentation Maker pour Tooling, ou les composants natifs du shell pour BO, a réussi sur les runners locaux. Le déclencheur CI temporaire de la branche a été retiré. La validation ne remplace pas les crash-tests XT ni les essais de migration multibase avant merge.
+
+## Guide développeur BO
+
+Le référentiel du **Design System** et des composants que les modules peuvent
+importer se trouve dans [`docs/dev/bo-components.md`](docs/dev/bo-components.md).
+Il documente les composants réellement livrés, leurs props, les exemples
+Svelte, les variantes sémantiques des boutons, les jetons de couleur et
+les règles clair/sombre. Il ne remplace pas la documentation propre à
+chaque module.

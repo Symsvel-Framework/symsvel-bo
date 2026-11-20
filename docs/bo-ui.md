@@ -1,0 +1,389 @@
+# Interface BO commune
+
+Le BO hôte rend un shell unique via `src/routes/+layout.svelte` et
+`src/lib/components/AppShell.svelte`. Les routes `/`, `/login`, `/auth/*`
+(activation et récupération) et `/two-factor` (challenge pré-session)
+sont rendues **sans shell authentifié** via `src/lib/bo/public-routes.ts`,
+importé relativement depuis le layout afin d'être résolu par Svelte/TypeScript.
+Le shell appelle `currentBo()` avant de rendre les pages privées ; il persiste
+pendant les navigations internes.
+Le cookie HttpOnly et le Bearer restent gérés dans `src/lib/api/session.ts`.
+
+La sidebar contient Dashboard et les déclarations installées dans
+`src/lib/modules/*/navigation.ts`, uniquement après un appel de lecture
+autorisé par les ACL PHP. Aucun rôle n'est interprété côté Svelte.
+Les liens et l'état de chargement sont partagés avec le dashboard via
+`src/lib/bo/context.ts`. L'élément actif suit la route courante.
+
+La topbar contient un menu administrateur avec la déconnexion. Le BO
+ne crée pas de lien Profil tant qu'aucune route Profil effective n'existe.
+Les modules autorisés peuvent exporter `boAlerts(check)` dans leur
+`navigation.ts` ; le shell affiche leurs alertes `{ id, path, message: { fr,
+en } }` avec compteur. Une réponse refusée ou indisponible n'expose
+aucune alerte, et le destinataire doit rester la route du module autorisé.
+Le contenu et les règles d'alerte appartiennent aux modules.
+
+Ce mécanisme reprend l'AppShell et les composants partagés de XCore
+conformément à l'ADR 0004, sans recopier son menu figé ni son auth.
+Les libellés de shell suivent `uiLanguage` et le style commun reste
+dans `src/app.css`.
+
+## Validation non clôturée
+
+Exécuter `npm run qa`, vérifier les CI du BO et des modules, puis sur XT :
+Dashboard → Admins → Users → Settings → Dashboard, menu persistant et actif,
+ACL, alertes, déconnexion, rechargement avec refresh HttpOnly et session expirée.
+Seuls les crash-tests utilisateur confirment l'intégration réelle.
+
+## Catalogue de composants réutilisables (hérité des principes XCore)
+
+Le BO hôte fournit désormais `src/lib/components/Button.svelte`,
+`Alert.svelte`, `InputField.svelte`, `DataTable.svelte` et
+`Pagination.svelte`. Les modules doivent préférer ces primitives,
+sans les recopier. Aucun de ces composants n'appelle l'API.
+
+- `Button` reçoit les props HTML du bouton, `variant`
+  (`primary`, `secondary`, `danger`) et `loading`.
+- `Alert` reçoit `kind` (`error`, `success`, `info`) et expose
+  le rôle ARIA approprié.
+- `InputField` associe label et saisie, avec `bind:value`.
+- `DataTable` reçoit lignes, colonnes, actions, filtres, tri et pagination
+  optionnels. Il n'interprète aucune ACL et n'effectue aucun fetch.
+- `Pagination` reçoit `page`, `limit` (10/20/50/100), `total`,
+  `onPageChange` et `onLimitChange`. Le défaut est 20 résultats.
+
+Les libellés génériques FR/EN sont centralisés dans `components/texts.ts`,
+synchronisés avec `uiLanguage`. Les chaînes métier restent dans les modules.
+Pour les tableaux avec édition en ligne complexe, conserver le HTML natif
+jusqu'à l'existence d'un besoin avéré de snippets de cellule : éviter une
+abstraction plus large sans besoin.
+
+Tests unitaires des utilitaires de pagination, tri et affichage requis.
+
+L'étiquette accessible des filtres de tableau suit aussi la langue d'interface.
+
+## Actualisation des alertes
+
+Après une opération susceptible de modifier les avertissements, un module
+peut déclencher `window.dispatchEvent(new Event('symsvel:alerts-changed'))`.
+Le shell réinterroge alors uniquement les providers des modules autorisés ;
+il ne recalcule aucune règle métier et ne déconnecte pas l'administrateur.
+L'abonnement est nettoyé lors du démontage du shell.
+
+## Compatibilité entre les sources BO et les modules
+
+Les pages des modules installés peuvent importer les composants publics du BO
+depuis `src/lib/components/`. Lorsqu'un module adopte de nouvelles primitives
+BO, le **BO natif du projet doit être actualisé en premier**. Dans un projet
+SymSvel en canal `dev` :
+
+```bash
+symsvel update bo
+symsvel update
+```
+
+Ces commandes ont des responsabilités distinctes :
+`symsvel update bo` suit la source Git BO correspondant au canal du projet,
+applique les nouveautés natives et reconstruit le BO ;
+`symsvel update` passe par Composer et synchronise les modules, mais n'installe
+pas à lui seul les nouveaux fichiers natifs du BO.
+
+Un échec Vite `UNRESOLVED_IMPORT` pour `components/Button.svelte`,
+`components/Alert.svelte` ou `components/DataTable.svelte`, alors que
+ces fichiers existent dans le dépôt BO, indique un assemblage local dont les
+sources sont désalignées ou absentes. Ne pas recopier les composants dans les
+modules et ne pas « réparer » leurs imports relatifs tant que leur résolution
+a été confirmée par l'assemblage CI. Vérifier d'abord que la mise à jour native
+s'est effectivement terminée (elle est transactionnelle et peut restaurer
+l'état précédent en cas d'échec).
+
+Le canal est enregistré dans `backend/.symsvel/project.json`. Ne pas changer
+ce fichier manuellement pour débloquer une version : il fait partie de la
+provenance gérée par CLI/Tooling. Les CI isolées des modules assemblent un
+BO `dev` neuf et ne prouvent pas à elles seules le comportement d'un projet
+historique possédant encore un BO natif antérieur. Le crash-test XT reste requis.
+
+## Modales d'édition et d'invitation
+
+`src/lib/components/Modal.svelte` repose sur l'élément HTML natif
+`dialog.showModal()`. La page module possède l'état `open`, le titre, les
+champs et le rappel `onClose`. Le composant gère le voile, l'accessibilité
+(nom accessible, fermeture par Échap, focus géré par le navigateur) et ne
+contient ni API ni droits métier. Ne pas recopier un overlay dans chaque module.
+
+Les onglets et les accordéons restent du HTML natif piloté par le module.
+Les tableaux réutilisent `DataTable` + `Pagination` avec une recherche,
+un tri et un découpage gérés par l'écran, comme dans XCore. L'API garde ses
+contrôles d'accès et reste la seule autorité pour les mutations.
+
+## Traductions statiques générées (17/11/2026)
+
+Les dictionnaires TypeScript produits par Languages et écrits en développement par Tooling sont attendus sous `src/lib/i18n/generated/<code-iso>.ts`. La fonction `generatedTranslation()` dans `src/lib/i18n/generated-translations.ts` les découvre au **build Vite** avec `import.meta.glob` et résout les objets imbriqués. Le fallback est effectué à la clé vers le dictionnaire français, sans modifier la langue du compte.
+
+Les libellés des composants natifs BO (`components.*`) utilisent ces dictionnaires lorsque la clé existe, avec repli sur les valeurs FR/EN intégrées. Les pages de modules qui utilisent leur propre système d'i18n doivent raccorder leurs clés au même helper ; les pages Languages utilisent `languages.*` et `languages.translations.*`. Les fonctions de mise en forme dynamiques restent portées par le code. Aucun chargement de BDD/Redis à l'exécution et aucun serveur Node en production. Un nouveau build/CD est nécessaire après toute modification de fichier généré.
+
+## Connexion avec module 2FA optionnel (17/11/2026)
+
+La connexion BO utilise toujours `/apibo/auth/browser/login`. En présence d'un provider 2FA exigeant une seconde preuve, Auth répond avec un challenge HTTP 202. Le client BO reconnaît cette réponse, conserve temporairement le challenge **en mémoire et dans `sessionStorage` propre à l'onglet** (sans session authentifiée ni cookie de rafraîchissement) et dirige vers la route `/two-factor` fournie uniquement par le module `symsvel-framework/module-two-factor`. Sans ce module, les parcours classiques et les routes du BO restent inchangés.
+
+Après validation, `completeBoSecondFactor` appelle `/apibo/auth/browser/second-factor` avec le cookie HttpOnly géré par le serveur, vérifie `/apibo/auth/me` puis conserve uniquement l'access token en mémoire. La réponse peut afficher une seule fois les codes de secours ; les secrets refresh ne transitent pas par JavaScript. Le challenge persiste lors d'un rechargement de page dans le même onglet, jusqu'à son expiration côté serveur (5 minutes). Une nouvelle connexion, la déconnexion, une valeur invalide/expirée ou une validation 2FA réussie purgent ce stockage. Si `sessionStorage` est interdit par le navigateur, le challenge reste en mémoire jusqu'au rechargement. La synchronisation du module Svelte et les CT de navigation sont requis avant release.
+
+La route `/two-factor` ne doit **jamais** monter `AppShell` : à ce stade, le
+challenge HTTP 202 n'a pas encore émis de cookie refresh, donc un
+`/apibo/auth/browser/refresh` déclenché par `currentBo()` retournerait
+légitimement `401 invalid_session` et interromprait le parcours. La route
+reste publique uniquement **au niveau du rendu Svelte** ; aucun token BO
+n'est accordé sans validation du code TOTP ou de secours par Auth. Le test
+`src/lib/bo/public-routes.test.ts` vérifie les routes pré-session et le
+maintien de la protection des routes privées. En CT, vérifier le parcours
+login → challenge 202 → saisie 2FA → dashboard **sans appel prématuré au
+refresh**, ainsi que le rechargement du dashboard avec cookie valide.
+
+### Persistance pré-session du challenge (18/11/2026)
+
+Conformément au parcours XCore historique, le challenge 2FA est restauré depuis
+`sessionStorage['symsvel.bo.second-factor.challenge']` si la navigation a
+réinitialisé le module Svelte/JavaScript. Ce stockage est limité à l'onglet et
+ne contient **ni token access, ni token refresh, ni mot de passe**. Il contient
+le challenge opaque et, uniquement lors de l'enrôlement, la clé et l'URI TOTP
+déjà transmises à la page par Auth ; ces données sont sensibles, doivent rester
+éphémères et ne sont jamais recopiées vers `localStorage`.
+
+L'accès au stockage est protégé contre les refus du navigateur, les contenus
+corrompus ou anormalement volumineux sont supprimés, et l'expiration de la
+réponse Auth est revérifiée à chaque récupération. Le serveur conserve
+l'autorité sur l'expiration réelle, les essais TOTP et la consommation du
+challenge. Les tests unitaires simulent un rechargement de module, une
+expiration, un stockage inaccessible et la suppression après succès, nouvelle
+connexion et déconnexion. Crash-test local encore requis.
+
+### QR TOTP du module TwoFactor (18/11/2026)
+
+Le module optionnel TwoFactor affiche un QR code créé **localement dans le navigateur**
+à partir de l'URI `otpauth://` transmise par Auth. Les dépendances
+`qrcode@^1.5.4` et `@types/qrcode@^1.5.5` sont installées par le BO hôte ;
+elles ne sont incluses dans le build statique que lorsque la route du module
+les importe. Aucun service QR externe et aucun changement des tokens ou cookies BO.
+La clé manuelle reste disponible dans un volet de secours.
+
+Sur un projet existant, lancer `symsvel update bo` **avant** de synchroniser
+la nouvelle version de TwoFactor pour disposer des dépendances npm. Le build
+statique et le CT local du scan restent requis.
+
+## Première fondation du Design System BO (19/11/2026)
+
+Le thème est une responsabilité du BO hôte : `src/lib/theme/bo-theme.ts` gère le choix `system`, `light` ou `dark`, sans API ni changement d'authentification. Le layout appelle `installBoTheme` y compris pour le login et la 2FA. Le thème système suit `prefers-color-scheme` et les changements de préférence d'un autre onglet. Le choix utilisateur sera exposé par le menu administrateur et enregistré sous `localStorage['symsvel.bo.theme']` (pas de données sensibles). Le composant ne recharge jamais la page. Les tests unitaires vérifient les préférences. Les couleurs communes restent des jetons CSS gérés par le BO et non par les modules.
+
+### Choix de thème dans AppShell (19/11/2026)
+
+Le menu du compte propose un sélecteur accessible **Apparence : Système / Clair / Sombre**. Les libellés appartiennent aux textes natifs `bo.system.shell.*`, avec repli FR/EN. Changer de thème ne relance pas l'authentification, ne change pas de route et ne recharge pas le BO. Aucun rôle ni ACL supplémentaire n'est nécessaire pour une préférence locale de présentation.
+
+### Jetons graphiques communs (19/11/2026)
+
+Le BO hôte expose dans `src/app.css` les jetons `--bo-bg`, `--bo-surface`, `--bo-input`, `--bo-text`, `--bo-muted`, `--bo-border`, `--bo-primary`, `--bo-focus`, `--bo-danger`, états et sidebar. Ils sont définis pour clair, sombre et préférence système sans JavaScript préalable. Les composants natifs consomment ces jetons ; la modale HTML native en hérite aussi. Les couleurs sont provisoires avant confrontation au ZIP HP : aucune approximation ne doit être présentée comme un code couleur HP vérifié. Les modules devront progressivement migrer leurs CSS codés en dur vers ce même contrat.
+
+Le layout importe le helper de thème par chemin relatif (`../lib/theme/bo-theme`) : pour les fichiers du routeur, le module TypeScript de résolution `#lib` n'est pas universellement accepté pendant le contrôle Svelte. Ce choix suit le pattern existant des routes publiques et évite d'introduire un alias parallèle.
+
+### Ajustement sombre sur les captures HP (19/11/2026)
+
+Les valeurs sombres des jetons BO ont été rapprochées des aplats visibles sur les captures de la page Traductions et de la modale HP : fond très sombre, surface ardoise, champs légèrement plus clairs. Ce sont des échantillons d'image, pas encore les variables officielles du CSS HP. La palette claire et les accents définitifs seront comparés au code source HP lors de sa mise à disposition.
+
+## Sélection Dropdown HP (19/11/2026)
+
+Le composant BO natif `src/lib/components/Dropdown.svelte` est une sélection contrôlée sans appel API et sans reload, recevant `value`, `options` (`value`, `label`, `code?`, `icon?`), `label`, `onChange(value)` et `disabled?`. Le clavier gère flèches, Home/End, Entrée/Espace, Échap et Tab ; la fermeture hors panneau et le retour du focus sont prévus. Le style utilise les variables `--bo-*`, sans bibliothèque supplémentaire. Il est introduit d'abord dans Languages, puis réutilisé par les modules lors de leurs reprises UX.
+
+Le helper `dropdown.ts` reprend **exactement la correspondance de pays explicitée par HP** (`localeToCountry.ts`) : FR→🇫🇷, EN→🇬🇧, IT→🇮🇹, ES→🇪🇸, DE→🇩🇪, PT→🇵🇹, NL→🇳🇱, PL→🇵🇱, SV→🇸🇪. Une langue hors de cette liste utilise 🌐, sans inventer de pays. Tests des options contrôlées, du clavier et des drapeaux. La CI et le CT sur XT doivent valider le comportement réel en thèmes clair et sombre.
+
+Le composant concret utilise un déclencheur `<button aria-haspopup="listbox">`, une liste de choix clavier/souris dans `<div role="listbox">` et des options focusables (`role="option"`). Échap et sélection restituent le focus au déclencheur ; un clic hors du composant replie le panneau. L'identifiant interne est créé avec `$props.id()` et le menu n'est monté que lorsqu'il est ouvert.
+
+### Pagination et sélecteur de taille HP (19/11/2026)
+
+`Pagination.svelte` conserve son contrat public (`page`, `limit`, `total`, `loading`, `onPageChange`, `onLimitChange`) et ses tailles natives 10/20/50/100. Le sélecteur de taille utilise désormais le **Dropdown commun du BO**, sans `select` natif visible : même apparence en clair/sombre et même navigation clavier que les filtres Languages. Il n'appelle ni API ni navigation et le parent reste propriétaire du tableau, du filtre et de la page courante. Les pages qui utilisent déjà `DataTable` continuent à fonctionner sans changement. Validation de la compilation Svelte et tests de pagination, suivis du CT XT.
+
+## Normalisation globale du Design System BO (19/11/2026)
+
+Les primitives BO exposent un seul contrat visuel pour les modules : `--bo-bg`, `--bo-surface`, `--bo-surface-muted`, `--bo-input`, `--bo-text`, `--bo-muted`, `--bo-border`, `--bo-primary`, `--bo-primary-contrast`, `--bo-focus`, `--bo-shadow`, états et navigation. Aucun module ne code une palette clair/sombre parallèle. Les écrans BO utilisent `Button`, `Alert`, `Modal`, `DataTable`, `Pagination`, `Dropdown` lorsque le contrat convient ; aucune bibliothèque de composants supplémentaire.
+
+Le sélecteur **Apparence** du compte et les filtres à choix de `DataTable` utilisent `Dropdown.svelte` au lieu des sélecteurs du navigateur. `Pagination` le possède déjà. Les boutons, cartes dashboard et fermeture des modales respectent les jetons de thème. Le choix des langues, valeurs par défaut et droits reste géré par les modules, pas par les composants.
+
+Les modules existants conservent leurs tableaux, formulaires et règles métier. Seuls leurs styles et sélecteurs communs sont normalisés, en maintenant les appels API asynchrones, la pagination, le focus et le scroll. Tests BO et assemblage des modules exigés avant CT XT sur les deux thèmes. L'écran de double authentification conserve **un fond QR blanc** pour la lisibilité des codes, même en mode sombre.
+
+### Correctif de stabilité CSS (19/11/2026)
+
+Lors de la suppression des anciens sélecteurs natifs du champ Pagination, la règle commune des champs dans `src/app.css` a conservé une virgule isolée et perdu son accolade ouvrante. La CI BO et les assemblages modules l'ont détecté avant validation : la règle a été restaurée pour `.form input`, `.bo-field input` et `.bo-data-table-filter input`. Aucune modification des comportements utilisateur.
+
+### Écrans publics BO et thème (19/11/2026)
+
+Les écrans de connexion, d'activation d'invitation et de challenge 2FA utilisent tous le même `auth-shell`/`auth-card` hérité du BO hôte. Le focus des champs, l'alerte d'erreur publique et l'ombre des cartes sont désormais associés aux jetons `--bo-focus`, `--bo-primary`, `--bo-error-bg`, `--bo-error-text` et `--bo-shadow` plutôt qu'à l'ancienne palette statique. Cela préserve le contraste en clair/sombre avant l'établissement de la session ; les parcours d'authentification et leurs secrets restent inchangés.
+
+### Présentation native des tableaux (19/11/2026, correctif Languages)
+
+Le tableau **Langues** de Languages utilise `DataTable.svelte` du BO. La charte doit donc s'appliquer **au composant hôte**, pas à un style ad hoc de `languages/+page.svelte` : bordure arrondie, surface, en-tête atténué, lignes alternées et survol, boutons de tri neutres et actions compactes. Les styles de `src/app.css` utilisent exclusivement les jetons `--bo-*` du thème, y compris le focus, et restent applicables aux tableaux Admins, Roles, ACLs et Users. Aucune nouvelle colonne, permission, traduction ou règle de pagination n'est introduite. Les règles de mise en forme du tri supplantent explicitement la variante primaire du composant Button afin de restituer un **véritable en-tête de tableau**, pas un bouton de formulaire.
+
+Validation : CI BO, assemblages module, puis CT sur XT en modes clair et sombre, particulièrement la page `/languages`, son filtre, le tri et les actions Activer / Préouvrir.
+
+### Compatibilité des thèmes entre versions de modules (19/11/2026)
+
+**Incident XT constaté sur les six écrans BO :** un BO hôte sombre récent, assemblé avec des versions antérieures de certains modules, faisait apparaître des **panneaux blancs** contenant du **texte clair** et des tableaux sombres. Les anciennes pages des modules Admins, Roles, ACLs, Users, Settings et Languages avaient des règles scoped `.panel { background: white }` ou `#fff`, tandis que le BO central appliquait déjà ses jetons sombres à `DataTable` et au texte. La CI ne détectait pas ce mélange de versions, chaque dépôt compilant indépendamment.
+
+**Contrat de compatibilité hôte :** `src/app.css` déclare sous `:root .bo-content` les styles sémantiques des panneaux `.panel`, de leurs champs, des en-têtes `.module-group`/Settings et des textes secondaires. La spécificité de cette règle dépasse celle des anciens CSS scoped Svelte, y compris si un seul paquet a été mis à jour. Les variables `--bo-*` demeurent l'unique source de couleur, le reste du layout de chaque module est préservé. Cette passerelle reste confinée au BO authentifié ; login, activation et challenge 2FA ne sont pas modifiés.
+
+L'installation XT complète exige malgré tout `symsvel update` sur le canal `dev` pour récupérer les **nouveaux composants** et comportements des modules. Ce pont CSS corrige seulement l'incohérence du thème lorsqu'un module ancien cohabite temporairement avec le BO nouveau. Régression couverte par le test du contrat CSS du BO, compilation et CT visuel clair/sombre requis.
+
+## Validation des formulaires sans rechargement (19/11/2026)
+
+Audit des routes BO existantes : Settings, Languages (langues et traductions),
+Admins, Roles, ACLs, Users, activation Auth et challenge TwoFactor. Les
+soumissions de formulaires utilisent `onsubmit` avec `preventDefault()`,
+puis un appel API asynchrone. Les actions de tableau et les sélecteurs
+déclarent un bouton de type `button`. Les navigations Auth après validation
+de l'identité ou expiration de session sont volontaires.
+
+Pour prévenir une soumission HTML accidentelle sur de nouveaux écrans,
+`Button.svelte` utilise désormais `type="button"` **par défaut**. Toute
+action qui doit réellement soumettre un formulaire doit déclarer explicitement
+`type="submit"`. Le contrat est couvert par un test du composant rendu
+dans un navigateur, sans ajout de dépendance.
+
+Une synchronisation de **liste de données** (`load` ou `refresh`) après
+écriture dans Admins, Roles ou Users n'est pas une navigation ni un
+rechargement du document. Settings et Languages mettent à jour la ligne
+enregistrée directement dans l'état Svelte. Dans Settings, les autres
+brouillons, l'accordéon et le défilement doivent rester inchangés.
+L'actualisation volontaire par le bouton dédié reste possible.
+
+Validation restante : `npm run qa`, CI du BO, assemblage des modules et
+crash-tests XT, notamment la sauvegarde de plusieurs paramètres Settings
+dans des accordéons différents, la création/édition modale et le retour
+sans rechargement réseau du document.
+
+## Navigation conditionnelle après modification Settings (19/11/2026)
+
+Un module peut conditionner sa visibilité dans le menu BO en refusant
+sa sonde `boNavigation.probe` lorsque sa fonction n'est pas disponible.
+Countries utilise le paramètre existant `languages.multilingual` :
+le module reste installé et les API publiques actives en mode monolingue,
+mais sa sonde `/apibo/countries` renvoie 404 et son lien est masqué.
+
+Lorsqu'un paramètre change cette disponibilité, la page peut émettre
+`symsvel:navigation-changed` après sauvegarde. Le shell relance la
+découverte des **modules installés**, avec les sondes ACL existantes, sans
+navigation ni rechargement du document. Les réponses périmées sont ignorées.
+Les alertes sont recalculées d'après la nouvelle navigation autorisée.
+Aucun accès BO ne découle de ce seul événement : les ACL continuent d'être
+imposées par les APIs du module. Tests de contrat ajoutés, CI et CT XT requis.
+
+## Profil personnel administrateur (19/11/2026)
+
+Le module natif obligatoire Admins fournit la route Svelte `/profile`
+et ses endpoints `/apibo/admins/profile` pour une lecture du compte courant
+et la mise à jour de sa langue. La topbar BO affiche désormais « Mon profil »
+dans le menu administrateur ; elle n'expose pas de lien de gestion de
+tous les administrateurs ni de droit de modifier une identité tierce.
+Les permissions d'administration restent distinctes de l'accès
+personnel authentifié ; l'API tranche la portée et la validité du token.
+
+Le lien utilise le routeur SvelteKit et conserve la coque sans reload.
+Les libellés sont fournis par les traductions du module Admins
+(`bo.admins.profile.title`) lorsqu'il est installé. L'assemblage
+BO/Admins doit être validé en CI et sur XT ; ne pas présenter le
+parcours d'email/mot de passe comme réalisé.
+
+## Branding dynamique : nom public du projet (19/11/2026)
+
+Le BO récupère le seul champ public `data.name` via
+`GET /apiopen/project`, sans Authorization ni cookie. Le nom provient
+de la configuration de projet validée par le Setup, projetée côté Back :
+aucun accès du navigateur à `.symsvel/project.json`. Le sidebar et la
+page de connexion affichent ce titre ; le fallback est `SymSvel` en
+cas d'API absente, d'erreur ou de donnée invalide. L'affichage est
+échappé par Svelte et n'injecte jamais du HTML non fiable.
+
+Le thème, la session et les sondes de modules BO restent indépendants
+de cette récupération. Le changement de nom peut être lu au prochain
+montage de l'écran sans rebuild des fichiers statiques ; le
+rebranding des images/logos n'entre pas dans ce correctif. Le
+contrat attend la CI et le CT XT.
+
+### Normalisation du code de branding (19/11/2026)
+
+Les helpers et composants conservent le format Prettier du BO hôte.
+La correction est purement stylistique, conserve le rendu du titre,
+le repli SymSvel et l'annulation des mises à jour après démontage ;
+le contrat HTTP et les règles de validation restent inchangés.
+
+### Validation Unicode du titre (19/11/2026)
+
+Le validateur de nom public teste les codes Unicode des caractères
+(`codePointAt`) pour refuser les contrôles ASCII, sans expression
+régulière contenant ces caractères. Le même contrat de sécurité et
+le repli `SymSvel` sont préservés. Correction pour `no-control-regex`
+en CI, sans modifier l'API, la session ou le rendu du projet.
+
+## Confirmation publique d'une nouvelle adresse (19/11/2026)
+
+`/verify-email-change` est volontairement une page publique sans AppShell :
+le clic sur le lien envoyé à la nouvelle boîte doit fonctionner même si la
+session précédente est expirée. Le token à usage unique est vérifié par Auth
+et exclusivement consommé sur le backend dans le contexte BO.
+`/profile` reste une page authentifiée. La liste des routes publiques
+autorise seulement la page de confirmation, sans élargir l'accès au profil.
+
+## Sémantique des boutons et actions BO (19/11/2026)
+
+Le Design System utilise désormais un contrat unique dans
+`src/lib/components/Button.svelte` et `DataTable.svelte`.
+Les actions ne déduisent **jamais** leur finalité d'un libellé traduit :
+
+| Variante    | Intention                               | Couleur                   |
+| ----------- | --------------------------------------- | ------------------------- |
+| `primary`   | Créer, ouvrir une action principale     | Bleu pétrole de la charte |
+| `secondary` | Annuler, revenir, actualiser, éditer    | Surface neutre bordée     |
+| `success`   | Valider, enregistrer, accorder, activer | Vert                      |
+| `danger`    | Supprimer, révoquer définitivement      | Rouge                     |
+| `warning`   | Désactiver, retirer un droit réversible | Orange                    |
+| `active`    | État actuellement actif                 | Bleu                      |
+| `inactive`  | État actuellement désactivé             | Orange                    |
+
+`DataAction<T>.variant` accepte une variante fixe ou une fonction
+`(row) => variant`, afin que les boutons Activer/Désactiver suivent
+**l'action qui va être réalisée** et non un libellé figé. Les actions
+des tableaux restent neutres par défaut ; la variante destructive doit
+être explicitement fournie par le module propriétaire.
+
+Un bouton désactivé devient gris clair à texte atténué en thème clair,
+avec une variante gris moyen et texte `rgba(255,255,255,.8)` en sombre.
+Le blanc transparent sur un gris très pâle aurait un contraste illisible ;
+le thème clair utilise donc un gris foncé lisible. Les états disabled
+priment sur toute couleur destructive ou positive, sans simple diminution
+d'opacité de l'ensemble du bouton. Hover et focus restent visibles,
+les transitions respectent `prefers-reduced-motion`.
+
+La palette centralisée appartient au BO hôte. Les modules n'injectent
+pas leur propre CSS de boutons et doivent déclarer `variant` au
+point d'utilisation. Tests de composant et des intentions de DataAction ;
+CI et inspection XT clair/sombre requises.
+
+## Guide pour les développeurs de modules BO
+
+Pour créer des écrans de modules, consulter le guide des composants natifs (props, couleurs et exemples Svelte).
+
+[Guide développeur : composants BO, props et couleurs](dev/bo-components.md)
+
+## Documentation native dans le menu BO (19/11/2026)
+
+Le menu compte de l'AppShell conserve « Mon profil » et expose maintenant
+« Documentation » vers la route privée `/documentation`, apportée par le
+module Admins obligatoire. Ce lien n'accorde aucun droit : chaque requête
+passe par `boApi`, puis par l'endpoint Admins qui vérifie le Bearer BO et
+réserve la documentation `dev` à `ROLE_DEV`. Le BO hôte n'embarque aucun
+fichier Markdown et n'accède jamais directement aux sources du projet.
+La navigation reste dans le shell authentifié et les textes passent par
+`bo.system.shell.documentation` dans les dictionnaires du BO hôte.
+
+L'assemblage documentaire est une maintenance explicite
+`symsvel documentation:sync` dans CLI/Tooling, et ne s'exécute pas
+pendant le Setup ou le build Svelte. Si aucun corpus n'est publié,
+l'écran Admins affiche le message approprié. Tests Vitest et assemblage
+Svelte par CI puis CT XT des parcours `ROLE_DEV` et administrateur
+non-développeur sont obligatoires avant livraison.

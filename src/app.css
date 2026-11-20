@@ -1,0 +1,908 @@
+:root {
+	font-family:
+		Inter,
+		ui-sans-serif,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		sans-serif;
+	color: #18202b;
+	background: #f3f5f8;
+	font-synthesis: none;
+}
+* {
+	box-sizing: border-box;
+}
+body {
+	margin: 0;
+}
+a {
+	color: #2457d6;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+.auth-shell {
+	min-height: 100vh;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	background: radial-gradient(circle at top, #fff 0, #eef2f7 60%, #e7ebf1 100%);
+}
+.auth-card {
+	width: min(100%, 430px);
+	background: #fff;
+	border: 1px solid #e2e7ee;
+	border-radius: 16px;
+	padding: 32px;
+	box-shadow: var(--bo-shadow);
+}
+.auth-card header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	padding-bottom: 24px;
+	border-bottom: 1px solid #edf0f4;
+}
+.auth-card header strong {
+	font-size: 1.5rem;
+}
+.auth-card header span,
+.auth-card p {
+	color: #667085;
+}
+.auth-card h1 {
+	font-size: 1.45rem;
+	margin: 28px 0 8px;
+}
+.auth-card p {
+	line-height: 1.55;
+}
+.form {
+	display: grid;
+	gap: 10px;
+	margin-top: 24px;
+}
+.form label {
+	font-weight: 650;
+	font-size: 0.9rem;
+}
+.form input {
+	width: 100%;
+	border: 1px solid #ccd4df;
+	border-radius: 9px;
+	padding: 12px 13px;
+	font: inherit;
+	margin-bottom: 8px;
+}
+.form input:focus-visible {
+	outline: 2px solid var(--bo-focus);
+	outline-offset: 2px;
+	border-color: var(--bo-primary);
+}
+.form button {
+	margin-top: 8px;
+	border: 0;
+	border-radius: 9px;
+	background: #1e293b;
+	color: #fff;
+	padding: 12px 16px;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.form button:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+.alert {
+	padding: 11px 13px;
+	border-radius: 9px;
+	background: var(--bo-error-bg);
+	color: var(--bo-error-text);
+	margin: 16px 0;
+}
+.bo-shell {
+	min-height: 100vh;
+	display: grid;
+	grid-template-columns: 240px minmax(0, 1fr);
+}
+.bo-sidebar {
+	padding: 24px 16px;
+	background: #18202b;
+	color: #dce3ec;
+}
+.bo-brand {
+	color: #fff;
+	font-size: 1.25rem;
+	font-weight: 750;
+}
+.bo-main {
+	min-width: 0;
+}
+.bo-topbar {
+	height: 64px;
+	background: #fff;
+	border-bottom: 1px solid #e2e7ee;
+}
+.bo-content {
+	padding: 32px;
+}
+.welcome {
+	min-height: calc(100vh - 128px);
+	display: grid;
+	place-content: center;
+	text-align: center;
+}
+.welcome h1 {
+	font-size: clamp(2rem, 7vw, 5rem);
+	margin: 0;
+}
+.welcome p {
+	color: #667085;
+}
+@media (max-width: 760px) {
+	.bo-shell {
+		grid-template-columns: 160px minmax(0, 1fr);
+	}
+	.bo-content {
+		padding: 20px;
+	}
+}
+
+.bo-topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 24px;
+}
+.bo-topbar button {
+	border: 1px solid #ccd4df;
+	background: #fff;
+	border-radius: 8px;
+	padding: 9px 14px;
+	font: inherit;
+	cursor: pointer;
+}
+
+/* Authenticated host shell: shared across dashboard and all installed modules. */
+.bo-shell {
+	background: #f3f5f8;
+}
+.bo-sidebar {
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	padding: 20px 16px;
+	overflow-y: auto;
+}
+.bo-brand {
+	display: flex;
+	align-items: baseline;
+	gap: 7px;
+	padding: 4px 10px 24px;
+	text-decoration: none;
+}
+.bo-brand span {
+	color: #94a3b8;
+	font-size: 0.75rem;
+	font-weight: 750;
+}
+.bo-nav {
+	display: grid;
+	align-content: start;
+	gap: 4px;
+}
+.bo-nav a {
+	display: block;
+	padding: 10px 12px;
+	border-radius: 8px;
+	color: #c9d2de;
+	font-size: 0.92rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+.bo-nav a:hover,
+.bo-nav a:focus-visible {
+	background: #2b3748;
+	color: white;
+}
+.bo-nav a.active {
+	background: #374151;
+	color: white;
+}
+.bo-nav-section {
+	display: grid;
+	gap: 3px;
+	margin-top: 18px;
+}
+.bo-nav-section > span {
+	padding: 0 12px 7px;
+	color: #9da9ba;
+	font-size: 0.7rem;
+	font-weight: 750;
+	text-transform: uppercase;
+}
+.bo-nav-loading {
+	padding: 0 12px;
+	color: #c9d2de;
+	font-size: 0.85rem;
+}
+.bo-main {
+	min-width: 0;
+	display: grid;
+	grid-template-rows: 64px minmax(0, 1fr);
+}
+.bo-topbar {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	justify-content: flex-end;
+	gap: 16px;
+}
+.bo-system-alerts {
+	position: relative;
+	margin-right: auto;
+}
+.bo-topbar .bo-alert-trigger {
+	background: #fff4d6;
+	border-color: #ead5a0;
+	font-weight: 750;
+}
+.bo-alert-panel,
+.bo-account-menu {
+	position: absolute;
+	top: 48px;
+	z-index: 20;
+	padding: 12px;
+	background: white;
+	border: 1px solid #e2e7ee;
+	border-radius: 10px;
+	box-shadow: 0 14px 38px rgba(26, 38, 58, 0.14);
+}
+.bo-alert-panel {
+	left: 0;
+	width: min(420px, 75vw);
+	display: grid;
+	gap: 8px;
+}
+.bo-alert-panel a {
+	background: #fff8e8;
+	border-radius: 7px;
+	padding: 10px;
+	text-decoration: none;
+	color: #18202b;
+}
+.bo-alert-panel a:hover {
+	background: #ffefc4;
+}
+.bo-account {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: #667085;
+	font-size: 0.9rem;
+}
+.bo-topbar .bo-avatar {
+	width: 38px;
+	height: 38px;
+	padding: 0;
+	border-radius: 50%;
+	background: #18202b;
+	color: white;
+	font-weight: 750;
+}
+.bo-account-menu {
+	right: 0;
+	width: 200px;
+	display: grid;
+	gap: 4px;
+}
+.bo-account-menu .bo-profile-link {
+	display: block;
+	padding: 10px;
+	border-radius: 7px;
+	color: var(--bo-text);
+	text-decoration: none;
+	font-weight: 650;
+}
+.bo-account-menu .bo-profile-link:hover,
+.bo-account-menu .bo-profile-link:focus-visible {
+	background: var(--bo-surface-muted);
+	color: var(--bo-primary);
+}
+.bo-account-menu strong {
+	padding: 8px 10px;
+	font-size: 0.85rem;
+	color: #667085;
+}
+.bo-topbar .bo-account-menu button {
+	display: block;
+	width: 100%;
+	text-align: left;
+	border: 0;
+	background: transparent;
+}
+.bo-topbar .bo-account-menu button:hover {
+	background: #f3f5f8;
+}
+@media (max-width: 760px) {
+	.bo-sidebar {
+		padding: 16px 8px;
+	}
+	.bo-account > span {
+		display: none;
+	}
+}
+
+/* Reusable UI primitives: presentational only, never make API calls. */
+.bo-button {
+	border: 0;
+	border-radius: 8px;
+	padding: 10px 14px;
+	background: #1e293b;
+	color: white;
+	font: inherit;
+	font-weight: 650;
+	cursor: pointer;
+}
+.bo-button-secondary {
+	border: 1px solid #ccd4df;
+	background: white;
+	color: #1e293b;
+}
+.bo-button-danger {
+	background: #9d2626;
+	color: white;
+}
+.bo-button:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+.bo-button:focus-visible {
+	outline: 2px solid #2457d6;
+	outline-offset: 2px;
+}
+.bo-alert {
+	padding: 11px 13px;
+	border-radius: 9px;
+	margin: 12px 0;
+}
+.bo-alert-error {
+	background: #fff1f1;
+	color: #9d2626;
+}
+.bo-alert-success {
+	background: #eefaf2;
+	color: #236747;
+}
+.bo-alert-info {
+	background: #eef5ff;
+	color: #294f8a;
+}
+.bo-field {
+	display: grid;
+	gap: 6px;
+	font-weight: 600;
+}
+.bo-field input {
+	width: 100%;
+	min-width: 0;
+	padding: 10px 12px;
+	border: 1px solid #ccd4df;
+	border-radius: 8px;
+	font: inherit;
+}
+.bo-data-table {
+	width: 100%;
+}
+.bo-data-table-scroll {
+	overflow-x: auto;
+}
+.bo-data-table-scroll table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.bo-data-table-scroll th,
+.bo-data-table-scroll td {
+	padding: 12px;
+	border-bottom: 1px solid #e5e7eb;
+	text-align: left;
+}
+.bo-data-table-scroll .bo-data-table-right {
+	text-align: right;
+}
+.bo-data-table-scroll .bo-data-table-center {
+	text-align: center;
+}
+.bo-data-table-sort {
+	border: none;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 650;
+	cursor: pointer;
+}
+.bo-data-table-actions {
+	white-space: nowrap;
+}
+.bo-data-table-actions .bo-button {
+	margin-right: 6px;
+}
+.bo-data-table-empty {
+	text-align: center !important;
+	color: #667085;
+	padding: 24px !important;
+}
+.bo-data-table-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+.bo-data-table-filter {
+	display: grid;
+	gap: 5px;
+}
+.bo-data-table-filter input {
+	border: 1px solid #ccd4df;
+	border-radius: 7px;
+	padding: 7px 9px;
+	font: inherit;
+}
+.bo-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 12px 0;
+	font-size: 0.875rem;
+}
+.bo-pagination-size,
+.bo-pagination-controls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.bo-pagination-count {
+	color: #667085;
+	font-variant-numeric: tabular-nums;
+}
+
+/* All DataTable instances, including Languages > Langues, share one HP-inspired
+   table surface. Keep these rules in the host, never in each module. */
+.bo-data-table-scroll {
+	border: 1px solid var(--bo-border);
+	border-radius: 12px;
+	background: var(--bo-surface);
+}
+.bo-data-table-scroll table {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+}
+.bo-data-table-scroll thead {
+	background: var(--bo-surface-muted);
+}
+.bo-data-table-scroll thead th {
+	color: var(--bo-muted);
+	font-size: 0.82rem;
+	font-weight: 750;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+}
+.bo-data-table-scroll tbody tr:nth-child(even) {
+	background: var(--bo-surface-muted);
+}
+.bo-data-table-scroll tbody tr:hover,
+.bo-data-table-scroll tbody tr:focus-within {
+	background: color-mix(in srgb, var(--bo-primary) 8%, var(--bo-surface));
+}
+.bo-data-table-scroll tbody td {
+	color: var(--bo-text);
+	vertical-align: middle;
+}
+.bo-data-table-scroll .bo-data-table-sort.bo-button {
+	padding: 4px 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+	text-align: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+}
+.bo-data-table-scroll .bo-data-table-sort.bo-button:hover:not(:disabled) {
+	color: var(--bo-primary);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button {
+	padding: 7px 11px;
+	border: 1px solid var(--bo-border);
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	font-size: 0.82rem;
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button:hover:not(:disabled) {
+	border-color: var(--bo-primary);
+	color: var(--bo-primary);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button:focus-visible,
+.bo-data-table-scroll .bo-data-table-sort.bo-button:focus-visible {
+	outline: 2px solid var(--bo-focus);
+	outline-offset: 2px;
+}
+.bo-data-table-filter {
+	color: var(--bo-muted);
+	font-size: 0.88rem;
+	font-weight: 650;
+}
+.bo-data-table-filter input {
+	min-height: 40px;
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border: 1px solid var(--bo-border);
+}
+
+/* Design System BO: semantic tokens. Visual source is HP, pending exact palette audit. */
+:root {
+	color-scheme: light;
+	--bo-bg: #f2f5f7;
+	--bo-surface: #ffffff;
+	--bo-surface-muted: #f7fafb;
+	--bo-input: #ffffff;
+	--bo-text: #182b36;
+	--bo-muted: #596b78;
+	--bo-border: #d4e0e6;
+	--bo-primary: #087d92;
+	--bo-primary-contrast: #ffffff;
+	--bo-focus: #148fa4;
+	--bo-sidebar: #102632;
+	--bo-sidebar-text: #dae7ed;
+	--bo-sidebar-hover: #20404f;
+	--bo-sidebar-current: #285262;
+	--bo-danger: #c13943;
+	--bo-danger-contrast: #ffffff;
+	--bo-success-bg: #e5f5ed;
+	--bo-success-text: #146647;
+	--bo-error-bg: #fcecef;
+	--bo-error-text: #922d39;
+	--bo-info-bg: #e8f5fa;
+	--bo-info-text: #18546c;
+	--bo-shadow: 0 16px 48px rgba(12, 29, 40, 0.12);
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--bo-bg: #0f161d;
+	--bo-surface: #121c24;
+	--bo-surface-muted: #18222d;
+	--bo-input: #1a252c;
+	--bo-text: #e2e3e4;
+	--bo-muted: #abb2b9;
+	--bo-border: #39444b;
+	--bo-primary: #12a1b3;
+	--bo-primary-contrast: #061d27;
+	--bo-focus: #36c6d1;
+	--bo-sidebar: #0b141b;
+	--bo-sidebar-text: #d2e4ec;
+	--bo-sidebar-hover: #1e303b;
+	--bo-sidebar-current: #264958;
+	--bo-danger: #c9424b;
+	--bo-danger-contrast: #ffffff;
+	--bo-success-bg: #123a30;
+	--bo-success-text: #8ce3bd;
+	--bo-error-bg: #46212b;
+	--bo-error-text: #ffc1ca;
+	--bo-info-bg: #163848;
+	--bo-info-text: #9edce9;
+	--bo-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--bo-bg: #0f161d;
+		--bo-surface: #121c24;
+		--bo-surface-muted: #18222d;
+		--bo-input: #1a252c;
+		--bo-text: #e2e3e4;
+		--bo-muted: #abb2b9;
+		--bo-border: #39444b;
+		--bo-primary: #12a1b3;
+		--bo-primary-contrast: #061d27;
+		--bo-focus: #36c6d1;
+		--bo-sidebar: #0b141b;
+		--bo-sidebar-text: #d2e4ec;
+		--bo-sidebar-hover: #1e303b;
+		--bo-sidebar-current: #264958;
+		--bo-danger: #c9424b;
+		--bo-danger-contrast: #ffffff;
+		--bo-success-bg: #123a30;
+		--bo-success-text: #8ce3bd;
+		--bo-error-bg: #46212b;
+		--bo-error-text: #ffc1ca;
+		--bo-info-bg: #163848;
+		--bo-info-text: #9edce9;
+		--bo-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+	}
+}
+:root {
+	color: var(--bo-text);
+	background: var(--bo-bg);
+}
+body {
+	color: var(--bo-text);
+	background: var(--bo-bg);
+}
+a {
+	color: var(--bo-primary);
+}
+.auth-shell,
+.bo-shell {
+	background: var(--bo-bg);
+}
+.auth-card,
+.bo-topbar,
+.bo-alert-panel,
+.bo-account-menu {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+.auth-card header,
+.bo-topbar,
+.bo-data-table-scroll th,
+.bo-data-table-scroll td {
+	border-color: var(--bo-border);
+}
+.auth-card header span,
+.auth-card p,
+.bo-account,
+.welcome p,
+.bo-data-table-empty,
+.bo-pagination-count,
+.bo-account-menu strong {
+	color: var(--bo-muted);
+}
+.form input,
+.bo-field input,
+.bo-data-table-filter input {
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border: 1px solid var(--bo-border);
+}
+:where(input, select, textarea, button, a):focus-visible {
+	outline: 2px solid var(--bo-focus);
+	outline-offset: 2px;
+}
+.bo-sidebar {
+	background: var(--bo-sidebar);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a,
+.bo-nav-loading {
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a:hover,
+.bo-nav a:focus-visible {
+	background: var(--bo-sidebar-hover);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav a.active {
+	background: var(--bo-sidebar-current);
+	color: var(--bo-sidebar-text);
+}
+.bo-nav-section > span,
+.bo-brand span {
+	color: var(--bo-sidebar-text);
+}
+.bo-topbar button,
+.bo-button-secondary {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+.bo-topbar .bo-avatar,
+.bo-button,
+.form button {
+	background: var(--bo-primary);
+	color: var(--bo-primary-contrast);
+}
+.bo-button-secondary {
+	background: var(--bo-surface);
+	color: var(--bo-text);
+}
+.bo-button-danger {
+	background: var(--bo-danger);
+	color: var(--bo-danger-contrast);
+}
+.bo-alert-error {
+	background: var(--bo-error-bg);
+	color: var(--bo-error-text);
+}
+.bo-alert-success {
+	background: var(--bo-success-bg);
+	color: var(--bo-success-text);
+}
+.bo-alert-info {
+	background: var(--bo-info-bg);
+	color: var(--bo-info-text);
+}
+.bo-topbar .bo-alert-trigger,
+.bo-alert-panel a {
+	background: var(--bo-info-bg);
+	color: var(--bo-info-text);
+	border-color: var(--bo-border);
+}
+.bo-alert-panel a:hover,
+.bo-topbar .bo-account-menu button:hover {
+	background: var(--bo-surface-muted);
+}
+.bo-account-menu {
+	width: 230px;
+}
+.bo-theme-choice {
+	display: grid;
+	gap: 6px;
+	padding: 8px 10px;
+	font-size: 0.85rem;
+	color: var(--bo-text);
+}
+
+/* Shared size selector uses the same HP-style Dropdown as module filters. */
+.bo-pagination-size-control {
+	width: 92px;
+	min-width: 92px;
+}
+
+/* Host-controlled filters and account preferences use the same HP Dropdown. */
+.bo-data-table-filter-select {
+	width: min(100%, 260px);
+	min-width: 170px;
+}
+.bo-theme-choice .bo-dropdown {
+	width: 100%;
+}
+
+/*
+ * Cross-version BO compatibility.
+ * Composer modules can still provide Svelte pages compiled before theme tokens.
+ * Their scoped ".panel { background: white }" rules must not win over the
+ * host's current dark palette when only the BO is updated.
+ * Keep the scope under .bo-content so public authentication is unaffected.
+ */
+:root .bo-content .panel {
+	background-color: var(--bo-surface);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel .module-group {
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel .module-group summary {
+	background: var(--bo-surface-muted);
+	color: var(--bo-text);
+}
+:root .bo-content .panel .module-group summary:is(:hover, :focus-visible) {
+	background: var(--bo-surface);
+}
+:root .bo-content .panel .module-group summary small,
+:root .bo-content :is(.page-heading, .heading) p {
+	color: var(--bo-muted);
+}
+:root .bo-content .panel .module-group[open] summary,
+:root .bo-content .panel .setting {
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+	background: var(--bo-input);
+	color: var(--bo-text);
+	border-color: var(--bo-border);
+}
+:root .bo-content .panel :is(input, textarea)::placeholder {
+	color: var(--bo-muted);
+}
+
+/* Semantic button intentions. Components and module actions consume this one
+   palette; light/dark contrast and disabled behavior belong to the host. */
+:root {
+	--bo-action-success: #176c48;
+	--bo-action-warning: #97500b;
+	--bo-action-active: #145f8c;
+	--bo-action-inactive: #97500b;
+	--bo-action-contrast: #ffffff;
+	--bo-action-disabled-bg: #e1e6ea;
+	--bo-action-disabled-fg: #566372;
+	--bo-action-disabled-border: #cbd4db;
+}
+:root[data-theme='dark'] {
+	--bo-action-success: #18734c;
+	--bo-action-warning: #a75a0c;
+	--bo-action-active: #21658e;
+	--bo-action-inactive: #a75a0c;
+	--bo-action-disabled-bg: #48535e;
+	--bo-action-disabled-fg: rgba(255, 255, 255, 0.8);
+	--bo-action-disabled-border: #5a6671;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--bo-action-success: #18734c;
+		--bo-action-warning: #a75a0c;
+		--bo-action-active: #21658e;
+		--bo-action-inactive: #a75a0c;
+		--bo-action-disabled-bg: #48535e;
+		--bo-action-disabled-fg: rgba(255, 255, 255, 0.8);
+		--bo-action-disabled-border: #5a6671;
+	}
+}
+
+/* The table host previously flattened all action buttons to a neutral style.
+   Resolve the same semantic variables for standard buttons and DataTable. */
+.bo-button {
+	--bo-button-bg: var(--bo-primary);
+	--bo-button-fg: var(--bo-primary-contrast);
+	--bo-button-border: transparent;
+	border: 1px solid var(--bo-button-border);
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	transition:
+		filter 120ms ease,
+		background-color 120ms ease,
+		border-color 120ms ease;
+}
+.bo-button.bo-button-secondary {
+	--bo-button-bg: var(--bo-surface);
+	--bo-button-fg: var(--bo-text);
+	--bo-button-border: var(--bo-border);
+}
+.bo-button.bo-button-success {
+	--bo-button-bg: var(--bo-action-success);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-warning {
+	--bo-button-bg: var(--bo-action-warning);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-danger {
+	--bo-button-bg: var(--bo-danger);
+	--bo-button-fg: var(--bo-danger-contrast);
+}
+.bo-button.bo-button-active {
+	--bo-button-bg: var(--bo-action-active);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-button.bo-button-inactive {
+	--bo-button-bg: var(--bo-action-inactive);
+	--bo-button-fg: var(--bo-action-contrast);
+}
+.bo-data-table-scroll .bo-data-table-actions .bo-button {
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	border-color: var(--bo-button-border);
+}
+.bo-button:hover:not(:disabled),
+.bo-data-table-scroll .bo-data-table-actions .bo-button:hover:not(:disabled) {
+	filter: brightness(0.92);
+	background: var(--bo-button-bg);
+	color: var(--bo-button-fg);
+	border-color: var(--bo-button-border);
+}
+.bo-button:disabled,
+.bo-data-table-scroll .bo-data-table-actions .bo-button:disabled {
+	opacity: 1;
+	background: var(--bo-action-disabled-bg);
+	color: var(--bo-action-disabled-fg);
+	border: 1px solid var(--bo-action-disabled-border);
+	cursor: not-allowed;
+	filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.bo-button {
+		transition: none;
+	}
+}
