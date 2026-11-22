@@ -1,5 +1,10 @@
 # Intégration continue
 
+Depuis le 22 novembre 2026, les workflows CI de ce dépôt public s'exécutent sur **GitHub-hosted Ubuntu 24.04** et non sur les runners Docker du mainteneur. `.github/workflows/ci.yml` conserve les tests et utilise Node.js 24 (SvelteKit, npm, Playwright et build statique). Déclencheurs : `push` sur `dev`, `main` et `feat/**`, et pull requests vers `dev` ou `main`. Le fichier `ci.yml.stub` n'est qu'une archive inactive de la configuration historique.
+
+Les runners auto-hébergés sont réservés aux dépôts privés d'infrastructure `symsvel-packages` et `symsvel-recipes`. Une CI verte n'exonère pas des crash-tests locaux exigés par SymSvel.
+ 
+
 La branche `dev` est le terrain de développement ; `main` conserve la version stable.
 
 Le workflow `.github/workflows/ci.yml` est déclenché par les `push` sur `dev` et `main`, ainsi que par les pull requests ciblant `main`. Les pull requests ciblant `dev` ne déclenchent pas de CI au titre de l'événement `pull_request` ; un `push` sur `dev` déclenche sa propre exécution. Les éventuels déclencheurs supplémentaires définis dans le workflow restent applicables.
@@ -22,7 +27,10 @@ Cette automatisation nécessite que les paramètres GitHub Actions du dépôt au
 
 Plusieurs exécutions CI peuvent démarrer sur la même branche de PR après des commits rapprochés. Sans synchronisation, le second commit de formatage est refusé par Git en `non-fast-forward` (`fetch first`), même si le premier a déjà corrigé le fichier. Le job `test` est désormais sérialisé par branche avec `concurrency` (`cancel-in-progress: false`) et, avant tout push de formatage, récupère la tête distante puis rebase son commit sur celle-ci. Le push reste **sans force** ; un conflit de rebase fait échouer le job sans écraser de changement. La sérialisation évite les chevauchements entre jobs, pas les modifications externes : la vérification Git au moment du push reste nécessaire. L'autocorrection sur un commit GitHub Actions ne relance pas automatiquement la CI ; les tests s'exécutent dans le même job sur le contenu formaté.
 
-## CD des releases sur runners locaux (16/11/2026)
+## Releases sur GitHub-hosted (22/11/2026)
+
+Le workflow `.github/workflows/release.yml` s'exécute désormais sur **GitHub-hosted Ubuntu 24.04** pour les tags `vX.Y.Z`. Il conserve les validations existantes, Node.js 24 et Playwright avec installation des dépendances système, ainsi que la vérification du tag et la GitHub Release via `actions/github-script@v7`. L'autorisation `contents: write` reste requise pour publier. Aucun tag n'a été créé pendant la migration ; une release réelle devra être validée séparément.
+
 
 La release déclenchée par un tag `vX.Y.Z` utilise maintenant `[self-hosted, linux, ARM64, symsvel]`. Le setup Node.js 24, les tests Playwright et la génération SvelteKit demeurent ; `npx playwright install chromium` réutilise le fonctionnement de la CI sans installer de paquets système. La publication GitHub génère des notes de changements réelles et vérifie le tag via `actions/github-script@v7`, sans dépendre du binaire `gh` (non garanti sur le runner). L'autorisation `contents: write` est maintenue, aucun tag n'est créé ici. Validation par release réelle et CT de l'artefact requise.
 
