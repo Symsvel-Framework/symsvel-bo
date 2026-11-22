@@ -41,3 +41,13 @@ Les pushes sur `feat/**` déclenchent désormais la CI locale du BO avant toute 
 ## Première release fonctionnelle (20/11/2026)
 
 Le libellé historique « Aucun changement fonctionnel » est remplacé par des notes générées à partir des changements réels. La QA doit précéder la GitHub Release, déclenchée exclusivement par un tag Git vérifié. Le CT final sans `--dev` est distinct des quatre CT de développement.
+
+
+### Variables publiques du client Vite (22/11/2026)
+
+Les clients SvelteKit lisent `import.meta.env.PUBLIC_API_URL`. Vite ne publie
+pas `PUBLIC_*` via `import.meta.env` par défaut ; le projet utilise
+`envPrefix: ['VITE_', 'PUBLIC_']` dans `vite.config.ts` pour respecter
+le préfixe public du contrat SymSvel. Les URL sont des données publiques,
+jamais des secrets. Les CD de projets doivent passer `PUBLIC_API_URL`
+pendant le build, et non au runtime du serveur statique.
