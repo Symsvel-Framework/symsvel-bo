@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: [self-hosted, linux, ARM64, symsvel]
+    runs-on: ubuntu-24.04
     concurrency:
       group: bo-ci-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: false
@@ -48,7 +48,7 @@ jobs:
         if: github.ref_name == 'main' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
         run: git diff --exit-code
 
-      - run: npx playwright install chromium
+      - run: npx playwright install --with-deps chromium
       - run: npm run qa
       - name: Verify deployable static build
         run: |
