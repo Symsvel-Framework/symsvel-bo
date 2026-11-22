@@ -4,6 +4,8 @@ import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
+	// SvelteKit's PUBLIC_ variables must also be exposed to Vite import.meta.env.
+	envPrefix: ['VITE_', 'PUBLIC_'],
 	plugins: [
 		sveltekit({
 			compilerOptions: {
