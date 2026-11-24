@@ -156,3 +156,7 @@ refresh HttpOnly n'est émis qu'après réussite du second facteur. L'absence de
 `sessionStorage` conserve le repli mémoire, limité à la vie du document.
 La CI couvre la restauration après réimport du module ; le CT sur un vrai
 navigateur et le backend local restent obligatoires.
+
+## Branding public du projet
+
+Le layout racine fournit une instance de branding via `provideProjectBrand()` (une requête anonyme à `/apiopen/project` après hydratation). Les composants et routes lisent le store en appelant `getProjectBrand()` lors de leur initialisation, puis affichent `$brandName`. Les titres natifs et les en-têtes utilisent ce même nom, sans requête supplémentaire lors des navigations. `SymSvel` est uniquement la valeur de repli en cas d'indisponibilité ou de nom invalide. Le build statique reste autonome ; `PUBLIC_API_URL` configure l'origine Back à la compilation. Les tests Playwright couvrent le nom personnalisé et le repli ; le CT doit vérifier le nom réel du projet après déploiement.
