@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { passwordStrength } from './strength';
 
 describe('new password rules and indicative strength', () => {
-	it.each(['Abcdefghi1!', 'ABCDEFGHIJK1!', 'abcdefghijk1!', 'Abcdefghijk!', 'Abcdefghijk1', 'Éa1!ééééééé'])('rejects a missing required criterion: %s', (value) => {
+	it.each([
+		'Abcdefghi1!',
+		'ABCDEFGHIJK1!',
+		'abcdefghijk1!',
+		'Abcdefghijk!',
+		'Abcdefghijk1',
+		'Éa1!ééééééé'
+	])('rejects a missing required criterion: %s', (value) => {
 		expect(passwordStrength(value).valid).toBe(false);
 	});
 	it('accepts all five criteria, including Unicode, but not NUL or oversized input', () => {

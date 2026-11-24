@@ -11,10 +11,27 @@ export function passwordStrength(password: string) {
 	const hasUpper = /\p{Lu}/u.test(password);
 	const hasDigit = /\p{Nd}/u.test(password);
 	const hasSymbol = /[\p{P}\p{S}]/u.test(password);
-	const safeLength = bytes <= 1024 && !password.includes('\0') && !/[\uD800-\uDFFF]/u.test(password);
+	const safeLength =
+		bytes <= 1024 && !password.includes('\0') && !/[\uD800-\uDFFF]/u.test(password);
 	const classes = [hasLower, hasUpper, hasDigit, hasSymbol].filter(Boolean).length;
 	const valid = hasLength && safeLength && classes === 4;
-	const score = password.length === 0 ? 0 : Math.min(4,
-		Number(hasLength) + Number(characters >= 16) + Number(classes >= 2) + Number(classes >= 3));
-	return { valid, score, bytes, characters, hasLength, hasLower, hasUpper, hasDigit, hasSymbol, safeLength };
+	const score =
+		password.length === 0
+			? 0
+			: Math.min(
+					4,
+					Number(hasLength) + Number(characters >= 16) + Number(classes >= 2) + Number(classes >= 3)
+				);
+	return {
+		valid,
+		score,
+		bytes,
+		characters,
+		hasLength,
+		hasLower,
+		hasUpper,
+		hasDigit,
+		hasSymbol,
+		safeLength
+	};
 }
