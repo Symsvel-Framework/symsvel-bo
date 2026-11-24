@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { ApiError } from '../../lib/api/client';
-	import { onMount } from 'svelte';
-	import { publicProjectName } from '../../lib/branding';
+	import { getProjectBrand } from '../../lib/branding';
 	import { loginBo, SecondFactorRequired } from '../../lib/api/session';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -26,21 +25,11 @@
 			'Connexion impossible pour le moment.'
 	});
 
-	let brandName = $state('SymSvel');
+	const brandName = getProjectBrand();
 	let email = $state('');
 	let password = $state('');
 	let loading = $state(false);
 	let error = $state('');
-
-	onMount(() => {
-		let mounted = true;
-		void publicProjectName().then((name) => {
-			if (mounted) brandName = name;
-		});
-		return () => {
-			mounted = false;
-		};
-	});
 
 	async function submit(event: SubmitEvent) {
 		event.preventDefault();
@@ -68,12 +57,12 @@
 </script>
 
 <svelte:head>
-	<title>{t.title} | {brandName} BO</title>
+	<title>{t.title} | {$brandName} BO</title>
 </svelte:head>
 
 <main class="auth-shell">
 	<section class="auth-card" aria-labelledby="login-title">
-		<header><strong>{brandName}</strong><span>BO</span></header>
+		<header><strong>{$brandName}</strong><span>BO</span></header>
 		<h1 id="login-title">{t.title}</h1>
 		<p>{t.intro}</p>
 		{#if error}<div class="alert" role="alert">{error}</div>{/if}

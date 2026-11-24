@@ -1,3 +1,5 @@
+import { getContext, onMount, setContext } from 'svelte';
+import { readable, writable, type Readable } from 'svelte/store';
 import { api } from './api/client';
 
 /** Branding is public metadata projected by Back, never the private Setup JSON. */
@@ -22,4 +24,27 @@ export async function publicProjectName(): Promise<string> {
 	} catch {
 		return 'SymSvel';
 	}
+}
+
+/** One request per root layout; context is isolated from other layout instances. */
+const projectBrandKey = Symbol('project-brand');
+
+export function provideProjectBrand(): Readable<string> {
+	const brand = writable('SymSvel');
+	setContext(projectBrandKey, brand);
+	onMount(() => {
+		let mounted = true;
+		void publicProjectName().then((name) => {
+			if (mounted) brand.set(name);
+		});
+		return () => {
+			mounted = false;
+		};
+	});
+	return brand;
+}
+
+/** Call during component initialization, including module pages. */
+export function getProjectBrand(): Readable<string> {
+	return getContext<Readable<string> | undefined>(projectBrandKey) ?? readable('SymSvel');
 }

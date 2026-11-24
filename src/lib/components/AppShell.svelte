@@ -16,7 +16,7 @@
 	import { boShellKey, type BoShellContext } from '../bo/context';
 	import { generatedTranslation } from '../i18n/generated-translations';
 	import Dropdown from './Dropdown.svelte';
-	import { publicProjectName } from '../branding';
+	import { getProjectBrand } from '../branding';
 	import {
 		isBoThemePreference,
 		readBoThemePreference,
@@ -32,7 +32,7 @@
 	let menuOpen = $state(false);
 	let alertsOpen = $state(false);
 	let themePreference = $state<BoThemePreference>('system');
-	let brandName = $state('SymSvel');
+	const brandName = getProjectBrand();
 	const detectedModules = declaredBoNavigation().length;
 	const language = $derived(($uiLanguage ?? 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en');
 	const copy = {
@@ -104,9 +104,6 @@
 
 	onMount(() => {
 		let mounted = true;
-		void publicProjectName().then((name) => {
-			if (mounted) brandName = name;
-		});
 		let navigationRevision = 0;
 		themePreference = readBoThemePreference();
 		const onThemeStorage = () => {
@@ -184,7 +181,7 @@
 	<div class="bo-shell">
 		<aside class="bo-sidebar">
 			<a class="bo-brand" href={resolve('/dashboard')}
-				><strong>{brandName}</strong><span>BO</span></a
+				><strong>{$brandName}</strong><span>BO</span></a
 			>
 			<nav class="bo-nav" aria-label={t.navigation}>
 				<a

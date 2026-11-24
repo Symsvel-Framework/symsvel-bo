@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getProjectBrand } from '../../lib/branding';
+	const brandName = getProjectBrand();
 	import { resolve } from '$app/paths';
 	import type { Path } from '$app/types';
 	import { uiLanguage } from '../../lib/api/locales';
@@ -38,7 +40,7 @@
 	);
 </script>
 
-<svelte:head><title>{t.dashboard} | SymSvel BO</title></svelte:head>
+<svelte:head><title>{t.dashboard} | {$brandName} BO</title></svelte:head>
 
 <section class="welcome">
 	<h1>{t.dashboard}</h1>
