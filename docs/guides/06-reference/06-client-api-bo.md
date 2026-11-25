@@ -6,11 +6,11 @@ Les modules BO utilisent le client natif de l'interface. Il applique l'origine b
 
 Dans une page de premier niveau d'un module (après synchronisation) :
 
-~~~typescript
+```typescript
 import { boApi } from '../../../../api/session';
 
 const items = await boApi<{ id: number; name: string }[]>('/apibo/catalogue');
-~~~
+```
 
 Cet exemple suppose que votre module a déclaré et protégé le endpoint correspondant. Adaptez le chemin relatif à la profondeur de la page.
 

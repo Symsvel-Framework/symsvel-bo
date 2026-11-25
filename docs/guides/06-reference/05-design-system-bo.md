@@ -515,7 +515,6 @@ lorsqu'un module et l'hôte n'ont pas la même version.
 - [Sources du BO](https://github.com/Symsvel-Framework/symsvel-bo)
 - [Contrat de synchronisation des modules](https://github.com/Symsvel-Framework/symsvel-tooling/blob/main/docs/modules/contrat.md)
 
-
 ### PasswordFeedback
 
 Les formulaires de choix d'un nouveau mot de passe importent `passwordStrength` et `PasswordFeedback.svelte` depuis `lib/password/` (chemin relatif adapté à la profondeur du module). Le composant reçoit `{password}`, affiche cinq critères FR/EN rouges ou verts avec un symbole textuel, puis une jauge indicative accessible. Le résultat `valid` exige 12 points de code Unicode minimum, une majuscule, une minuscule, un chiffre et un signe de ponctuation ou symbole. Le plafond de 1024 octets UTF-8 et l'absence de NUL restent des garde-fous. Cette validation d'interface ne remplace jamais la politique Auth côté serveur. Les mots de passe existants ne sont pas soumis à ces critères lors de la connexion.
